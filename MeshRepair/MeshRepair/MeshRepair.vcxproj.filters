@@ -5,5 +5,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h" />
+    <ClInclude Include="API\Parameters.h">
+      <Filter>API</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="API">
+      <UniqueIdentifier>{4f3c7907-4190-4ed0-909f-58a3f17a9faa}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>
