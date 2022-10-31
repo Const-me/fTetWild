@@ -623,9 +623,7 @@ int main(int argc, char** argv)
     }
     // fortest
     MeshIO::write_mesh(output_mesh_name, mesh, false, colors, !nobinary, !csg_file.empty());
-    igl::write_triangle_mesh(params.output_path + "_" + params.postfix + "_sf.obj", V_sf, F_sf);
-    //    MeshIO::write_surface_mesh(params.output_path + "_" + params.postfix + "_sf.obj", mesh,
-    //    false);
+    igl::write_triangle_mesh(params.output_path + "_" + params.postfix + "_sf.stl", V_sf, F_sf, false);
 
     std::ofstream fout(params.log_path + "_" + params.postfix + ".csv");
     if (fout.good())
