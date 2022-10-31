@@ -12,3 +12,6 @@ matlab/*.stl
 __pycache__
 .DS_Store
 /data
+MeshRepair/MeshRepair/x64/
+MeshRepair/RepairTest/x64/
+*.user
