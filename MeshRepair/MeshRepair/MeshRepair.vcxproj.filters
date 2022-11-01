@@ -5,6 +5,7 @@
     <ClCompile Include="MeshRepair.cpp" />
     <ClCompile Include="SourceMesh.cpp" />
     <ClCompile Include="convertParameters.cpp" />
+    <ClCompile Include="stdafx.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h" />
@@ -19,6 +20,7 @@
     </ClInclude>
     <ClInclude Include="SourceMesh.h" />
     <ClInclude Include="convertParameters.h" />
+    <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="API">

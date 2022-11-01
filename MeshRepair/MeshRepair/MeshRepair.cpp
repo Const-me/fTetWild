@@ -1,5 +1,7 @@
+#include "stdafx.h"
 #include "API/library.h"
 #include "SourceMesh.h"
+#include <geogram/basic/common.h>
 
 namespace MeshRepair
 {
@@ -9,7 +11,23 @@ namespace MeshRepair
 		  uint32_t countVertices, const float* vb, uint32_t countTriangles, const uint32_t* ib, iSourceMesh** rdi ) noexcept override final;
 
 		HRESULT COMLIGHTCALL repair( iSourceMesh* mesh, const Parameters& parameters, iResultMesh** rdi ) noexcept override final;
+
+	  protected:
+
+		HRESULT FinalConstruct();
+		void FinalRelease();
 	};
+
+	HRESULT MeshRepair::FinalConstruct()
+	{
+		GEO::initialize();
+		return S_OK;
+	}
+
+	void MeshRepair::FinalRelease() 
+	{
+		GEO::terminate();
+	}
 
 	DLLEXPORT HRESULT COMLIGHTCALL createMeshRepair( iMeshRepair** rdi )
 	{
