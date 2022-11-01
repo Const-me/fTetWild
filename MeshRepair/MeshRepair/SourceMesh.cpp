@@ -17,10 +17,15 @@ namespace
 			__m256d d = _mm256_cvtps_pd( v );
 			_mm256_storeu_pd( rdi, d );
 #else
+			// Upcast v.xy to FP64
 			__m128d d = _mm_cvtps_pd( v );
-			v = _mm_unpackhi_ps( v, v );
+			// Permute the source FP32 vector into v.zwzw
+			v = _mm_movehl_ps( v, v );
+			// Store first two FP64 numbers
 			_mm_storeu_pd( rdi, d );
+			// Upcast v.xy to FP64
 			d = _mm_cvtps_pd( v );
+			// Store remaining two FP64 numbers
 			_mm_storeu_pd( rdi + 2, d );
 #endif
 		}
