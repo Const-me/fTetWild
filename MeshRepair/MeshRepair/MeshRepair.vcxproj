@@ -44,16 +44,18 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)include\;$(SolutionDir)..\3rdparty\libigl\cmake\..\external\predicates;$(SolutionDir)..\3rdparty\libigl\external\predicates;$(SolutionDir)..\build\predicates;$(SolutionDir)..\3rdparty\libigl\external\eigen;$(SolutionDir)..\3rdparty\json\include;$(SolutionDir)..\3rdparty\geogram\src\lib;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)include\;$(SolutionDir)..\3rdparty\libigl\cmake\..\external\predicates;$(SolutionDir)..\3rdparty\libigl\external\predicates;$(SolutionDir)..\build\predicates;$(SolutionDir)..\3rdparty\libigl\external\eigen;$(SolutionDir)..\3rdparty\json\include;$(SolutionDir)..\3rdparty\geogram\src\lib;$(SolutionDir)..\3rdparty\tbb\include;$(SolutionDir)..\..\mpir\sandybridge\Inc;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)tbb\Debug;$(SolutionDir)..\..\mpir\sandybridge\Bin;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(SolutionDir)include\;$(SolutionDir)..\3rdparty\libigl\cmake\..\external\predicates;$(SolutionDir)..\3rdparty\libigl\external\predicates;$(SolutionDir)..\build\predicates;$(SolutionDir)..\3rdparty\libigl\external\eigen;$(SolutionDir)..\3rdparty\json\include;$(SolutionDir)..\3rdparty\geogram\src\lib;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)include\;$(SolutionDir)..\3rdparty\libigl\cmake\..\external\predicates;$(SolutionDir)..\3rdparty\libigl\external\predicates;$(SolutionDir)..\build\predicates;$(SolutionDir)..\3rdparty\libigl\external\eigen;$(SolutionDir)..\3rdparty\json\include;$(SolutionDir)..\3rdparty\geogram\src\lib;$(SolutionDir)..\3rdparty\tbb\include;$(SolutionDir)..\..\mpir\sandybridge\Inc;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)tbb\Release;$(SolutionDir)..\..\mpir\sandybridge\Bin;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;MESHREPAIR_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;FLOAT_TETWILD_USE_TBB;NOMINMAX;LIBIGL_WITH_PREDICATES;_USE_MATH_DEFINES;SPDLOG_FMT_EXTERNAL;__TBB_NO_IMPLICIT_LINKAGE=1;_DEBUG;MESHREPAIR_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
@@ -70,7 +72,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NDEBUG;MESHREPAIR_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;FLOAT_TETWILD_USE_TBB;NOMINMAX;LIBIGL_WITH_PREDICATES;_USE_MATH_DEFINES;SPDLOG_FMT_EXTERNAL;__TBB_NO_IMPLICIT_LINKAGE=1;NDEBUG;MESHREPAIR_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
@@ -88,7 +90,7 @@
     <ClInclude Include="API\library.h" />
     <ClInclude Include="API\Parameters.h" />
     <ClInclude Include="convertParameters.h" />
-    <ClInclude Include="framework.h" />
+    <ClInclude Include="meshRepairMain.h" />
     <ClInclude Include="SourceMesh.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
@@ -96,6 +98,7 @@
     <ClCompile Include="convertParameters.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="MeshRepair.cpp" />
+    <ClCompile Include="meshRepairMain.cpp" />
     <ClCompile Include="SourceMesh.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

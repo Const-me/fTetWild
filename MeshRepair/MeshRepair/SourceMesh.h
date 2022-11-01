@@ -11,8 +11,10 @@ namespace MeshRepair
 
 		GEO::Mesh mesh;
 
-		// std::vector<floatTetWild::Vector3> input_vertices;
-		// std::vector<floatTetWild::Vector3i> input_faces;
-		// std::vector<int> input_tags;
+		// Another copy of the same data, stored in slightly different way.
+		// TODO [RAM usage]: refactor away somehow
+		std::vector<floatTetWild::Vector3> input_vertices;
+		std::vector<floatTetWild::Vector3i> input_faces;
+		std::vector<int> input_tags;
 	};
 }  // namespace MeshRepair

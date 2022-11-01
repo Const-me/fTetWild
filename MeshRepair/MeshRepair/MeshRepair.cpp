@@ -2,6 +2,7 @@
 #include "API/library.h"
 #include "SourceMesh.h"
 #include <geogram/basic/common.h>
+#include "meshRepairMain.h"
 
 namespace MeshRepair
 {
@@ -13,7 +14,6 @@ namespace MeshRepair
 		HRESULT COMLIGHTCALL repair( iSourceMesh* mesh, const Parameters& parameters, iResultMesh** rdi ) noexcept override final;
 
 	  protected:
-
 		HRESULT FinalConstruct();
 		void FinalRelease();
 	};
@@ -24,7 +24,7 @@ namespace MeshRepair
 		return S_OK;
 	}
 
-	void MeshRepair::FinalRelease() 
+	void MeshRepair::FinalRelease()
 	{
 		GEO::terminate();
 	}
@@ -50,6 +50,17 @@ namespace MeshRepair
 
 	HRESULT COMLIGHTCALL MeshRepair::repair( iSourceMesh* mesh, const Parameters& parameters, iResultMesh** rdi ) noexcept
 	{
-		return E_NOTIMPL;
+		if( nullptr == mesh || nullptr == rdi )
+			return E_POINTER;
+
+		SourceMesh* const objMesh = static_cast<SourceMesh*>( mesh );
+		try
+		{
+			return meshRepairMain( *objMesh, parameters );
+		}
+		catch( const std::bad_alloc& )
+		{
+			return E_OUTOFMEMORY;
+		}
 	}
 }  // namespace MeshRepair
