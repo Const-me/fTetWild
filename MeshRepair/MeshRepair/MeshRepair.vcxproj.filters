@@ -35,4 +35,7 @@
       <Filter>API</Filter>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="eigen.natvis" />
+  </ItemGroup>
 </Project>
