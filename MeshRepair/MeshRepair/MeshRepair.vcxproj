@@ -43,11 +43,17 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>$(SolutionDir)include\;$(SolutionDir)..\3rdparty\libigl\cmake\..\external\predicates;$(SolutionDir)..\3rdparty\libigl\external\predicates;$(SolutionDir)..\build\predicates;$(SolutionDir)..\3rdparty\libigl\external\eigen;$(SolutionDir)..\3rdparty\json\include;$(SolutionDir)..\3rdparty\geogram\src\lib;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>$(SolutionDir)include\;$(SolutionDir)..\3rdparty\libigl\cmake\..\external\predicates;$(SolutionDir)..\3rdparty\libigl\external\predicates;$(SolutionDir)..\build\predicates;$(SolutionDir)..\3rdparty\libigl\external\eigen;$(SolutionDir)..\3rdparty\json\include;$(SolutionDir)..\3rdparty\geogram\src\lib;$(IncludePath)</IncludePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;MESHREPAIR_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;MESHREPAIR_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -63,7 +69,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;MESHREPAIR_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NDEBUG;MESHREPAIR_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -79,10 +85,12 @@
     <ClInclude Include="API\interfaces.h" />
     <ClInclude Include="API\library.h" />
     <ClInclude Include="API\Parameters.h" />
+    <ClInclude Include="convertParameters.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="SourceMesh.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="convertParameters.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="MeshRepair.cpp" />
     <ClCompile Include="SourceMesh.cpp" />
