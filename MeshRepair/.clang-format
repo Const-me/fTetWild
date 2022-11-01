@@ -1,7 +1,7 @@
 ---
 Language:        Cpp
 AccessModifierOffset: -2                           # No indent for public
-AlignAfterOpenBracket: Align                       # Align parameters that break
+AlignAfterOpenBracket: DontAlign
 AlignConsecutiveAssignments: true                  # See enums
 AlignConsecutiveDeclarations: true
 AlignEscapedNewlines: Left
@@ -17,8 +17,8 @@ AlwaysBreakAfterDefinitionReturnType: None
 AlwaysBreakAfterReturnType: None
 AlwaysBreakBeforeMultilineStrings: true
 AlwaysBreakTemplateDeclarations: Yes
-BinPackArguments: false                               # debatable
-BinPackParameters: false                              # debatable
+BinPackArguments: true
+BinPackParameters: true
 BraceWrapping:
   AfterClass:      true
   AfterControlStatement: false

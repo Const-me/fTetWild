@@ -8,6 +8,12 @@
     <ClInclude Include="API\Parameters.h">
       <Filter>API</Filter>
     </ClInclude>
+    <ClInclude Include="API\interfaces.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="API\library.h">
+      <Filter>API</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="API">
