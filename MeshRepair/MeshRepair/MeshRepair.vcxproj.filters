@@ -2,6 +2,8 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="MeshRepair.cpp" />
+    <ClCompile Include="SourceMesh.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h" />
@@ -14,10 +16,16 @@
     <ClInclude Include="API\library.h">
       <Filter>API</Filter>
     </ClInclude>
+    <ClInclude Include="SourceMesh.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="API">
       <UniqueIdentifier>{4f3c7907-4190-4ed0-909f-58a3f17a9faa}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="API\MeshRepair.def">
+      <Filter>API</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -21,9 +21,6 @@
     <ClInclude Include="Utils\IndexedMesh.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="Utils\check.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
     <ClInclude Include="Utils\simdUtils.h">
       <Filter>Utils</Filter>
     </ClInclude>

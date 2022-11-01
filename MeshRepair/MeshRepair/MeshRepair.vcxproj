@@ -54,6 +54,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <ModuleDefinitionFile>API\MeshRepair.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -71,6 +72,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <ModuleDefinitionFile>API\MeshRepair.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -78,9 +80,15 @@
     <ClInclude Include="API\library.h" />
     <ClInclude Include="API\Parameters.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="SourceMesh.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="MeshRepair.cpp" />
+    <ClCompile Include="SourceMesh.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="API\MeshRepair.def" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

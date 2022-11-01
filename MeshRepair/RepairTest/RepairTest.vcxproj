@@ -88,10 +88,14 @@
     <ClCompile Include="Utils\IndexedMesh.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Utils\check.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Utils\IndexedMesh.h" />
     <ClInclude Include="Utils\simdUtils.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MeshRepair\MeshRepair.vcxproj">
+      <Project>{5997bd5d-2dc7-4b30-adeb-46fa341c2f5e}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,5 +1,5 @@
 #pragma once
-#include "../../ComLightLib/comLightCommon.h"
+#include "../../ComLightLib/comLightClient.h"
 #include "Parameters.h"
 
 namespace MeshRepair
@@ -27,10 +27,9 @@ namespace MeshRepair
 	{
 		DEFINE_INTERFACE_ID( "{f4ef4dfd-6016-45bb-ac93-2865c9c044e6}" );
 
-		virtual HRESULT COMLIGHTCALL createIndexedMeshFP32( uint32_t countVertices, const float* vb,
-		  uint32_t countTriangles, const uint32_t* ib, iSourceMesh** rdi ) = 0;
+		virtual HRESULT COMLIGHTCALL createIndexedMeshFP32(
+		  uint32_t countVertices, const float* vb, uint32_t countTriangles, const uint32_t* ib, iSourceMesh** rdi ) = 0;
 
-		virtual HRESULT COMLIGHTCALL repair(
-		  iSourceMesh* mesh, const Parameters parameters, iResultMesh** rdi ) = 0;
+		virtual HRESULT COMLIGHTCALL repair( iSourceMesh* mesh, const Parameters& parameters, iResultMesh** rdi ) = 0;
 	};
 }  // namespace MeshRepair

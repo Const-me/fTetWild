@@ -10,5 +10,4 @@
 #include <stdio.h>
 #include <d3d11.h>
 #include <DirectXMath.h>
-
-#include "Utils/check.h"
+#include "../ComLightLib/comLightClient.h"
