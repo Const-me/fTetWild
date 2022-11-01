@@ -20,7 +20,7 @@ namespace MeshRepair
 		  (uint32_t)rsi.vertices.size(), (const float*)rsi.vertices.data(), (uint32_t)rsi.triangles.size(), (const uint32_t*)rsi.triangles.data(), &rdi );
 	}
 
-	HRESULT copyMesh( iResultMesh* rsi, IndexedMesh& rdi ) 
+	HRESULT copyMesh( iResultMesh* rsi, IndexedMesh& rdi )
 	{
 		uint32_t verts, tris;
 		CHECK( rsi->getSize( verts, tris ) );
@@ -30,7 +30,7 @@ namespace MeshRepair
 			rdi.vertices.resize( verts );
 			rdi.triangles.resize( tris );
 		}
-		catch(const std::bad_alloc& )
+		catch( const std::bad_alloc& )
 		{
 			return E_OUTOFMEMORY;
 		}
@@ -61,7 +61,7 @@ HRESULT testRepair()
 
 	CComPtr<iSourceMesh> source;
 	CHECK( createMesh( repair, mesh, source ) );
-	
+
 	Parameters params;
 	CComPtr<iResultMesh> result;
 	CHECK( repair->repair( source, params, &result ) );
