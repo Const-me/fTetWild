@@ -9,5 +9,7 @@
 #include <windows.h>
 #include <stdio.h>
 #include <d3d11.h>
+
+#define _XM_SSE4_INTRINSICS_
 #include <DirectXMath.h>
 #include "../ComLightLib/comLightClient.h"
