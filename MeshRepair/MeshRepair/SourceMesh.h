@@ -9,6 +9,10 @@ namespace MeshRepair
 	public:
 		HRESULT createMesh( uint32_t countVertices, const float* vb, uint32_t countTriangles, const uint32_t* ib );
 
-		floatTetWild::Mesh mesh;
+		GEO::Mesh mesh;
+
+		// std::vector<floatTetWild::Vector3> input_vertices;
+		// std::vector<floatTetWild::Vector3i> input_faces;
+		// std::vector<int> input_tags;
 	};
 }  // namespace MeshRepair
