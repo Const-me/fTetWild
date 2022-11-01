@@ -37,5 +37,6 @@
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="eigen.natvis" />
+    <Natvis Include="simd.natvis" />
   </ItemGroup>
 </Project>
