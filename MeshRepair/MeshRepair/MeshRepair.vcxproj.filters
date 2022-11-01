@@ -7,6 +7,7 @@
     <ClCompile Include="convertParameters.cpp" />
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="meshRepairMain.cpp" />
+    <ClCompile Include="ResultMesh.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="API\Parameters.h">
@@ -22,6 +23,7 @@
     <ClInclude Include="convertParameters.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="meshRepairMain.h" />
+    <ClInclude Include="ResultMesh.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="API">

@@ -10,6 +10,7 @@
 #include <floattetwild/FloatTetDelaunay.h>
 #include <floattetwild/TriangleInsertion.h>
 #include <floattetwild/MeshImprovement.h>
+#include "ResultMesh.h"
 
 using namespace floatTetWild;
 
@@ -18,7 +19,7 @@ namespace
 	constexpr bool skip_simplify = false;
 }
 
-HRESULT meshRepairMain( MeshRepair::SourceMesh& rsi, const MeshRepair::Parameters& parameters )
+HRESULT meshRepairMain( MeshRepair::SourceMesh& rsi, const MeshRepair::Parameters& parameters, MeshRepair::iResultMesh** rdi )
 {
 	Mesh mesh;
 	Parameters& params = mesh.params;
@@ -26,6 +27,9 @@ HRESULT meshRepairMain( MeshRepair::SourceMesh& rsi, const MeshRepair::Parameter
 
 #ifdef FLOAT_TETWILD_USE_TBB
 	uint32_t max_threads = parameters.maxThreads;
+	if( 0 == max_threads )
+		max_threads = std::thread::hardware_concurrency();
+
 	const size_t MB = 1024 * 1024;
 	const size_t stack_size = 64 * MB;
 	uint32_t num_threads = std::max( 1u, std::thread::hardware_concurrency() );
@@ -78,14 +82,17 @@ HRESULT meshRepairMain( MeshRepair::SourceMesh& rsi, const MeshRepair::Parameter
 		}
 	}
 
-	Eigen::MatrixXd V_sf;
-	Eigen::MatrixXi F_sf;
-	if( params.manifold_surface )
-		manifold_surface( mesh, V_sf, F_sf );
-	else
-		get_surface( mesh, V_sf, F_sf );
+	using namespace ComLight;
+	CComPtr<Object<MeshRepair::ResultMesh>> result;
+	CHECK( Object<MeshRepair::ResultMesh>::create( result ) );
 
-	return E_NOTIMPL;
+	if( params.manifold_surface )
+		manifold_surface( mesh, result->V_sf, result->F_sf );
+	else
+		get_surface( mesh, result->V_sf, result->F_sf );
+
+	result.detach( rdi );
+	return S_OK;
 }
 
 #pragma comment( lib, "tbb_static.lib" )

@@ -91,6 +91,7 @@
     <ClInclude Include="API\Parameters.h" />
     <ClInclude Include="convertParameters.h" />
     <ClInclude Include="meshRepairMain.h" />
+    <ClInclude Include="ResultMesh.h" />
     <ClInclude Include="SourceMesh.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
@@ -99,6 +100,7 @@
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="MeshRepair.cpp" />
     <ClCompile Include="meshRepairMain.cpp" />
+    <ClCompile Include="ResultMesh.cpp" />
     <ClCompile Include="SourceMesh.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

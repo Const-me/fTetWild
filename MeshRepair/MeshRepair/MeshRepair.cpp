@@ -56,7 +56,7 @@ namespace MeshRepair
 		SourceMesh* const objMesh = static_cast<SourceMesh*>( mesh );
 		try
 		{
-			return meshRepairMain( *objMesh, parameters );
+			return meshRepairMain( *objMesh, parameters, rdi );
 		}
 		catch( const std::bad_alloc& )
 		{

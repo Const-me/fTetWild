@@ -1,4 +1,4 @@
 #pragma once
 #include "SourceMesh.h"
 
-HRESULT meshRepairMain( MeshRepair::SourceMesh& rsi, const MeshRepair::Parameters& parameters );
+HRESULT meshRepairMain( MeshRepair::SourceMesh& rsi, const MeshRepair::Parameters& parameters, MeshRepair::iResultMesh** rdi );
