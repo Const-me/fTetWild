@@ -27,8 +27,17 @@ namespace MeshRepair
 
 		try
 		{
+#ifdef _DEBUG
+			rdi.vertices.clear();
+			rdi.triangles.clear();
+			DirectX::XMFLOAT3 cv { NAN, NAN, NAN };
+			rdi.vertices.resize( verts, cv );
+			std::array<uint32_t, 3> cf { 0xCCCCCCCCu, 0xCCCCCCCCu, 0xCCCCCCCCu };
+			rdi.triangles.resize( tris, cf );
+#else
 			rdi.vertices.resize( verts );
 			rdi.triangles.resize( tris );
+#endif
 		}
 		catch( const std::bad_alloc& )
 		{
@@ -76,4 +85,5 @@ int main()
 	// testStlIO();
 	testRepair();
 	printf( "Hello World!\n" );
+	return 0;
 }
