@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "SourceMesh.h"
 #include "../TetWild2/Utils/setMeshData.h"
+#include "../TetWild2/Utils/TriangleMesh.h"
 #include <geogram/mesh/mesh_reorder.h>
 using namespace MeshRepair;
 
@@ -28,5 +29,12 @@ HRESULT SourceMesh::createMesh( uint32_t countVertices, const float* vb, uint32_
 	{
 		return E_OUTOFMEMORY;
 	}
+
+#if 1
+	TriangleMesh testMesh;
+	testMesh.assignVertices( countVertices, vb );
+	testMesh.assignTriangles( countTriangles, ib );
+	testMesh.reorderMorton();
+#endif
 	return S_OK;
 }

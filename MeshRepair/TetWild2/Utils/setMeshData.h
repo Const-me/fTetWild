@@ -2,6 +2,9 @@
 #include "../src/Types.hpp"
 #include "Geogram2.h"
 
+// Upcast an array of FP32 into FP64
+void upcastFloats( double* rdi, size_t length, const float* vb );
+
 // Set vertex buffer of the mesh, upcasting coordinates to FP64
 HRESULT assignMeshVertices( GEO2::Mesh& mesh, size_t count, const float* vb );
 

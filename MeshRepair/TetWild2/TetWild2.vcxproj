@@ -92,6 +92,8 @@
     <ClInclude Include="external\Predicates.hpp" />
     <ClInclude Include="external\Rational.h" />
     <ClInclude Include="external\WindingNumber.h" />
+    <ClInclude Include="Utils\reorderUtils.h" />
+    <ClInclude Include="Utils\TriangleMesh.h" />
     <ClInclude Include="Utils\Geogram2.h" />
     <ClInclude Include="includeEigen.h" />
     <ClInclude Include="Utils\setMeshData.h" />
@@ -130,6 +132,8 @@
     <ClCompile Include="external\MshSaver.cpp" />
     <ClCompile Include="external\Predicates.cpp" />
     <ClCompile Include="external\triangle_triangle_intersection.cpp" />
+    <ClCompile Include="Utils\reorderUtils.cpp" />
+    <ClCompile Include="Utils\TriangleMesh.cpp" />
     <ClCompile Include="Utils\Geogram2.cpp" />
     <ClCompile Include="Utils\setMeshData.cpp" />
     <ClCompile Include="src\AABBWrapper.cpp" />
@@ -154,6 +158,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="TetWild2.cpp" />
+    <ClCompile Include="Utils\TriangleMesh.reorder.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
