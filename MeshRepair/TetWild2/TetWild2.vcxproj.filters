@@ -59,9 +59,6 @@
     <ClInclude Include="src\FloatTetDelaunay.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\FloatTetwild.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="src\intersections.h">
       <Filter>src</Filter>
     </ClInclude>
@@ -152,9 +149,6 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\FloatTetDelaunay.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\FloatTetwild.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\intersections.cpp">
