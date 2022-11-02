@@ -73,7 +73,7 @@ namespace
 		}
 
 		static_assert( sizeof( GEO::index_t ) == 4, "GEO::index_t expected to be 4 bytes" );
-		memcpy( vec.data(), ib, count * 4 );
+		memcpy( vec.data(), ib, totalIntegers * 4 );
 		mesh.facets.assign_triangle_mesh( vec, true );
 		return S_OK;
 	}
