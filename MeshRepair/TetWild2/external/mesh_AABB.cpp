@@ -50,7 +50,7 @@
 
 namespace
 {
-	using namespace GEO;
+	using namespace GEO2;
 
 	/**
 	 * \brief Computes the axis-aligned bounding box of a mesh facet.

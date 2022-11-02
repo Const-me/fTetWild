@@ -245,7 +245,7 @@ namespace floatTetWild
 
 	void Mesh::partition( const int n_parts, std::vector<std::vector<int>>& tets_id ) const
 	{
-		GEO2::Mesh M;
+		GEO2::TetraMesh M;
 		// Setup vertices
 		M.vertices.create_vertices( (int)tet_vertices.size() );
 		for( int i = 0; i < (int)M.vertices.nb(); ++i )

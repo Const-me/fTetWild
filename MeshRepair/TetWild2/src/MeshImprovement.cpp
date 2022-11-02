@@ -1391,7 +1391,7 @@ void floatTetWild::apply_sizingfield( Mesh& mesh, AABBWrapper& tree )
 	auto& tet_vertices = mesh.tet_vertices;
 	auto& tets = mesh.tets;
 
-	GEO2::Mesh bg_mesh;
+	GEO2::TetraMesh bg_mesh;
 	bg_mesh.vertices.clear();
 	bg_mesh.vertices.create_vertices( (int)mesh.params.V_sizing_field.rows() / 3 );
 	for( int i = 0; i < mesh.params.V_sizing_field.rows() / 3; i++ )

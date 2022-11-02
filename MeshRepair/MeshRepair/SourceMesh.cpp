@@ -15,7 +15,7 @@ HRESULT SourceMesh::createMesh( uint32_t countVertices, const float* vb, uint32_
 	CHECK( assignMeshTriangles( mesh, countTriangles, ib ) );
 
 	// See MeshIO::load_mesh function in the original code
-	GEO::mesh_reorder( mesh, GEO::MESH_ORDER_MORTON );
+	mesh.reorderMorton();
 
 	// Extract the data, store as different types
 	CHECK( copyMeshData( mesh, input_vertices, input_faces ) );

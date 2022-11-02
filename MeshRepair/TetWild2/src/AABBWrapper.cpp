@@ -66,7 +66,7 @@ void floatTetWild::AABBWrapper::init_b_mesh_and_tree( const std::vector<Vector3>
 		}
 	}
 
-	mesh_reorder( b_mesh, GEO2::MESH_ORDER_MORTON );
+	b_mesh.reorderMorton();
 	b_tree = std::make_shared<MeshFacetsAABBWithEps>( b_mesh );
 
 	if( b_edges.empty() )
@@ -151,7 +151,7 @@ void floatTetWild::AABBWrapper::init_tmp_b_mesh_and_tree( const std::vector<Vect
 			tmp_b_mesh.facets.set_vertex( i, 2, i * 2 + 1 );
 		}
 	}
-	mesh_reorder( tmp_b_mesh, GEO2::MESH_ORDER_MORTON );
+	tmp_b_mesh.reorderMorton();
 	tmp_b_tree = std::make_shared<MeshFacetsAABBWithEps>( tmp_b_mesh );
 
 #ifdef NEW_ENVELOPE

@@ -384,7 +384,7 @@ namespace floatTetWild
 
 	inline void get_point_facet_nearest_point( const GEO2::Mesh& M, const GEO2::vec3& p, GEO2::index_t f, GEO2::vec3& nearest_p, double& squared_dist )
 	{
-		using namespace GEO;
+		using namespace GEO2;
 		geo_debug_assert( M.facets.nb_vertices( f ) == 3 );
 		index_t c = M.facets.corners_begin( f );
 		const vec3& p1 = Geom::mesh_vertex( M, M.facet_corners.vertex( c ) );
