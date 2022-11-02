@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "TriangleMesh.h"
 #include "setMeshData.h"
+#include "BoundingBox.hpp"
 
 // Set vertex buffer of the mesh, upcasting coordinates to FP64
 HRESULT TriangleMesh::assignVertices( size_t count, const float* vb )
@@ -35,32 +36,13 @@ HRESULT TriangleMesh::assignTriangles( size_t count, const uint32_t* ib )
 
 double TriangleMesh::boxDiagonal() const
 {
-	__m128d xyMin = _mm_set1_pd( DBL_MAX );
-	__m128d zMin = xyMin;
-	__m128d xyMax = _mm_sub_pd( _mm_setzero_pd(), xyMin );
-	__m128d zMax = xyMax;
-
+	BoundingBox box;
 	for( const GEO::vec3& vert : vertices )
 	{
 		const double* rsi = (const double*)&vert;
-		__m128d v = _mm_loadu_pd( rsi );
-		xyMin = _mm_min_pd( xyMin, v );
-		xyMax = _mm_max_pd( xyMax, v );
-
-		v = _mm_load_sd( rsi + 2 );
-		zMin = _mm_min_pd( zMin, v );
-		zMax = _mm_max_pd( zMax, v );
+		box.extend( rsi );
 	}
-
-	__m128d xy = _mm_sub_pd( xyMax, xyMin );
-	__m128d z = _mm_sub_pd( zMax, zMin );
-
-	xy = _mm_dp_pd( xy, xy, 0b00110001 );
-	z = _mm_mul_sd( z, z );
-
-	__m128d res = _mm_add_sd( xy, z );
-	res = _mm_sqrt_sd( res, res );
-	return _mm_cvtsd_f64( res );
+	return box.diagonal();
 }
 
 void TriangleMesh::clearMesh( bool keepMemory )
