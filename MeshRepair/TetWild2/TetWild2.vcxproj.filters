@@ -2,9 +2,191 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="external\mesh_AABB.h">
+      <Filter>external</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AABBWrapper.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Mesh.hpp">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="external\bfs_orient.h">
+      <Filter>external</Filter>
+    </ClInclude>
+    <ClInclude Include="external\Exception.h">
+      <Filter>external</Filter>
+    </ClInclude>
+    <ClInclude Include="external\FastWindingNumber.hpp">
+      <Filter>external</Filter>
+    </ClInclude>
+    <ClInclude Include="external\get_mem.h">
+      <Filter>external</Filter>
+    </ClInclude>
+    <ClInclude Include="external\MshLoader.h">
+      <Filter>external</Filter>
+    </ClInclude>
+    <ClInclude Include="external\MshSaver.h">
+      <Filter>external</Filter>
+    </ClInclude>
+    <ClInclude Include="external\Predicates.hpp">
+      <Filter>external</Filter>
+    </ClInclude>
+    <ClInclude Include="external\Rational.h">
+      <Filter>external</Filter>
+    </ClInclude>
+    <ClInclude Include="external\WindingNumber.h">
+      <Filter>external</Filter>
+    </ClInclude>
+    <ClInclude Include="src\auto_table.hpp">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CSGTreeParser.hpp">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CutMesh.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EdgeCollapsing.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EdgeSplitting.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EdgeSwapping.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\FloatTetDelaunay.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\FloatTetwild.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\intersections.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LocalOperations.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Logger.hpp">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MeshImprovement.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MeshIO.hpp">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Parameters.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Simplification.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Statistics.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TriangleInsertion.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Types.hpp">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\VertexSmoothing.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="TetWild2.cpp" />
+    <ClCompile Include="external\mesh_AABB.cpp">
+      <Filter>external</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AABBWrapper.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Mesh.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="external\bfs_orient.cpp">
+      <Filter>external</Filter>
+    </ClCompile>
+    <ClCompile Include="external\FastWindingNumber.cpp">
+      <Filter>external</Filter>
+    </ClCompile>
+    <ClCompile Include="external\get_mem.cpp">
+      <Filter>external</Filter>
+    </ClCompile>
+    <ClCompile Include="external\getRSS.c">
+      <Filter>external</Filter>
+    </ClCompile>
+    <ClCompile Include="external\MshLoader.cpp">
+      <Filter>external</Filter>
+    </ClCompile>
+    <ClCompile Include="external\MshSaver.cpp">
+      <Filter>external</Filter>
+    </ClCompile>
+    <ClCompile Include="external\Predicates.cpp">
+      <Filter>external</Filter>
+    </ClCompile>
+    <ClCompile Include="external\triangle_triangle_intersection.cpp">
+      <Filter>external</Filter>
+    </ClCompile>
+    <ClCompile Include="src\auto_table.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CSGTreeParser.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CutMesh.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\EdgeCollapsing.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\EdgeSplitting.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\EdgeSwapping.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FloatTetDelaunay.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FloatTetwild.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\intersections.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LocalOperations.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Logger.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MeshImprovement.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MeshIO.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Simplification.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TriangleInsertion.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VertexSmoothing.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="external">
+      <UniqueIdentifier>{9461dba4-bb17-4eb4-829b-bfd2488a3b27}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{94573ef6-8620-4fa6-8ac6-612fc0d46df3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>
