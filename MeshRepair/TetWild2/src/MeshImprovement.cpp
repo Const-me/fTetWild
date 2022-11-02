@@ -2389,12 +2389,8 @@ void floatTetWild::smooth_open_boundary_aux( Mesh& mesh, const AABBWrapper& tree
 		//        vertex_smoothing(mesh, tree);
 
 		/// unfreeze
-		for( int v_id; v_id < tet_vertices.size(); v_id++ )
-		{
-			//            if (is_b_vs[v_id])
-			//            if (!conn_b_fs[v_id].empty())
-			tet_vertices[ v_id ].is_freezed = false;
-		}
+		for( auto& tv : tet_vertices )
+			tv.is_freezed = false;
 	}
 }
 
