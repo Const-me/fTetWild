@@ -341,8 +341,8 @@ void floatTetWild::collapsing( std::vector<Vector3>& input_vertices, std::vector
 		// compute new point
 		Vector3 p = ( input_vertices[ v1_id ] + input_vertices[ v2_id ] ) / 2;
 		tree.project_to_sf( p );
-		// GEO::vec3 geo_p(p[0], p[1], p[2]);
-		// GEO::vec3 nearest_p;
+		// GEO2::vec3 geo_p(p[0], p[1], p[2]);
+		// GEO2::vec3 nearest_p;
 		// double _;
 		// tree.nearest_facet(geo_p, nearest_p, _);
 		// p[0] = nearest_p[0];
@@ -970,29 +970,29 @@ bool floatTetWild::is_out_envelope( const std::array<Vector3, 3>& vs, const AABB
 	return tree.is_out_sf_envelope_exact_simplify( vs );
 #else
 #ifdef STORE_SAMPLE_POINTS
-	std::vector<GEO::vec3> ps;
+	std::vector<GEO2::vec3> ps;
 	sample_triangle( vs, ps, params.dd_simplification );
 	return tree.is_out_sf_envelope( ps, params.eps_2_simplification );
 #else
-	GEO::index_t prev_facet = GEO::NO_FACET;
+	GEO2::index_t prev_facet = GEO2::NO_FACET;
 	return sample_triangle_and_check_is_out( vs, params.dd_simplification, params.eps_2_simplification, tree, prev_facet );
 #endif
 #endif
 
-	// GEO::vec3 init_point(vs[0][0], vs[0][1], vs[0][2]);
-	// GEO::vec3 nearest_point;
+	// GEO2::vec3 init_point(vs[0][0], vs[0][1], vs[0][2]);
+	// GEO2::vec3 nearest_point;
 	// double sq_distg;
-	// GEO::index_t prev_facet = tree.nearest_facet(init_point, nearest_point, sq_distg);
+	// GEO2::index_t prev_facet = tree.nearest_facet(init_point, nearest_point, sq_distg);
 	// Scalar sq_dist = sq_distg;
 	// if (sq_dist > params.eps_2_simplification)
 	//     return true;
 
-	// std::vector<GEO::vec3> ps;
+	// std::vector<GEO2::vec3> ps;
 	// sample_triangle(vs, ps, params.dd_simplification);
 	// int cnt = 0;
 	// const unsigned int ps_size = ps.size();
 	// for (unsigned int i = ps_size / 2;; i = (i + 1) % ps_size) {//check from the middle
-	//     GEO::vec3 &current_point = ps[i];
+	//     GEO2::vec3 &current_point = ps[i];
 	//     sq_distg = current_point.distance2(nearest_point);
 	//     tree.nearest_facet_with_hint(current_point, prev_facet, nearest_point, sq_distg);
 	//     sq_dist = sq_distg;
@@ -1015,7 +1015,7 @@ void floatTetWild::check_surface( std::vector<Vector3>& input_vertices, std::vec
 	{
 		if( f_is_removed[ i ] )
 			continue;
-		std::vector<GEO::vec3> ps;
+		std::vector<GEO2::vec3> ps;
 		sample_triangle( { { input_vertices[ input_faces[ i ][ 0 ] ], input_vertices[ input_faces[ i ][ 1 ] ], input_vertices[ input_faces[ i ][ 2 ] ] } }, ps,
 		  params.dd_simplification );
 		Scalar dist = tree.dist_sf_envelope( ps, params.eps_2 );

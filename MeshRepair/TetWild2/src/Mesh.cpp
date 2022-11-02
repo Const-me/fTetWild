@@ -9,7 +9,6 @@
 #include "stdafx.h"
 #include "Mesh.hpp"
 #include "LocalOperations.h"
-#include <geogram/mesh/mesh_partition.h>
 #include <numeric>
 
 namespace floatTetWild
@@ -246,12 +245,12 @@ namespace floatTetWild
 
 	void Mesh::partition( const int n_parts, std::vector<std::vector<int>>& tets_id ) const
 	{
-		GEO::Mesh M;
+		GEO2::Mesh M;
 		// Setup vertices
 		M.vertices.create_vertices( (int)tet_vertices.size() );
 		for( int i = 0; i < (int)M.vertices.nb(); ++i )
 		{
-			GEO::vec3& p = M.vertices.point( i );
+			GEO2::vec3& p = M.vertices.point( i );
 			p[ 0 ] = tet_vertices[ i ][ 0 ];
 			p[ 1 ] = tet_vertices[ i ][ 1 ];
 			p[ 2 ] = tet_vertices[ i ][ 2 ];
@@ -276,7 +275,7 @@ namespace floatTetWild
 
 		{
 			c = 0;
-			GEO::Attribute<int> original_indices( M.cells.attributes(), "indices" );
+			GEO2::Attribute<int> original_indices( M.cells.attributes(), "indices" );
 			for( int index = 0; index < (int)tets.size(); ++index )
 			{
 				if( tets[ index ].is_removed )
@@ -286,11 +285,11 @@ namespace floatTetWild
 			}
 		}
 
-		GEO::vector<GEO::index_t> facet_ptr, tet_ptr;
-		GEO::mesh_partition( M, GEO::MESH_PARTITION_HILBERT, facet_ptr, tet_ptr, n_parts );
-		// GEO::MESH_PARTITION_CONNECTED_COMPONENTS
+		GEO2::vector<GEO2::index_t> facet_ptr, tet_ptr;
+		GEO2::mesh_partition( M, GEO2::MESH_PARTITION_HILBERT, facet_ptr, tet_ptr, n_parts );
+		// GEO2::MESH_PARTITION_CONNECTED_COMPONENTS
 
-		GEO::Attribute<int> original_indices( M.cells.attributes(), "indices" );
+		GEO2::Attribute<int> original_indices( M.cells.attributes(), "indices" );
 
 		tets_id.clear();
 		tets_id.resize( tet_ptr.size() - 1 );

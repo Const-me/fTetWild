@@ -67,7 +67,7 @@ namespace floatTetWild
 	}
 
 	bool CSGTreeParser::load_and_merge(
-	  const std::vector<std::string>& meshes, std::vector<Vector3>& V, std::vector<Vector3i>& F, GEO::Mesh& sf_mesh, std::vector<int>& tags )
+	  const std::vector<std::string>& meshes, std::vector<Vector3>& V, std::vector<Vector3i>& F, GEO2::Mesh& sf_mesh, std::vector<int>& tags )
 	{
 		std::vector<std::vector<Vector3>> Vs;
 		std::vector<std::vector<Vector3i>> Fs;
@@ -75,7 +75,7 @@ namespace floatTetWild
 		Vs.resize( meshes.size() );
 		Fs.resize( meshes.size() );
 
-		GEO::Mesh tmp_mesh;
+		GEO2::Mesh tmp_mesh;
 		std::vector<int> tmp_tags;
 
 		for( int i = 0; i < meshes.size(); ++i )
@@ -93,7 +93,7 @@ namespace floatTetWild
 	}
 
 	void CSGTreeParser::merge( const std::vector<std::vector<Vector3>>& Vs, const std::vector<std::vector<Vector3i>>& Fs, std::vector<Vector3>& V,
-	  std::vector<Vector3i>& F, GEO::Mesh& sf_mesh, std::vector<int>& tags )
+	  std::vector<Vector3i>& F, GEO2::Mesh& sf_mesh, std::vector<int>& tags )
 	{
 		V.clear();
 		F.clear();

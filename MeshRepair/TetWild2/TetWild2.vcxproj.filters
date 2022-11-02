@@ -93,7 +93,12 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="includeEigen.h" />
-    <ClInclude Include="Utils\setMeshData.h" />
+    <ClInclude Include="Utils\Geogram2.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\setMeshData.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp" />
@@ -176,7 +181,12 @@
     <ClCompile Include="src\VertexSmoothing.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="Utils\setMeshData.cpp" />
+    <ClCompile Include="Utils\Geogram2.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\setMeshData.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="external">
@@ -184,6 +194,9 @@
     </Filter>
     <Filter Include="src">
       <UniqueIdentifier>{94573ef6-8620-4fa6-8ac6-612fc0d46df3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utils">
+      <UniqueIdentifier>{a440e6dc-21d5-464d-8be6-93f367008cf2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -22,7 +22,7 @@
 #include <igl/Timer.h>
 #include <igl/winding_number.h>
 #include "../external/MshLoader.h"
-#include <geogram/mesh/mesh_AABB.h>
+#include "../Utils/Geogram2.h"
 
 //#define USE_FWN true
 
@@ -557,7 +557,7 @@ void floatTetWild::operation( const std::vector<Vector3>& input_vertices, const 
 						mesh.tet_vertices[ v_id ].is_on_cut = false;
 					}
 #else
-					GEO::index_t prev_facet;
+					GEO2::index_t prev_facet;
 					if( tree.is_out_tmp_b_envelope( mesh.tet_vertices[ v_id ].pos, mesh.params.eps_2, prev_facet ) )
 					{
 						mesh.tet_vertices[ v_id ].is_on_boundary = false;
@@ -719,7 +719,7 @@ bool floatTetWild::update_scaling_field( Mesh& mesh, Scalar max_energy )
 			scale_multipliers[ v_ids[ n ][ i ] ] = refine_scale;
 		}
 		// construct the kdtree
-		GEO::NearestNeighborSearch_var nnsearch = GEO::NearestNeighborSearch::create( 3, "BNN" );
+		GEO2::NearestNeighborSearch_var nnsearch = GEO2::NearestNeighborSearch::create( 3, "BNN" );
 		nnsearch->set_points( int( v_ids[ n ].size() ), pts.data() );
 
 		while( !v_queue.empty() )
@@ -733,7 +733,7 @@ bool floatTetWild::update_scaling_field( Mesh& mesh, Scalar max_energy )
 				{
 					if( is_visited.find( mesh.tets[ t_id ][ j ] ) != is_visited.end() )
 						continue;
-					GEO::index_t _;
+					GEO2::index_t _;
 					double sq_dist;
 					const double p[ 3 ] = { mesh.tet_vertices[ mesh.tets[ t_id ][ j ] ].pos[ 0 ], mesh.tet_vertices[ mesh.tets[ t_id ][ j ] ].pos[ 1 ],
 					  mesh.tet_vertices[ mesh.tets[ t_id ][ j ] ].pos[ 2 ] };
@@ -1136,7 +1136,7 @@ void floatTetWild::output_info( Mesh& mesh, const AABBWrapper& tree )
 	{
 		if( v.is_removed || !v.is_on_boundary )
 			continue;
-		//        GEO::index_t prev_facet;
+		//        GEO2::index_t prev_facet;
 		//        if (tree.is_out_tmp_b_envelope(v.pos, mesh.params.eps_2, prev_facet))
 		//            cout<<"bad b_v"<<endl;
 		fout << v.pos[ 0 ] << " " << v.pos[ 1 ] << " " << v.pos[ 2 ] << endl;
@@ -1163,7 +1163,7 @@ void floatTetWild::check_envelope( Mesh& mesh, const AABBWrapper& tree )
 		{
 			if( t.is_surface_fs[ j ] <= 0 )
 			{
-				std::vector<GEO::vec3> ps;
+				std::vector<GEO2::vec3> ps;
 				sample_triangle(
 				  { { mesh.tet_vertices[ t[ ( j + 1 ) % 4 ] ].pos, mesh.tet_vertices[ t[ ( j + 2 ) % 4 ] ].pos, mesh.tet_vertices[ t[ ( j + 3 ) % 4 ] ].pos } },
 				  ps, mesh.params.dd );
@@ -1184,7 +1184,7 @@ void floatTetWild::check_envelope( Mesh& mesh, const AABBWrapper& tree )
 		if( v.is_removed || !v.is_on_surface )
 			continue;
 
-		std::vector<GEO::vec3> ps = { GEO::vec3( v.pos[ 0 ], v.pos[ 1 ], v.pos[ 2 ] ) };
+		std::vector<GEO2::vec3> ps = { GEO2::vec3( v.pos[ 0 ], v.pos[ 1 ], v.pos[ 2 ] ) };
 		Scalar d = tree.dist_sf_envelope( ps, check_eps );
 		if( d > mesh.params.eps_2 )
 		{
@@ -1326,11 +1326,11 @@ void floatTetWild::output_surface( Mesh& mesh, const std::string& filename )
 //
 //    logger().debug("Applying sizing field...");
 //
-//    GEO::Mesh bg_mesh;
+//    GEO2::Mesh bg_mesh;
 //    bg_mesh.vertices.clear();
 //    bg_mesh.vertices.create_vertices((int) V_in.rows() / 3);
 //    for (int i = 0; i < V_in.rows() / 3; i++) {
-//        GEO::vec3 &p = bg_mesh.vertices.point(i);
+//        GEO2::vec3 &p = bg_mesh.vertices.point(i);
 //        for (int j = 0; j < 3; j++)
 //            p[j] = V_in(i * 3 + j);
 //    }
@@ -1341,15 +1341,15 @@ void floatTetWild::output_surface( Mesh& mesh, const std::string& filename )
 //            bg_mesh.cells.set_vertex(i, j, T_in(i * 4 + j));
 //    }
 //
-//    GEO::MeshCellsAABB bg_aabb(bg_mesh, false);
+//    GEO2::MeshCellsAABB bg_aabb(bg_mesh, false);
 //    for (auto &p: tet_vertices) {
 //        if (p.is_removed)
 //            continue;
 //
 //        p.sizing_scalar = 1;//reset scalar
-//        GEO::vec3 geo_p(p.pos[0], p.pos[1], p.pos[2]);
+//        GEO2::vec3 geo_p(p.pos[0], p.pos[1], p.pos[2]);
 //        int bg_t_id = bg_aabb.containing_tet(geo_p);
-//        if (bg_t_id == GEO::MeshCellsAABB::NO_TET)
+//        if (bg_t_id == GEO2::MeshCellsAABB::NO_TET)
 //            continue;
 //
 //        //compute barycenter
@@ -1391,12 +1391,12 @@ void floatTetWild::apply_sizingfield( Mesh& mesh, AABBWrapper& tree )
 	auto& tet_vertices = mesh.tet_vertices;
 	auto& tets = mesh.tets;
 
-	GEO::Mesh bg_mesh;
+	GEO2::Mesh bg_mesh;
 	bg_mesh.vertices.clear();
 	bg_mesh.vertices.create_vertices( (int)mesh.params.V_sizing_field.rows() / 3 );
 	for( int i = 0; i < mesh.params.V_sizing_field.rows() / 3; i++ )
 	{
-		GEO::vec3& p = bg_mesh.vertices.point( i );
+		GEO2::vec3& p = bg_mesh.vertices.point( i );
 		for( int j = 0; j < 3; j++ )
 			p[ j ] = mesh.params.V_sizing_field( i * 3 + j );
 	}
@@ -1407,13 +1407,13 @@ void floatTetWild::apply_sizingfield( Mesh& mesh, AABBWrapper& tree )
 		for( int j = 0; j < 4; j++ )
 			bg_mesh.cells.set_vertex( i, j, mesh.params.T_sizing_field( i * 4 + j ) );
 	}
-	GEO::MeshCellsAABB bg_aabb( bg_mesh, false );
+	GEO2::MeshCellsAABB bg_aabb( bg_mesh, false );
 
 	auto get_sizing_field_value = [ & ]( const Vector3& p )
 	{
-		GEO::vec3 geo_p( p[ 0 ], p[ 1 ], p[ 2 ] );
+		GEO2::vec3 geo_p( p[ 0 ], p[ 1 ], p[ 2 ] );
 		int bg_t_id = bg_aabb.containing_tet( geo_p );
-		if( bg_t_id == GEO::MeshCellsAABB::NO_TET )
+		if( bg_t_id == GEO2::MeshCellsAABB::NO_TET )
 			return -1.;
 
 		// compute barycenter
@@ -1576,7 +1576,7 @@ void floatTetWild::correct_tracked_surface_orientation( Mesh& mesh, AABBWrapper&
 			const auto& fv1 = tree.sf_mesh.vertices.point( tree.sf_mesh.facets.vertex( f_id, 0 ) );
 			const auto& fv2 = tree.sf_mesh.vertices.point( tree.sf_mesh.facets.vertex( f_id, 1 ) );
 			const auto& fv3 = tree.sf_mesh.vertices.point( tree.sf_mesh.facets.vertex( f_id, 2 ) );
-			auto nf = GEO::cross( ( fv2 - fv1 ), ( fv3 - fv1 ) );
+			auto nf = GEO2::cross( ( fv2 - fv1 ), ( fv3 - fv1 ) );
 			Vector3 n, nt;
 			n << nf[ 0 ], nf[ 1 ], nf[ 2 ];
 			//
@@ -1644,7 +1644,7 @@ void floatTetWild::boolean_operation( Mesh& mesh, const json& csg_tree_with_ids,
 		Vs.resize( meshes.size() );
 		Fs.resize( meshes.size() );
 
-		GEO::Mesh tmp_mesh;
+		GEO2::Mesh tmp_mesh;
 		std::vector<int> tmp_tags;
 
 		for( int i = 0; i < meshes.size(); ++i )

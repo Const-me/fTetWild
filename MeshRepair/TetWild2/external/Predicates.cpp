@@ -17,7 +17,7 @@ namespace floatTetWild
 	int Predicates::orient_3d( const Vector3& p1, const Vector3& p2, const Vector3& p3, const Vector3& p4 )
 	{
 #if GEO_PREDICATES
-		const int result = -GEO::PCK::orient_3d( p1.data(), p2.data(), p3.data(), p4.data() );
+		const int result = -GEO2::PCK::orient_3d( p1.data(), p2.data(), p3.data(), p4.data() );
 #else
 		//		const Scalar result = orient3d(p1.data(), p2.data(), p3.data(), p4.data());
 		igl::predicates::exactinit();
@@ -49,7 +49,7 @@ namespace floatTetWild
 	int Predicates::orient_3d_tolerance( const Vector3& p1, const Vector3& p2, const Vector3& p3, const Vector3& p )
 	{
 #if GEO_PREDICATES
-		const int result = -GEO::PCK::orient_3d( p1.data(), p2.data(), p3.data(), p.data() );
+		const int result = -GEO2::PCK::orient_3d( p1.data(), p2.data(), p3.data(), p.data() );
 #else
 		//		const Scalar result = orient3d(p1.data(), p2.data(), p3.data(), p.data());
 		igl::predicates::exactinit();
@@ -80,7 +80,7 @@ namespace floatTetWild
 	Scalar Predicates::orient_3d_volume( const Vector3& p1, const Vector3& p2, const Vector3& p3, const Vector3& p4 )
 	{
 #if GEO_PREDICATES
-		const int ori = -GEO::PCK::orient_3d( p1.data(), p2.data(), p3.data(), p4.data() );
+		const int ori = -GEO2::PCK::orient_3d( p1.data(), p2.data(), p3.data(), p4.data() );
 #else
 		//		const Scalar result = orient3d(p1.data(), p2.data(), p3.data(), p4.data());
 		igl::predicates::exactinit();
@@ -102,7 +102,7 @@ namespace floatTetWild
 	int Predicates::orient_2d( const Vector2& p1, const Vector2& p2, const Vector2& p3 )
 	{
 #if GEO_PREDICATES
-		const int result = -GEO::PCK::orient_2d( p1.data(), p2.data(), p3.data() );
+		const int result = -GEO2::PCK::orient_2d( p1.data(), p2.data(), p3.data() );
 #else
 		//		const Scalar result = orient2d(p1.data(), p2.data(), p3.data());
 		igl::predicates::exactinit();

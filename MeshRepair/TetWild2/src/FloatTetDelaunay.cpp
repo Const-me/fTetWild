@@ -154,7 +154,7 @@ namespace floatTetWild
 
 			//            const double sq_distg = std::min(params.ideal_edge_length / 2, 10 * params.eps);
 			const double sq_distg = 100 * params.eps_2;
-			GEO::vec3 nearest_point;
+			GEO2::vec3 nearest_point;
 
 			for( int i = 0; i <= n_voxels( 0 ); ++i )
 			{
@@ -246,8 +246,8 @@ namespace floatTetWild
 				V_d[ i * 3 + j ] = tet_vertices[ i ].pos[ j ];
 		}
 
-		GEO::Delaunay::initialize();
-		GEO::Delaunay_var T = GEO::Delaunay::create( 3, "BDEL" );
+		GEO2::Delaunay::initialize();
+		GEO2::Delaunay_var T = GEO2::Delaunay::create( 3, "BDEL" );
 		T->set_vertices( n_pts, V_d.data() );
 		//
 		tets.resize( T->nb_cells() );
@@ -290,7 +290,7 @@ namespace floatTetWild
 		//        cout<<"T->nb_cells() = "<<T->nb_cells()<<endl;
 		//        for (int i=0;i< mesh.tets.size();i++) {
 		//            auto &t = mesh.tets[i];
-		//            if (-GEO::PCK::orient_3d(mesh.tet_vertices[t[0]].pos.data(), mesh.tet_vertices[t[1]].pos.data(),
+		//            if (-GEO2::PCK::orient_3d(mesh.tet_vertices[t[0]].pos.data(), mesh.tet_vertices[t[1]].pos.data(),
 		//                                     mesh.tet_vertices[t[2]].pos.data(), mesh.tet_vertices[t[3]].pos.data()) <= 0) {
 		//                cout << "inverted found!!!! 1" << endl;
 		//                cout<<i<<endl;

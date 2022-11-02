@@ -51,10 +51,7 @@
  */
 
 #include <string>
-#include <geogram/mesh/mesh_geometry.h>
-#include <geogram/basic/common.h>
-#include <geogram/mesh/mesh.h>
-#include <geogram/basic/geometry.h>
+#include "../Utils/Geogram2.h"
 
 namespace floatTetWild
 {
@@ -77,7 +74,7 @@ namespace floatTetWild
 		 *  called else the algorithm will be pretty unefficient).
 		 * \pre M.facets.are_simplices()
 		 */
-		MeshFacetsAABBWithEps( const GEO::Mesh& M );
+		MeshFacetsAABBWithEps( const GEO2::Mesh& M );
 
 		/**
 		 * \brief Computes all the pairs of intersecting facets.
@@ -108,7 +105,7 @@ namespace floatTetWild
 		 * \p box_in.
 		 */
 		template<class ACTION>
-		void compute_bbox_facet_bbox_intersections( const GEO::Box& box_in, ACTION& action ) const
+		void compute_bbox_facet_bbox_intersections( const GEO2::Box& box_in, ACTION& action ) const
 		{
 			bbox_intersect_recursive( action, box_in, 1, 0, mesh_.facets.nb() );
 		}
@@ -120,9 +117,9 @@ namespace floatTetWild
 		 * \param[out] sq_dist squared distance between p and the surface.
 		 * \return the index of the facet nearest to point p.
 		 */
-		GEO::index_t nearest_facet( const GEO::vec3& p, GEO::vec3& nearest_point, double& sq_dist ) const
+		GEO2::index_t nearest_facet( const GEO2::vec3& p, GEO2::vec3& nearest_point, double& sq_dist ) const
 		{
-			GEO::index_t nearest_facet;
+			GEO2::index_t nearest_facet;
 			get_nearest_facet_hint( p, nearest_facet, nearest_point, sq_dist );
 			nearest_facet_recursive( p, nearest_facet, nearest_point, sq_dist, 1, 0, mesh_.facets.nb() );
 			return nearest_facet;
@@ -147,9 +144,9 @@ namespace floatTetWild
 		 *   distance between \p p and \p nearest_point (it is easy to
 		 *   forget to update it when calling it within a loop).
 		 */
-		void nearest_facet_with_hint( const GEO::vec3& p, GEO::index_t& nearest_facet, GEO::vec3& nearest_point, double& sq_dist ) const
+		void nearest_facet_with_hint( const GEO2::vec3& p, GEO2::index_t& nearest_facet, GEO2::vec3& nearest_point, double& sq_dist ) const
 		{
-			if( nearest_facet == GEO::NO_FACET )
+			if( nearest_facet == GEO2::NO_FACET )
 			{
 				get_nearest_facet_hint( p, nearest_facet, nearest_point, sq_dist );
 			}
@@ -160,9 +157,9 @@ namespace floatTetWild
 		 * Finds the nearest facet on the surface, but stops early if a
 		 * point within a given distance is found.
 		 */
-		GEO::index_t facet_in_envelope( const GEO::vec3& p, double sq_epsilon, GEO::vec3& nearest_point, double& sq_dist ) const
+		GEO2::index_t facet_in_envelope( const GEO2::vec3& p, double sq_epsilon, GEO2::vec3& nearest_point, double& sq_dist ) const
 		{
-			GEO::index_t nearest_facet;
+			GEO2::index_t nearest_facet;
 			get_nearest_facet_hint( p, nearest_facet, nearest_point, sq_dist );
 			facet_in_envelope_recursive( p, sq_epsilon, nearest_facet, nearest_point, sq_dist, 1, 0, mesh_.facets.nb() );
 			return nearest_facet;
@@ -172,9 +169,9 @@ namespace floatTetWild
 		 * Same as before, but stops as soon as a point on the surface in
 		 * within a given distance bound from the triangle mesh.
 		 */
-		void facet_in_envelope_with_hint( const GEO::vec3& p, double sq_epsilon, GEO::index_t& nearest_facet, GEO::vec3& nearest_point, double& sq_dist ) const
+		void facet_in_envelope_with_hint( const GEO2::vec3& p, double sq_epsilon, GEO2::index_t& nearest_facet, GEO2::vec3& nearest_point, double& sq_dist ) const
 		{
-			if( nearest_facet == GEO::NO_FACET )
+			if( nearest_facet == GEO2::NO_FACET )
 			{
 				get_nearest_facet_hint( p, nearest_facet, nearest_point, sq_dist );
 			}
@@ -187,9 +184,9 @@ namespace floatTetWild
 		 * \param[in] p query point
 		 * \return the squared distance between \p p and the surface.
 		 */
-		double squared_distance( const GEO::vec3& p ) const
+		double squared_distance( const GEO2::vec3& p ) const
 		{
-			GEO::vec3 nearest_point;
+			GEO2::vec3 nearest_point;
 			double result;
 			nearest_facet( p, nearest_point, result );
 			return result;
@@ -203,7 +200,7 @@ namespace floatTetWild
 		 *  and a facet of the mesh.
 		 * \retval false otherwise.
 		 */
-		bool segment_intersection( const GEO::vec3& q1, const GEO::vec3& q2 ) const;
+		bool segment_intersection( const GEO2::vec3& q1, const GEO2::vec3& q2 ) const;
 
 	  protected:
 		/**
@@ -224,7 +221,7 @@ namespace floatTetWild
 		 *  facet in \p node
 		 */
 		template<class ACTION>
-		void bbox_intersect_recursive( ACTION& action, const GEO::Box& box, GEO::index_t node, GEO::index_t b, GEO::index_t e ) const
+		void bbox_intersect_recursive( ACTION& action, const GEO2::Box& box, GEO2::index_t node, GEO2::index_t b, GEO2::index_t e ) const
 		{
 			geo_debug_assert( e != b );
 
@@ -242,9 +239,9 @@ namespace floatTetWild
 			}
 
 			// Recursion
-			GEO::index_t m = b + ( e - b ) / 2;
-			GEO::index_t node_l = 2 * node;
-			GEO::index_t node_r = 2 * node + 1;
+			GEO2::index_t m = b + ( e - b ) / 2;
+			GEO2::index_t node_l = 2 * node;
+			GEO2::index_t node_r = 2 * node + 1;
 
 			bbox_intersect_recursive( action, box, node_l, b, m );
 			bbox_intersect_recursive( action, box, node_r, m, e );
@@ -273,7 +270,7 @@ namespace floatTetWild
 		 */
 		template<class ACTION>
 		void intersect_recursive(
-		  ACTION& action, GEO::index_t node1, GEO::index_t b1, GEO::index_t e1, GEO::index_t node2, GEO::index_t b2, GEO::index_t e2 ) const
+		  ACTION& action, GEO2::index_t node1, GEO2::index_t b1, GEO2::index_t e1, GEO2::index_t node2, GEO2::index_t b2, GEO2::index_t e2 ) const
 		{
 			geo_debug_assert( e1 != b1 );
 			geo_debug_assert( e2 != b2 );
@@ -306,17 +303,17 @@ namespace floatTetWild
 			//   intersect node1's two children with node2
 			if( e2 - b2 > e1 - b1 )
 			{
-				GEO::index_t m2 = b2 + ( e2 - b2 ) / 2;
-				GEO::index_t node2_l = 2 * node2;
-				GEO::index_t node2_r = 2 * node2 + 1;
+				GEO2::index_t m2 = b2 + ( e2 - b2 ) / 2;
+				GEO2::index_t node2_l = 2 * node2;
+				GEO2::index_t node2_r = 2 * node2 + 1;
 				intersect_recursive( action, node1, b1, e1, node2_l, b2, m2 );
 				intersect_recursive( action, node1, b1, e1, node2_r, m2, e2 );
 			}
 			else
 			{
-				GEO::index_t m1 = b1 + ( e1 - b1 ) / 2;
-				GEO::index_t node1_l = 2 * node1;
-				GEO::index_t node1_r = 2 * node1 + 1;
+				GEO2::index_t m1 = b1 + ( e1 - b1 ) / 2;
+				GEO2::index_t node1_l = 2 * node1;
+				GEO2::index_t node1_r = 2 * node1 + 1;
 				intersect_recursive( action, node1_l, b1, m1, node2, b2, e2 );
 				intersect_recursive( action, node1_r, m1, e1, node2, b2, e2 );
 			}
@@ -335,7 +332,7 @@ namespace floatTetWild
 		 * \param[out] nearest_point a point in nearest_facet
 		 * \param[out] sq_dist squared distance between p and nearest_point
 		 */
-		void get_nearest_facet_hint( const GEO::vec3& p, GEO::index_t& nearest_facet, GEO::vec3& nearest_point, double& sq_dist ) const;
+		void get_nearest_facet_hint( const GEO2::vec3& p, GEO2::index_t& nearest_facet, GEO2::vec3& nearest_point, double& sq_dist ) const;
 
 		/**
 		 * \brief The recursive function used by the implementation
@@ -355,14 +352,14 @@ namespace floatTetWild
 		 *  subtree under node \p n
 		 */
 		void nearest_facet_recursive(
-		  const GEO::vec3& p, GEO::index_t& nearest_facet, GEO::vec3& nearest_point, double& sq_dist, GEO::index_t n, GEO::index_t b, GEO::index_t e ) const;
+		  const GEO2::vec3& p, GEO2::index_t& nearest_facet, GEO2::vec3& nearest_point, double& sq_dist, GEO2::index_t n, GEO2::index_t b, GEO2::index_t e ) const;
 
 		/*
 		 * Same as before, but stops early if a point within a given distance
 		 * is found.
 		 */
-		void facet_in_envelope_recursive( const GEO::vec3& p, double sq_epsilon, GEO::index_t& nearest_facet, GEO::vec3& nearest_point, double& sq_dist,
-		  GEO::index_t n, GEO::index_t b, GEO::index_t e ) const;
+		void facet_in_envelope_recursive( const GEO2::vec3& p, double sq_epsilon, GEO2::index_t& nearest_facet, GEO2::vec3& nearest_point, double& sq_dist,
+		  GEO2::index_t n, GEO2::index_t b, GEO2::index_t e ) const;
 
 		/**
 		 * \brief The recursive function used by the implementation
@@ -373,11 +370,11 @@ namespace floatTetWild
 		 * \param[in] e one position past the index of the last facet in the
 		 *  subtree under node \p n
 		 */
-		bool segment_intersection_recursive( const GEO::vec3& q1, const GEO::vec3& q2, GEO::index_t n, GEO::index_t b, GEO::index_t e ) const;
+		bool segment_intersection_recursive( const GEO2::vec3& q1, const GEO2::vec3& q2, GEO2::index_t n, GEO2::index_t b, GEO2::index_t e ) const;
 
 	  protected:
-		GEO::vector<GEO::Box> bboxes_;
-		const GEO::Mesh& mesh_;
+		GEO2::vector<GEO2::Box> bboxes_;
+		const GEO2::Mesh& mesh_;
 	};
 
 }  // namespace floatTetWild
@@ -385,7 +382,7 @@ namespace floatTetWild
 namespace floatTetWild
 {
 
-	inline void get_point_facet_nearest_point( const GEO::Mesh& M, const GEO::vec3& p, GEO::index_t f, GEO::vec3& nearest_p, double& squared_dist )
+	inline void get_point_facet_nearest_point( const GEO2::Mesh& M, const GEO2::vec3& p, GEO2::index_t f, GEO2::vec3& nearest_p, double& squared_dist )
 	{
 		using namespace GEO;
 		geo_debug_assert( M.facets.nb_vertices( f ) == 3 );

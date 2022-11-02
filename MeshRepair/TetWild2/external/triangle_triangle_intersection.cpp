@@ -36,6 +36,7 @@
 // modified by Aaron to better detect coplanarity
 
 #include "stdafx.h"
+#include "../Utils/Geogram2.h"
 
 #ifdef FLOAT_TETWILD_USE_FLOAT
 typedef float real;	 // float
@@ -226,11 +227,10 @@ int sub_sub_cross_sub_dot( real a[ 3 ], real b[ 3 ], real c[ 3 ], real d[ 3 ] );
 
 // extern "C" real orient3d(const real *pa, const real *pb, const real *pc, const real *pd);
 
-#include <geogram/delaunay/delaunay_3d.h>
 inline int sub_sub_cross_sub_dot( real pa[ 3 ], real pb[ 3 ], real pc[ 3 ], real pd[ 3 ] )
 {
 	//    const real result = orient3d(pa, pb, pc, pd);
-	auto result = -GEO::PCK::orient_3d( pa, pb, pc, pd );
+	auto result = -GEO2::PCK::orient_3d( pa, pb, pc, pd );
 	if( result > 0 )
 		return 1;
 	else if( result < 0 )

@@ -8,7 +8,7 @@
 
 #pragma once
 #include "Types.hpp"
-#include <geogram/mesh/mesh.h>
+#include "../Utils/Geogram2.h"
 #include <vector>
 #include <map>
 #include <string>
@@ -39,9 +39,9 @@ namespace floatTetWild
 		static bool keep_tet( const json& csg_tree_with_ids, const int t_id, const std::vector<Eigen::VectorXd>& w );
 
 		static bool load_and_merge(
-		  const std::vector<std::string>& meshes, std::vector<Vector3>& V, std::vector<Vector3i>& F, GEO::Mesh& sf_mesh, std::vector<int>& tags );
+		  const std::vector<std::string>& meshes, std::vector<Vector3>& V, std::vector<Vector3i>& F, GEO2::Mesh& sf_mesh, std::vector<int>& tags );
 		static void merge( const std::vector<std::vector<Vector3>>& Vs, const std::vector<std::vector<Vector3i>>& Fs, std::vector<Vector3>& V,
-		  std::vector<Vector3i>& F, GEO::Mesh& sf_mesh, std::vector<int>& tags );
+		  std::vector<Vector3i>& F, GEO2::Mesh& sf_mesh, std::vector<int>& tags );
 
 	  private:
 		static void get_meshes_aux(

@@ -178,9 +178,9 @@ bool floatTetWild::project_and_check( Mesh& mesh, int v_id, Vector3& p, const AA
 			tree.project_to_tmp_b( p );
 	}
 
-	//    GEO::vec3 np_;
+	//    GEO2::vec3 np_;
 	//    double _;
-	//    tree.nearest_facet(GEO::vec3(p[0], p[1], p[2]), np_, _);
+	//    tree.nearest_facet(GEO2::vec3(p[0], p[1], p[2]), np_, _);
 	//    np[0] = np_[0];
 	//    np[1] = np_[1];
 	//    np[2] = np_[2];

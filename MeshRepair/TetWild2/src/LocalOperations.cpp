@@ -31,11 +31,11 @@ namespace floatTetWild
 using floatTetWild::Scalar;
 
 // void floatTetWild::init_b_tree(const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces,
-//         GEO::Mesh& b_mesh) {
+//         GEO2::Mesh& b_mesh) {
 // //    std::vector<std::array<int, 2>> edges;
 // //    for(int i=0;i<sf_mesh.facets.nb();i++){
 // //        for(int j=0;j<3;j++) {
-// //            if(sf_mesh.facets.adjacent(i, j)==GEO::NO_FACET){
+// //            if(sf_mesh.facets.adjacent(i, j)==GEO2::NO_FACET){
 // //                edges.push_back({{}})
 // //            }
 // //        }
@@ -68,7 +68,7 @@ using floatTetWild::Scalar;
 //     if (b_edges.empty()) {
 //         b_mesh.vertices.clear();
 //         b_mesh.vertices.create_vertices(1);
-//         b_mesh.vertices.point(0) = GEO::vec3(0, 0, 0);
+//         b_mesh.vertices.point(0) = GEO2::vec3(0, 0, 0);
 //         b_mesh.facets.clear();
 //         b_mesh.facets.create_triangles(1);
 //         b_mesh.facets.set_vertex(0, 0, 0);
@@ -80,7 +80,7 @@ using floatTetWild::Scalar;
 //         int cnt = 0;
 //         for (auto &e:b_edges) {
 //             for (int j = 0; j < 2; j++) {
-//                 GEO::vec3 &p = b_mesh.vertices.point(cnt++);
+//                 GEO2::vec3 &p = b_mesh.vertices.point(cnt++);
 //                 p[0] = input_vertices[e[j]][0];
 //                 p[1] = input_vertices[e[j]][1];
 //                 p[2] = input_vertices[e[j]][2];
@@ -294,12 +294,12 @@ bool floatTetWild::is_boundary_edge( const Mesh& mesh, int v1_id, int v2_id, con
 		return !tree.is_out_b_envelope_exact( { { mesh.tet_vertices[ v1_id ].pos, mesh.tet_vertices[ v2_id ].pos, mesh.tet_vertices[ v2_id ].pos } } );
 	}
 #else
-	std::vector<GEO::vec3> ps;
-	ps.push_back( GEO::vec3( mesh.tet_vertices[ v1_id ].pos[ 0 ], mesh.tet_vertices[ v1_id ].pos[ 1 ], mesh.tet_vertices[ v1_id ].pos[ 2 ] ) );
+	std::vector<GEO2::vec3> ps;
+	ps.push_back( GEO2::vec3( mesh.tet_vertices[ v1_id ].pos[ 0 ], mesh.tet_vertices[ v1_id ].pos[ 1 ], mesh.tet_vertices[ v1_id ].pos[ 2 ] ) );
 	int p0_id = 0;
 	Scalar l = get_edge_length( mesh, v1_id, v2_id );
 	int N = l / mesh.params.dd + 1;
-	ps.push_back( GEO::vec3( mesh.tet_vertices[ v2_id ][ 0 ], mesh.tet_vertices[ v2_id ][ 1 ], mesh.tet_vertices[ v2_id ][ 2 ] ) );
+	ps.push_back( GEO2::vec3( mesh.tet_vertices[ v2_id ][ 0 ], mesh.tet_vertices[ v2_id ][ 1 ], mesh.tet_vertices[ v2_id ][ 2 ] ) );
 	int p1_id = ps.size() - 1;
 	for( Scalar j = 1; j < N - 1; j++ )
 	{
@@ -386,10 +386,10 @@ bool floatTetWild::is_point_out_envelope( const Mesh& mesh, const Vector3& p, co
 #ifdef NEW_ENVELOPE
 	return tree.is_out_sf_envelope_exact( p );
 #else
-	GEO::index_t prev_facet;
+	GEO2::index_t prev_facet;
 	return tree.is_out_sf_envelope( p, mesh.params.eps_2, prev_facet );
 #endif
-	//    GEO::vec3 geo_p(p[0], p[1], p[2]);
+	//    GEO2::vec3 geo_p(p[0], p[1], p[2]);
 	//    if (sf_tree.squared_distance(geo_p) > mesh.params.eps_2)
 	//        return true;
 	//
@@ -401,10 +401,10 @@ bool floatTetWild::is_point_out_boundary_envelope( const Mesh& mesh, const Vecto
 	if( mesh.is_input_all_inserted )
 		return false;
 
-	GEO::index_t prev_facet;
+	GEO2::index_t prev_facet;
 	return tree.is_out_tmp_b_envelope( p, mesh.params.eps_2, prev_facet );
 
-	//    GEO::vec3 geo_p(p[0], p[1], p[2]);
+	//    GEO2::vec3 geo_p(p[0], p[1], p[2]);
 	//    if (b_tree.squared_distance(geo_p) > mesh.params.eps_2)
 	//        return true;
 	//
@@ -561,7 +561,7 @@ bool floatTetWild::is_out_boundary_envelope( const Mesh& mesh, int v_id, const V
 	if( !mesh.tet_vertices[ v_id ].is_on_cut )
 		return false;
 
-	GEO::index_t prev_facet;
+	GEO2::index_t prev_facet;
 	if( tree.is_out_tmp_b_envelope( new_pos, mesh.params.eps_2 / 100, prev_facet ) )
 		return true;
 
@@ -593,14 +593,14 @@ bool floatTetWild::is_out_boundary_envelope( const Mesh& mesh, int v_id, const V
 	if( b_v_ids.empty() )
 		return false;
 
-	std::vector<GEO::vec3> ps;
-	ps.push_back( GEO::vec3( new_pos[ 0 ], new_pos[ 1 ], new_pos[ 2 ] ) );
+	std::vector<GEO2::vec3> ps;
+	ps.push_back( GEO2::vec3( new_pos[ 0 ], new_pos[ 1 ], new_pos[ 2 ] ) );
 	int p0_id = 0;
 	for( int b_v_id : b_v_ids )
 	{
 		Scalar l = get_edge_length( mesh, v_id, b_v_id );
 		int N = l / mesh.params.dd + 1;
-		ps.push_back( GEO::vec3( mesh.tet_vertices[ b_v_id ][ 0 ], mesh.tet_vertices[ b_v_id ][ 1 ], mesh.tet_vertices[ b_v_id ][ 2 ] ) );
+		ps.push_back( GEO2::vec3( mesh.tet_vertices[ b_v_id ][ 0 ], mesh.tet_vertices[ b_v_id ][ 1 ], mesh.tet_vertices[ b_v_id ][ 2 ] ) );
 		int p1_id = ps.size() - 1;
 		for( Scalar j = 1; j < N - 1; j++ )
 		{
@@ -611,10 +611,10 @@ bool floatTetWild::is_out_boundary_envelope( const Mesh& mesh, int v_id, const V
 
 	return tree.is_out_tmp_b_envelope( ps, mesh.params.eps_2 / 100, prev_facet );
 
-	//    GEO::vec3 init_point(new_pos[0], new_pos[1], new_pos[2]);
-	//    GEO::vec3 nearest_point;
+	//    GEO2::vec3 init_point(new_pos[0], new_pos[1], new_pos[2]);
+	//    GEO2::vec3 nearest_point;
 	//    double sq_distg;
-	//    GEO::index_t prev_facet = b_tree.nearest_facet(init_point, nearest_point, sq_distg);
+	//    GEO2::index_t prev_facet = b_tree.nearest_facet(init_point, nearest_point, sq_distg);
 	//    Scalar sq_dist = sq_distg;
 	//    if(sq_dist > mesh.params.eps_2)
 	//        return true;
@@ -642,14 +642,14 @@ bool floatTetWild::is_out_boundary_envelope( const Mesh& mesh, int v_id, const V
 	//    if(b_v_ids.empty())
 	//        return false;
 	//
-	//    std::vector<GEO::vec3> ps;
+	//    std::vector<GEO2::vec3> ps;
 	//    for(int b_v_id:b_v_ids) {
 	//        Scalar l = get_edge_length(mesh, v_id, b_v_id);
 	//        int N = l / mesh.params.dd + 1;
-	////        ps.push_back(GEO::vec3(mesh.tet_vertices[v_id][0], mesh.tet_vertices[v_id][1], mesh.tet_vertices[v_id][2]));
-	//        ps.push_back(GEO::vec3(new_pos[0], new_pos[1], new_pos[2]));
+	////        ps.push_back(GEO2::vec3(mesh.tet_vertices[v_id][0], mesh.tet_vertices[v_id][1], mesh.tet_vertices[v_id][2]));
+	//        ps.push_back(GEO2::vec3(new_pos[0], new_pos[1], new_pos[2]));
 	//        ps.push_back(
-	//                GEO::vec3(mesh.tet_vertices[b_v_id][0], mesh.tet_vertices[b_v_id][1], mesh.tet_vertices[b_v_id][2]));
+	//                GEO2::vec3(mesh.tet_vertices[b_v_id][0], mesh.tet_vertices[b_v_id][1], mesh.tet_vertices[b_v_id][2]));
 	//        for (Scalar j = 0; j < N - 1; j++) {
 	//            ps.push_back(ps[0] * (j / N) + ps[1] * (1 - j / N));
 	//        }
@@ -658,7 +658,7 @@ bool floatTetWild::is_out_boundary_envelope( const Mesh& mesh, int v_id, const V
 	//    int cnt = 0;
 	//    const unsigned int ps_size = ps.size();
 	//    for (unsigned int i = ps_size / 2; ; i = (i + 1) % ps_size) {//check from the middle
-	//        GEO::vec3 &current_point = ps[i];
+	//        GEO2::vec3 &current_point = ps[i];
 	//        sq_distg = current_point.distance2(nearest_point);
 	//        b_tree.nearest_facet_with_hint(current_point, prev_facet, nearest_point, sq_distg);
 	//        sq_dist = sq_distg;
@@ -679,12 +679,12 @@ bool floatTetWild::is_out_envelope( Mesh& mesh, int v_id, const Vector3& new_pos
 	if( tree.is_out_sf_envelope_exact( new_pos ) )
 		return true;
 #else
-	GEO::index_t prev_facet;
+	GEO2::index_t prev_facet;
 	if( tree.is_out_sf_envelope( new_pos, mesh.params.eps_2, prev_facet ) )
 		return true;
 #endif
 
-	std::vector<GEO::vec3> ps;
+	std::vector<GEO2::vec3> ps;
 	for( int t_id : mesh.tet_vertices[ v_id ].conn_tets )
 	{
 		for( int j = 0; j < 4; j++ )
@@ -764,7 +764,7 @@ bool floatTetWild::is_out_envelope( Mesh& mesh, int v_id, const Vector3& new_pos
 				//                int cnt = 0;
 				//                const unsigned int ps_size = ps.size();
 				//                for (unsigned int i = ps_size / 2; ; i = (i + 1) % ps_size) {//check from the middle
-				//                    GEO::vec3 &current_point = ps[i];
+				//                    GEO2::vec3 &current_point = ps[i];
 				//                    sq_distg = current_point.distance2(nearest_point);
 				//                    sf_tree.nearest_facet_with_hint(current_point, prev_facet, nearest_point, sq_distg);
 				//                    sq_dist = sq_distg;
@@ -780,15 +780,15 @@ bool floatTetWild::is_out_envelope( Mesh& mesh, int v_id, const Vector3& new_pos
 
 	return false;
 
-	//    GEO::vec3 init_point(new_pos[0], new_pos[1], new_pos[2]);
-	//    GEO::vec3 nearest_point;
+	//    GEO2::vec3 init_point(new_pos[0], new_pos[1], new_pos[2]);
+	//    GEO2::vec3 nearest_point;
 	//    double sq_distg;
-	//    GEO::index_t prev_facet = sf_tree.nearest_facet(init_point, nearest_point, sq_distg);
+	//    GEO2::index_t prev_facet = sf_tree.nearest_facet(init_point, nearest_point, sq_distg);
 	//    Scalar sq_dist = sq_distg;
 	//    if(sq_dist > mesh.params.eps_2)
 	//        return true;
 	//
-	//    std::vector<GEO::vec3> ps;
+	//    std::vector<GEO2::vec3> ps;
 	//    for (int t_id:mesh.tet_vertices[v_id].conn_tets) {
 	//        for (int j = 0; j < 4; j++) {
 	//            if (mesh.tets[t_id][j] != v_id && mesh.tets[t_id].is_surface_fs[j] < 0) {
@@ -809,7 +809,7 @@ bool floatTetWild::is_out_envelope( Mesh& mesh, int v_id, const Vector3& new_pos
 	//                int cnt = 0;
 	//                const unsigned int ps_size = ps.size();
 	//                for (unsigned int i = ps_size / 2; ; i = (i + 1) % ps_size) {//check from the middle
-	//                    GEO::vec3 &current_point = ps[i];
+	//                    GEO2::vec3 &current_point = ps[i];
 	//                    sq_distg = current_point.distance2(nearest_point);
 	//                    sf_tree.nearest_facet_with_hint(current_point, prev_facet, nearest_point, sq_distg);
 	//                    sq_dist = sq_distg;
@@ -826,7 +826,7 @@ bool floatTetWild::is_out_envelope( Mesh& mesh, int v_id, const Vector3& new_pos
 	//    return false;
 }
 
-void floatTetWild::sample_triangle( const std::array<Vector3, 3>& vs, std::vector<GEO::vec3>& ps, Scalar sampling_dist )
+void floatTetWild::sample_triangle( const std::array<Vector3, 3>& vs, std::vector<GEO2::vec3>& ps, Scalar sampling_dist )
 {
 	Scalar sqrt3_2 = std::sqrt( 3 ) / 2;
 
@@ -842,24 +842,24 @@ void floatTetWild::sample_triangle( const std::array<Vector3, 3>& vs, std::vecto
 	if( N <= 1 )
 	{
 		for( int i = 0; i < 3; i++ )
-			ps.push_back( GEO::vec3( vs[ i ][ 0 ], vs[ i ][ 1 ], vs[ i ][ 2 ] ) );
+			ps.push_back( GEO2::vec3( vs[ i ][ 0 ], vs[ i ][ 1 ], vs[ i ][ 2 ] ) );
 		return;
 	}
 	if( N == int( N ) )
 		N -= 1;
 
-	GEO::vec3 v0( vs[ max_i ][ 0 ], vs[ max_i ][ 1 ], vs[ max_i ][ 2 ] );
-	GEO::vec3 v1( vs[ mod3( max_i + 1 ) ][ 0 ], vs[ mod3( max_i + 1 ) ][ 1 ], vs[ mod3( max_i + 1 ) ][ 2 ] );
-	GEO::vec3 v2( vs[ mod3( max_i + 2 ) ][ 0 ], vs[ mod3( max_i + 2 ) ][ 1 ], vs[ mod3( max_i + 2 ) ][ 2 ] );
+	GEO2::vec3 v0( vs[ max_i ][ 0 ], vs[ max_i ][ 1 ], vs[ max_i ][ 2 ] );
+	GEO2::vec3 v1( vs[ mod3( max_i + 1 ) ][ 0 ], vs[ mod3( max_i + 1 ) ][ 1 ], vs[ mod3( max_i + 1 ) ][ 2 ] );
+	GEO2::vec3 v2( vs[ mod3( max_i + 2 ) ][ 0 ], vs[ mod3( max_i + 2 ) ][ 1 ], vs[ mod3( max_i + 2 ) ][ 2 ] );
 
-	GEO::vec3 n_v0v1 = GEO::normalize( v1 - v0 );
+	GEO2::vec3 n_v0v1 = GEO2::normalize( v1 - v0 );
 	for( int n = 0; n <= N; n++ )
 	{
 		ps.push_back( v0 + n_v0v1 * sampling_dist * n );
 	}
 	ps.push_back( v1 );
 
-	Scalar h = GEO::distance( GEO::dot( ( v2 - v0 ), ( v1 - v0 ) ) * ( v1 - v0 ) / ls[ max_i ] + v0, v2 );
+	Scalar h = GEO2::distance( GEO2::dot( ( v2 - v0 ), ( v1 - v0 ) ) * ( v1 - v0 ) / ls[ max_i ] + v0, v2 );
 	int M = h / ( sqrt3_2 * sampling_dist );
 	if( M < 1 )
 	{
@@ -867,13 +867,13 @@ void floatTetWild::sample_triangle( const std::array<Vector3, 3>& vs, std::vecto
 		return;
 	}
 
-	GEO::vec3 n_v0v2 = GEO::normalize( v2 - v0 );
-	GEO::vec3 n_v1v2 = GEO::normalize( v2 - v1 );
+	GEO2::vec3 n_v0v2 = GEO2::normalize( v2 - v0 );
+	GEO2::vec3 n_v1v2 = GEO2::normalize( v2 - v1 );
 	Scalar tan_v0, tan_v1, sin_v0, sin_v1;
-	sin_v0 = GEO::length( GEO::cross( ( v2 - v0 ), ( v1 - v0 ) ) ) / ( GEO::distance( v0, v2 ) * GEO::distance( v0, v1 ) );
-	tan_v0 = GEO::length( GEO::cross( ( v2 - v0 ), ( v1 - v0 ) ) ) / GEO::dot( ( v2 - v0 ), ( v1 - v0 ) );
-	tan_v1 = GEO::length( GEO::cross( ( v2 - v1 ), ( v0 - v1 ) ) ) / GEO::dot( ( v2 - v1 ), ( v0 - v1 ) );
-	sin_v1 = GEO::length( GEO::cross( ( v2 - v1 ), ( v0 - v1 ) ) ) / ( GEO::distance( v1, v2 ) * GEO::distance( v0, v1 ) );
+	sin_v0 = GEO2::length( GEO2::cross( ( v2 - v0 ), ( v1 - v0 ) ) ) / ( GEO2::distance( v0, v2 ) * GEO2::distance( v0, v1 ) );
+	tan_v0 = GEO2::length( GEO2::cross( ( v2 - v0 ), ( v1 - v0 ) ) ) / GEO2::dot( ( v2 - v0 ), ( v1 - v0 ) );
+	tan_v1 = GEO2::length( GEO2::cross( ( v2 - v1 ), ( v0 - v1 ) ) ) / GEO2::dot( ( v2 - v1 ), ( v0 - v1 ) );
+	sin_v1 = GEO2::length( GEO2::cross( ( v2 - v1 ), ( v0 - v1 ) ) ) / ( GEO2::distance( v1, v2 ) * GEO2::distance( v0, v1 ) );
 
 	for( int m = 1; m <= M; m++ )
 	{
@@ -883,14 +883,14 @@ void floatTetWild::sample_triangle( const std::array<Vector3, 3>& vs, std::vecto
 		{
 			n += 1;
 		}
-		GEO::vec3 v0_m = v0 + m * sqrt3_2 * sampling_dist / sin_v0 * n_v0v2;
-		GEO::vec3 v1_m = v1 + m * sqrt3_2 * sampling_dist / sin_v1 * n_v1v2;
-		if( GEO::distance( v0_m, v1_m ) <= sampling_dist )
+		GEO2::vec3 v0_m = v0 + m * sqrt3_2 * sampling_dist / sin_v0 * n_v0v2;
+		GEO2::vec3 v1_m = v1 + m * sqrt3_2 * sampling_dist / sin_v1 * n_v1v2;
+		if( GEO2::distance( v0_m, v1_m ) <= sampling_dist )
 			break;
 
 		Scalar delta_d = ( ( n + ( m % 2 ) / 2.0 ) - m * sqrt3_2 / tan_v0 ) * sampling_dist;
-		GEO::vec3 v = v0_m + delta_d * n_v0v1;
-		int N1 = GEO::distance( v, v1_m ) / sampling_dist;
+		GEO2::vec3 v = v0_m + delta_d * n_v0v1;
+		int N1 = GEO2::distance( v, v1_m ) / sampling_dist;
 		//        ps.push_back(v0_m);
 		for( int i = 0; i <= N1; i++ )
 		{
@@ -906,7 +906,7 @@ void floatTetWild::sample_triangle( const std::array<Vector3, 3>& vs, std::vecto
 	{
 		if( N == int( N ) )
 			N -= 1;
-		GEO::vec3 n_v1v2 = GEO::normalize( v2 - v1 );
+		GEO2::vec3 n_v1v2 = GEO2::normalize( v2 - v1 );
 		for( int n = 1; n <= N; n++ )
 		{
 			ps.push_back( v1 + n_v1v2 * sampling_dist * n );
@@ -918,7 +918,7 @@ void floatTetWild::sample_triangle( const std::array<Vector3, 3>& vs, std::vecto
 	{
 		if( N == int( N ) )
 			N -= 1;
-		GEO::vec3 n_v2v0 = GEO::normalize( v0 - v2 );
+		GEO2::vec3 n_v2v0 = GEO2::normalize( v0 - v2 );
 		for( int n = 1; n <= N; n++ )
 		{
 			ps.push_back( v2 + n_v2v0 * sampling_dist * n );
@@ -927,9 +927,9 @@ void floatTetWild::sample_triangle( const std::array<Vector3, 3>& vs, std::vecto
 }
 
 bool floatTetWild::sample_triangle_and_check_is_out(
-  const std::array<Vector3, 3>& vs, Scalar sampling_dist, Scalar eps_2, const AABBWrapper& tree, GEO::index_t& prev_facet )
+  const std::array<Vector3, 3>& vs, Scalar sampling_dist, Scalar eps_2, const AABBWrapper& tree, GEO2::index_t& prev_facet )
 {
-	GEO::vec3 nearest_point;
+	GEO2::vec3 nearest_point;
 	double sq_dist = std::numeric_limits<double>::max();
 
 	Scalar sqrt3_2 = std::sqrt( 3 ) / 2;
@@ -947,7 +947,7 @@ bool floatTetWild::sample_triangle_and_check_is_out(
 	{
 		for( int i = 0; i < 3; i++ )
 		{
-			//            ps.push_back(GEO::vec3(vs[i][0], vs[i][1], vs[i][2]));
+			//            ps.push_back(GEO2::vec3(vs[i][0], vs[i][1], vs[i][2]));
 			if( tree.is_out_sf_envelope( vs[ i ], eps_2, prev_facet, sq_dist, nearest_point ) )
 				return true;
 		}
@@ -957,11 +957,11 @@ bool floatTetWild::sample_triangle_and_check_is_out(
 	if( N == int( N ) )
 		N -= 1;
 
-	GEO::vec3 v0( vs[ max_i ][ 0 ], vs[ max_i ][ 1 ], vs[ max_i ][ 2 ] );
-	GEO::vec3 v1( vs[ mod3( max_i + 1 ) ][ 0 ], vs[ mod3( max_i + 1 ) ][ 1 ], vs[ mod3( max_i + 1 ) ][ 2 ] );
-	GEO::vec3 v2( vs[ mod3( max_i + 2 ) ][ 0 ], vs[ mod3( max_i + 2 ) ][ 1 ], vs[ mod3( max_i + 2 ) ][ 2 ] );
+	GEO2::vec3 v0( vs[ max_i ][ 0 ], vs[ max_i ][ 1 ], vs[ max_i ][ 2 ] );
+	GEO2::vec3 v1( vs[ mod3( max_i + 1 ) ][ 0 ], vs[ mod3( max_i + 1 ) ][ 1 ], vs[ mod3( max_i + 1 ) ][ 2 ] );
+	GEO2::vec3 v2( vs[ mod3( max_i + 2 ) ][ 0 ], vs[ mod3( max_i + 2 ) ][ 1 ], vs[ mod3( max_i + 2 ) ][ 2 ] );
 
-	GEO::vec3 n_v0v1 = GEO::normalize( v1 - v0 );
+	GEO2::vec3 n_v0v1 = GEO2::normalize( v1 - v0 );
 	for( int n = 0; n <= N; n++ )
 	{
 		//        ps.push_back(v0 + n_v0v1 * sampling_dist * n);
@@ -972,7 +972,7 @@ bool floatTetWild::sample_triangle_and_check_is_out(
 	if( tree.is_out_sf_envelope( v1, eps_2, prev_facet, sq_dist, nearest_point ) )
 		return true;
 
-	Scalar h = GEO::distance( GEO::dot( ( v2 - v0 ), ( v1 - v0 ) ) * ( v1 - v0 ) / ls[ max_i ] + v0, v2 );
+	Scalar h = GEO2::distance( GEO2::dot( ( v2 - v0 ), ( v1 - v0 ) ) * ( v1 - v0 ) / ls[ max_i ] + v0, v2 );
 	int M = h / ( sqrt3_2 * sampling_dist );
 	if( M < 1 )
 	{
@@ -981,13 +981,13 @@ bool floatTetWild::sample_triangle_and_check_is_out(
 		return tree.is_out_sf_envelope( v2, eps_2, prev_facet, sq_dist, nearest_point );
 	}
 
-	GEO::vec3 n_v0v2 = GEO::normalize( v2 - v0 );
-	GEO::vec3 n_v1v2 = GEO::normalize( v2 - v1 );
+	GEO2::vec3 n_v0v2 = GEO2::normalize( v2 - v0 );
+	GEO2::vec3 n_v1v2 = GEO2::normalize( v2 - v1 );
 	Scalar tan_v0, tan_v1, sin_v0, sin_v1;
-	sin_v0 = GEO::length( GEO::cross( ( v2 - v0 ), ( v1 - v0 ) ) ) / ( GEO::distance( v0, v2 ) * GEO::distance( v0, v1 ) );
-	tan_v0 = GEO::length( GEO::cross( ( v2 - v0 ), ( v1 - v0 ) ) ) / GEO::dot( ( v2 - v0 ), ( v1 - v0 ) );
-	tan_v1 = GEO::length( GEO::cross( ( v2 - v1 ), ( v0 - v1 ) ) ) / GEO::dot( ( v2 - v1 ), ( v0 - v1 ) );
-	sin_v1 = GEO::length( GEO::cross( ( v2 - v1 ), ( v0 - v1 ) ) ) / ( GEO::distance( v1, v2 ) * GEO::distance( v0, v1 ) );
+	sin_v0 = GEO2::length( GEO2::cross( ( v2 - v0 ), ( v1 - v0 ) ) ) / ( GEO2::distance( v0, v2 ) * GEO2::distance( v0, v1 ) );
+	tan_v0 = GEO2::length( GEO2::cross( ( v2 - v0 ), ( v1 - v0 ) ) ) / GEO2::dot( ( v2 - v0 ), ( v1 - v0 ) );
+	tan_v1 = GEO2::length( GEO2::cross( ( v2 - v1 ), ( v0 - v1 ) ) ) / GEO2::dot( ( v2 - v1 ), ( v0 - v1 ) );
+	sin_v1 = GEO2::length( GEO2::cross( ( v2 - v1 ), ( v0 - v1 ) ) ) / ( GEO2::distance( v1, v2 ) * GEO2::distance( v0, v1 ) );
 
 	for( int m = 1; m <= M; m++ )
 	{
@@ -997,14 +997,14 @@ bool floatTetWild::sample_triangle_and_check_is_out(
 		{
 			n += 1;
 		}
-		GEO::vec3 v0_m = v0 + m * sqrt3_2 * sampling_dist / sin_v0 * n_v0v2;
-		GEO::vec3 v1_m = v1 + m * sqrt3_2 * sampling_dist / sin_v1 * n_v1v2;
-		if( GEO::distance( v0_m, v1_m ) <= sampling_dist )
+		GEO2::vec3 v0_m = v0 + m * sqrt3_2 * sampling_dist / sin_v0 * n_v0v2;
+		GEO2::vec3 v1_m = v1 + m * sqrt3_2 * sampling_dist / sin_v1 * n_v1v2;
+		if( GEO2::distance( v0_m, v1_m ) <= sampling_dist )
 			break;
 
 		Scalar delta_d = ( ( n + ( m % 2 ) / 2.0 ) - m * sqrt3_2 / tan_v0 ) * sampling_dist;
-		GEO::vec3 v = v0_m + delta_d * n_v0v1;
-		int N1 = GEO::distance( v, v1_m ) / sampling_dist;
+		GEO2::vec3 v = v0_m + delta_d * n_v0v1;
+		int N1 = GEO2::distance( v, v1_m ) / sampling_dist;
 		for( int i = 0; i <= N1; i++ )
 		{
 			//            ps.push_back(v + i * n_v0v1 * sampling_dist);
@@ -1022,7 +1022,7 @@ bool floatTetWild::sample_triangle_and_check_is_out(
 	{
 		if( N == int( N ) )
 			N -= 1;
-		GEO::vec3 n_v1v2 = GEO::normalize( v2 - v1 );
+		GEO2::vec3 n_v1v2 = GEO2::normalize( v2 - v1 );
 		for( int n = 1; n <= N; n++ )
 		{
 			//            ps.push_back(v1 + n_v1v2 * sampling_dist * n);
@@ -1036,7 +1036,7 @@ bool floatTetWild::sample_triangle_and_check_is_out(
 	{
 		if( N == int( N ) )
 			N -= 1;
-		GEO::vec3 n_v2v0 = GEO::normalize( v0 - v2 );
+		GEO2::vec3 n_v2v0 = GEO2::normalize( v0 - v2 );
 		for( int n = 1; n <= N; n++ )
 		{
 			//            ps.push_back(v2 + n_v2v0 * sampling_dist * n);

@@ -9,17 +9,18 @@
 #pragma once
 #include "Mesh.hpp"
 #include "Types.hpp"
+#include "../Utils/Geogram2.h"
 
 namespace floatTetWild
 {
 	class MeshIO
 	{
 	  public:
-		static bool load_mesh( const std::string& path, std::vector<Vector3>& points, std::vector<Vector3i>& faces, GEO::Mesh& input, std::vector<int>& flags );
-		static void load_mesh( std::vector<Vector3>& points, std::vector<Vector3i>& faces, GEO::Mesh& input, std::vector<int>& flags );
+		static bool load_mesh( const std::string& path, std::vector<Vector3>& points, std::vector<Vector3i>& faces, GEO2::Mesh& input, std::vector<int>& flags );
+		static void load_mesh( std::vector<Vector3>& points, std::vector<Vector3i>& faces, GEO2::Mesh& input, std::vector<int>& flags );
 		static void load_mesh(
-		  std::vector<Vector3>& points, std::vector<Vector3i>& faces, GEO::Mesh& input, std::vector<int>& flags, std::vector<double>& epsr_flags );
-		static bool load_mesh( const std::string& path, std::vector<Vector3>& points, std::vector<Vector3i>& faces, GEO::Mesh& input, std::vector<int>& flags,
+		  std::vector<Vector3>& points, std::vector<Vector3i>& faces, GEO2::Mesh& input, std::vector<int>& flags, std::vector<double>& epsr_flags );
+		static bool load_mesh( const std::string& path, std::vector<Vector3>& points, std::vector<Vector3i>& faces, GEO2::Mesh& input, std::vector<int>& flags,
 		  std::vector<double>& epsr_flags );
 
 		static void write_mesh( const std::string& path, const Mesh& mesh, const bool do_filter = true,

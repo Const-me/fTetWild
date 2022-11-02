@@ -15,7 +15,7 @@ namespace floatTetWild
 	extern std::string envelope_log_csv;
 	extern int envelope_log_csv_cnt;
 
-	// void init_b_tree(const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, GEO::Mesh& b_mesh);
+	// void init_b_tree(const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, GEO2::Mesh& b_mesh);
 
 	int get_opp_t_id( const Mesh& mesh, int t_id, int j );
 	void set_opp_t_id( Mesh& mesh, int t_id, int j );
@@ -30,9 +30,9 @@ namespace floatTetWild
 		return -1;
 	}
 
-	inline GEO::vec3 to_geo_p( const Vector3& p )
+	inline GEO2::vec3 to_geo_p( const Vector3& p )
 	{
-		return GEO::vec3( p[ 0 ], p[ 1 ], p[ 2 ] );
+		return GEO2::vec3( p[ 0 ], p[ 1 ], p[ 2 ] );
 	}
 
 	void get_all_edges( const Mesh& mesh, std::vector<std::array<int, 2>>& edges );
@@ -56,9 +56,9 @@ namespace floatTetWild
 
 	bool is_out_envelope( Mesh& mesh, int v_id, const Vector3& new_pos, const AABBWrapper& tree );
 	bool is_out_boundary_envelope( const Mesh& mesh, int v_id, const Vector3& new_pos, const AABBWrapper& tree );
-	void sample_triangle( const std::array<Vector3, 3>& vs, std::vector<GEO::vec3>& ps, Scalar sampling_dist );
+	void sample_triangle( const std::array<Vector3, 3>& vs, std::vector<GEO2::vec3>& ps, Scalar sampling_dist );
 	bool sample_triangle_and_check_is_out(
-	  const std::array<Vector3, 3>& vs, Scalar sampling_dist, Scalar eps_2, const AABBWrapper& tree, GEO::index_t& prev_facet );
+	  const std::array<Vector3, 3>& vs, Scalar sampling_dist, Scalar eps_2, const AABBWrapper& tree, GEO2::index_t& prev_facet );
 
 	bool is_bbox_edge( const Mesh& mesh, int v1_id, int v2_id, const std::vector<int>& n12_t_ids );
 	bool is_surface_edge( const Mesh& mesh, int v1_id, int v2_id, const std::vector<int>& n12_t_ids );
