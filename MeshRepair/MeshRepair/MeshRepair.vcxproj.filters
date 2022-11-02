@@ -8,6 +8,9 @@
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="meshRepairMain.cpp" />
     <ClCompile Include="ResultMesh.cpp" />
+    <ClCompile Include="Utils\writeStl.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="API\Parameters.h">
@@ -24,10 +27,16 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="meshRepairMain.h" />
     <ClInclude Include="ResultMesh.h" />
+    <ClInclude Include="Utils\writeStl.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="API">
       <UniqueIdentifier>{4f3c7907-4190-4ed0-909f-58a3f17a9faa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utils">
+      <UniqueIdentifier>{77320a3a-00a3-4bf9-866a-2ab0ba7552de}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

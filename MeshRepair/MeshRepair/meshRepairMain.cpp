@@ -11,6 +11,7 @@
 #include <floattetwild/TriangleInsertion.h>
 #include <floattetwild/MeshImprovement.h>
 #include "ResultMesh.h"
+#include "Utils/writeStl.h"
 
 using namespace floatTetWild;
 
@@ -21,6 +22,8 @@ namespace
 
 HRESULT meshRepairMain( MeshRepair::SourceMesh& rsi, const MeshRepair::Parameters& parameters, MeshRepair::iResultMesh** rdi )
 {
+	// writeStl( rsi.input_vertices, rsi.input_faces, LR"(C:\Temp\2remove\TetWildBS\01.stl)" );
+
 	Mesh mesh;
 	Parameters& params = mesh.params;
 	CHECK( convertParameters( params, parameters ) );
