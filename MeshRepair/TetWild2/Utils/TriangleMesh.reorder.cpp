@@ -69,6 +69,9 @@ namespace
 	template<int COORD, bool UP>
 	using Morton_vcmp = Hilbert_vcmp<COORD, true>;
 
+	constexpr int COORDX = 0, COORDY = 1, COORDZ = 2;
+	constexpr bool UPX = false, UPY = false, UPZ = false;
+
 	template<template<int COORD, bool UP> class CMP, class MESH>
 	class HilbertSort3d
 	{
@@ -97,6 +100,76 @@ namespace
 			sort<COORDZ, !UPZ, !UPX, UPY>( M, m7, m8 );
 		}
 
+		void threadProc( int i )
+		{
+			switch( i )
+			{
+			case 0:
+				m2_ = reorder_split( m0_, m4_, CMP<COORDY, UPY>( M_ ) );
+				break;
+			case 1:
+				m6_ = reorder_split( m4_, m8_, CMP<COORDY, !UPY>( M_ ) );
+				break;
+			case 10:
+				m1_ = reorder_split( m0_, m2_, CMP<COORDZ, UPZ>( M_ ) );
+				break;
+			case 11:
+				m3_ = reorder_split( m2_, m4_, CMP<COORDZ, !UPZ>( M_ ) );
+				break;
+			case 12:
+				m5_ = reorder_split( m4_, m6_, CMP<COORDZ, UPZ>( M_ ) );
+				break;
+			case 13:
+				m7_ = reorder_split( m6_, m8_, CMP<COORDZ, !UPZ>( M_ ) );
+				break;
+			case 20:
+				sort<COORDZ, UPZ, UPX, UPY>( M_, m0_, m1_ );
+				break;
+			case 21:
+				sort<COORDY, UPY, UPZ, UPX>( M_, m1_, m2_ );
+				break;
+			case 22:
+				sort<COORDY, UPY, UPZ, UPX>( M_, m2_, m3_ );
+				break;
+			case 23:
+				sort<COORDX, UPX, !UPY, !UPZ>( M_, m3_, m4_ );
+				break;
+			case 24:
+				sort<COORDX, UPX, !UPY, !UPZ>( M_, m4_, m5_ );
+				break;
+			case 25:
+				sort<COORDY, !UPY, UPZ, !UPX>( M_, m5_, m6_ );
+				break;
+			case 26:
+				sort<COORDY, !UPY, UPZ, !UPX>( M_, m6_, m7_ );
+				break;
+			case 27:
+				sort<COORDZ, !UPZ, !UPX, UPY>( M_, m7_, m8_ );
+				break;
+			default:
+				geo_assert_not_reached;
+				break;
+			}
+		}
+
+		void sortInParallel()
+		{
+			// computes m2, m6 in parallel
+#pragma omp parallel for
+			for( int i = 0; i < 2; i++ )
+				threadProc( i );
+
+				// computes m1,m3,m5,m7 in parallel
+#pragma omp parallel for
+			for( int i = 10; i < 14; i++ )
+				threadProc( i );
+
+				// sorts the 8 subsets in parallel
+#pragma omp parallel for
+			for( int i = 20; i < 28; i++ )
+				threadProc( i );
+		}
+
 	  public:
 		HilbertSort3d( const MESH& M, vector<uint32_t>::iterator b, vector<uint32_t>::iterator e, ptrdiff_t limit = 1 )
 			: M_( M )
@@ -109,48 +182,14 @@ namespace
 
 			// If the sequence is smaller than 1024, use sequential sorting
 			if( ( e - b ) < 1024 )
-			{
 				sort<0, false, false, false>( M_, b, e );
-				return;
+			else
+			{
+				m0_ = b;
+				m8_ = e;
+				m4_ = reorder_split( m0_, m8_, CMP<COORDX, UPX>( M ) );
+				sortInParallel();
 			}
-#if 0
-			// Parallel sorting (2 then 4 then 8 sorts in parallel)
-			// Unfortunately we cannot access consts for template arguments in lambdas in all
-			// compilers (gcc is OK but not MSVC) so I'm using (ugly) macros here...
-
-#define COORDX 0
-#define COORDY 1
-#define COORDZ 2
-#define UPX false
-#define UPY false
-#define UPZ false
-
-			m0_ = b;
-			m8_ = e;
-			m4_ = reorder_split( m0_, m8_, CMP<COORDX, UPX>( M ) );
-
-			parallel_for( [ this ]() { m2_ = reorder_split( m0_, m4_, CMP<COORDY, UPY>( M_ ) ); },
-			  [ this ]() { m6_ = reorder_split( m4_, m8_, CMP<COORDY, !UPY>( M_ ) ); } );
-
-			parallel_for( [ this ]() { m1_ = reorder_split( m0_, m2_, CMP<COORDZ, UPZ>( M_ ) ); },
-			  [ this ]() { m3_ = reorder_split( m2_, m4_, CMP<COORDZ, !UPZ>( M_ ) ); },
-			  [ this ]() { m5_ = reorder_split( m4_, m6_, CMP<COORDZ, UPZ>( M_ ) ); },
-			  [ this ]() { m7_ = reorder_split( m6_, m8_, CMP<COORDZ, !UPZ>( M_ ) ); } );
-
-			parallel_for( [ this ]() { sort<COORDZ, UPZ, UPX, UPY>( M_, m0_, m1_ ); }, [ this ]() { sort<COORDY, UPY, UPZ, UPX>( M_, m1_, m2_ ); },
-			  [ this ]() { sort<COORDY, UPY, UPZ, UPX>( M_, m2_, m3_ ); }, [ this ]() { sort<COORDX, UPX, !UPY, !UPZ>( M_, m3_, m4_ ); },
-			  [ this ]() { sort<COORDX, UPX, !UPY, !UPZ>( M_, m4_, m5_ ); }, [ this ]() { sort<COORDY, !UPY, UPZ, !UPX>( M_, m5_, m6_ ); },
-			  [ this ]() { sort<COORDY, !UPY, UPZ, !UPX>( M_, m6_, m7_ ); }, [ this ]() { sort<COORDZ, !UPZ, !UPX, UPY>( M_, m7_, m8_ ); } );
-
-#undef COORDX
-#undef COORDY
-#undef COORDZ
-#undef UPX
-#undef UPY
-#undef UPZ
-#else
-			sort<0, false, false, false>( M_, b, e );
-#endif
 		}
 
 	  private:
