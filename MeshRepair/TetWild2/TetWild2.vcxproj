@@ -93,6 +93,7 @@
     <ClInclude Include="external\Rational.h" />
     <ClInclude Include="external\WindingNumber.h" />
     <ClInclude Include="includeEigen.h" />
+    <ClInclude Include="Utils\setMeshData.h" />
     <ClInclude Include="src\AABBWrapper.h" />
     <ClInclude Include="src\auto_table.hpp" />
     <ClInclude Include="src\CSGTreeParser.hpp" />
@@ -128,6 +129,7 @@
     <ClCompile Include="external\MshSaver.cpp" />
     <ClCompile Include="external\Predicates.cpp" />
     <ClCompile Include="external\triangle_triangle_intersection.cpp" />
+    <ClCompile Include="Utils\setMeshData.cpp" />
     <ClCompile Include="src\AABBWrapper.cpp" />
     <ClCompile Include="src\auto_table.cpp" />
     <ClCompile Include="src\CSGTreeParser.cpp" />
