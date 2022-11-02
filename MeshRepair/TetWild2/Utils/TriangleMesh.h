@@ -7,7 +7,8 @@ class TriangleMesh
 	GEO::vector<GEO::vec3i> triangles;
 
   public:
-	// returns 3.0 * specified coordinate of the center of the triangle
+
+	// Compute 3.0 * specified coordinate of the center of the triangle
 	template<int COORD>
 	inline double triangleCenterX3( uint32_t idxTri ) const;
 
@@ -23,4 +24,7 @@ class TriangleMesh
 	}
 
 	void reorderMorton();
+
+	// Compute diagonal of the bounding box
+	double boxDiagonal() const;
 };

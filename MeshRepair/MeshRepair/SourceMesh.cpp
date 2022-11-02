@@ -35,6 +35,8 @@ HRESULT SourceMesh::createMesh( uint32_t countVertices, const float* vb, uint32_
 	testMesh.assignVertices( countVertices, vb );
 	testMesh.assignTriangles( countTriangles, ib );
 	testMesh.reorderMorton();
+	const double diagMy = testMesh.boxDiagonal();
+	const double diagGg = mesh.boxDiagonal();
 #endif
 	return S_OK;
 }

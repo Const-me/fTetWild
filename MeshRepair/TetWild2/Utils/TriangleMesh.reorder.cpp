@@ -147,7 +147,7 @@ namespace
 				sort<COORDZ, !UPZ, !UPX, UPY>( M_, m7_, m8_ );
 				break;
 			default:
-				geo_assert_not_reached;
+				__debugbreak();
 				break;
 			}
 		}
