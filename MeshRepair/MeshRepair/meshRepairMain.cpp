@@ -5,11 +5,11 @@
 #include <tbb/task_scheduler_init.h>
 #include <thread>
 #endif
-#include <floattetwild/AABBWrapper.h>
-#include <floattetwild/Simplification.h>
-#include <floattetwild/FloatTetDelaunay.h>
-#include <floattetwild/TriangleInsertion.h>
-#include <floattetwild/MeshImprovement.h>
+#include "../TetWild2/src/AABBWrapper.h"
+#include "../TetWild2/src/Simplification.h"
+#include "../TetWild2/src/FloatTetDelaunay.h"
+#include "../TetWild2/src/TriangleInsertion.h"
+#include "../TetWild2/src/MeshImprovement.h"
 #include "ResultMesh.h"
 #include "Utils/writeStl.h"
 
@@ -98,5 +98,9 @@ HRESULT meshRepairMain( MeshRepair::SourceMesh& rsi, const MeshRepair::Parameter
 	return S_OK;
 }
 
+#ifdef _MSC_VER
+#ifdef FLOAT_TETWILD_USE_TBB
 #pragma comment( lib, "tbb_static.lib" )
+#endif
 #pragma comment( lib, "mpir.lib" )
+#endif

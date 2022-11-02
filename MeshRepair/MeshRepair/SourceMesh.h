@@ -1,6 +1,6 @@
 #pragma once
 #include "API/library.h"
-#include <floattetwild/Mesh.hpp>
+#include "../TetWild2/src/Mesh.hpp"
 
 namespace MeshRepair
 {

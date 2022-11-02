@@ -113,13 +113,19 @@
     <None Include="API\MeshRepair.def" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\build\FloatTetwild.vcxproj">
-      <Project>{e8130a97-083a-3826-97b1-46d8a5bf883a}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Natvis Include="eigen.natvis" />
     <Natvis Include="simd.natvis" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\build\geogram\src\lib\geogram\geogram.vcxproj">
+      <Project>{939fc30a-a6ab-31c3-ba10-f7a9eeba09f1}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\build\predicates\predicates.vcxproj">
+      <Project>{f88f72d3-3d63-3ca9-914d-34aa178d3b84}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\TetWild2\TetWild2.vcxproj">
+      <Project>{80d5a4ae-aa2d-4726-a1b3-b621f6bee624}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
