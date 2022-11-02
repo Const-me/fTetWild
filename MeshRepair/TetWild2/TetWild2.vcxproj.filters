@@ -103,6 +103,7 @@
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\reorderUtils.h" />
+    <ClInclude Include="Utils\miscUtils.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp" />

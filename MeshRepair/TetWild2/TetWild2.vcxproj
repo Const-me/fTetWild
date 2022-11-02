@@ -92,6 +92,7 @@
     <ClInclude Include="external\Predicates.hpp" />
     <ClInclude Include="external\Rational.h" />
     <ClInclude Include="external\WindingNumber.h" />
+    <ClInclude Include="Utils\miscUtils.hpp" />
     <ClInclude Include="Utils\reorderUtils.h" />
     <ClInclude Include="Utils\TriangleMesh.h" />
     <ClInclude Include="Utils\Geogram2.h" />
