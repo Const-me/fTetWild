@@ -48,7 +48,7 @@ namespace
 		{
 			vec.resize( totalFloats );
 		}
-		catch( const std::bad_alloc& ba )
+		catch( const std::bad_alloc& )
 		{
 			return E_OUTOFMEMORY;
 		}
@@ -67,7 +67,7 @@ namespace
 		{
 			vec.resize( totalIntegers );
 		}
-		catch( const std::bad_alloc& ba )
+		catch( const std::bad_alloc& )
 		{
 			return E_OUTOFMEMORY;
 		}
@@ -107,7 +107,7 @@ HRESULT SourceMesh::createMesh( uint32_t countVertices, const float* vb, uint32_
 		input_tags.clear();
 		input_tags.resize( input_faces.size(), 0 );
 	}
-	catch( const std::bad_alloc& ba )
+	catch( const std::bad_alloc& )
 	{
 		return E_OUTOFMEMORY;
 	}
