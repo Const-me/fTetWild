@@ -3,7 +3,7 @@
 #include "../MeshRepair/API/interfaces.h"
 
 static const LPCTSTR stlSource = LR"(C:\Temp\2remove\MeshRepair\model.stl)";
-static const LPCTSTR stlResult = LR"(C:\Temp\2remove\MeshRepair\model-saved.stl)";
+static const LPCTSTR stlResult = LR"(C:\Temp\2remove\MeshRepair\model-result.stl)";
 
 namespace MeshRepair
 {

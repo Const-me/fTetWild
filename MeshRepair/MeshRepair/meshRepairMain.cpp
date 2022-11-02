@@ -22,7 +22,7 @@ namespace
 
 HRESULT meshRepairMain( MeshRepair::SourceMesh& rsi, const MeshRepair::Parameters& parameters, MeshRepair::iResultMesh** rdi )
 {
-	// writeStl( rsi.input_vertices, rsi.input_faces, LR"(C:\Temp\2remove\TetWildBS\01.stl)" );
+	// writeStl( rsi.input_vertices, rsi.input_faces, LR"(C:\Temp\2remove\MeshRepair\Temp-01.stl)" );
 
 	Mesh mesh;
 	Parameters& params = mesh.params;
