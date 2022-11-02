@@ -62,3 +62,14 @@ double TriangleMesh::boxDiagonal() const
 	res = _mm_sqrt_sd( res, res );
 	return _mm_cvtsd_f64( res );
 }
+
+void TriangleMesh::clearMesh( bool keepMemory )
+{
+	vertices.clear();
+	triangles.clear();
+	if( keepMemory )
+		return;
+
+	vertices.shrink_to_fit();
+	triangles.shrink_to_fit();
+}
