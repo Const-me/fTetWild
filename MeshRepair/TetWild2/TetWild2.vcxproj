@@ -92,6 +92,7 @@
     <ClInclude Include="external\Predicates.hpp" />
     <ClInclude Include="external\Rational.h" />
     <ClInclude Include="external\WindingNumber.h" />
+    <ClInclude Include="includeEigen.h" />
     <ClInclude Include="src\AABBWrapper.h" />
     <ClInclude Include="src\auto_table.hpp" />
     <ClInclude Include="src\CSGTreeParser.hpp" />

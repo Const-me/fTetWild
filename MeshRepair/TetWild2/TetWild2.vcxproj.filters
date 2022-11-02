@@ -95,6 +95,7 @@
     <ClInclude Include="src\VertexSmoothing.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="includeEigen.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp" />
