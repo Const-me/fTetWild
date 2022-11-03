@@ -103,56 +103,11 @@ void floatTetWild::simplify( std::vector<Vector3>& input_vertices, std::vector<V
 
 	logger().info( "#v = {}", input_vertices.size() );
 	logger().info( "#f = {}", input_faces.size() );
-
-	////////////////////////
-	// output
-	if( params.log_level < 3 )
-	{
-		Eigen::MatrixXd V( input_vertices.size(), 3 );
-		Eigen::MatrixXi F( input_faces.size(), 3 );
-		for( int i = 0; i < input_vertices.size(); i++ )
-		{
-			V.row( i ) = input_vertices[ i ];
-		}
-		for( int i = 0; i < input_faces.size(); i++ )
-		{
-			F.row( i ) = input_faces[ i ];
-		}
-		if( !params.output_path.empty() )
-		{
-			igl::writeOFF( params.output_path + "_" + params.postfix + "_simplify.off", V, F );
-		}
-	}
-
-	//    ////////////////////////
-	//    //check
-	//    auto tmp = input_vertices;
-	//    std::sort(tmp.begin(), tmp.end(), [](const Vector3& a, const Vector3& b){
-	//       return std::tuple<Scalar, Scalar, Scalar>(a[0], a[1], a[2]) < std::tuple<Scalar, Scalar, Scalar>(b[0], b[1], b[2]);
-	//    });
-	//    for(int i=0;i<tmp.size()-1;i++){
-	//        if(tmp[i]==tmp[i+1]){
-	//            cout<<"find duplicates! "<<i<<endl;
-	//        }
-	//    }
 }
 
 bool floatTetWild::remove_duplicates(
   std::vector<Vector3>& input_vertices, std::vector<Vector3i>& input_faces, std::vector<int>& input_tags, const Parameters& params )
 {
-	//    std::vector<size_t> indices(input_vertices.size());
-	//    for(size_t i=0;i<input_vertices.size();i++)
-	//        indices[i] = i;
-	//
-	//    std::sort(indices.begin(), indices.end(), [&input_vertices](size_t i1, size_t i2) {
-	//        return std::make_tuple(input_vertices[i1][0], input_vertices[i1][1], input_vertices[i1][2])
-	//               < std::make_tuple(input_vertices[i2][0], input_vertices[i2][1], input_vertices[i2][2]);
-	//    });
-	//    indices.erase(std::unique(indices.begin(), indices.end(), [&input_vertices](size_t i1, size_t i2) {
-	//        return std::make_tuple(input_vertices[i1][0], input_vertices[i1][1], input_vertices[i1][2])
-	//               == std::make_tuple(input_vertices[i2][0], input_vertices[i2][1], input_vertices[i2][2]);
-	//    }), indices.end());
-
 	MatrixXs V_tmp( input_vertices.size(), 3 ), V_in;
 	Eigen::MatrixXi F_tmp( input_faces.size(), 3 ), F_in;
 	for( int i = 0; i < input_vertices.size(); i++ )

@@ -18,15 +18,6 @@ namespace floatTetWild
 	class Parameters
 	{
 	  public:
-		std::string log_path = "";
-		std::string input_path = "";
-		std::string output_path = "";
-		std::string tag_path = "";
-		std::string postfix = "";
-
-		std::string envelope_log = "";
-		std::string envelope_log_csv = "";
-
 		bool not_sort_input = false;
 		bool correct_surface_orientation = false;
 		bool is_quiet = false;
@@ -39,12 +30,6 @@ namespace floatTetWild
 		bool use_general_wn = false;
 		bool use_input_for_wn = false;
 		bool coarsen = false;
-
-		bool apply_sizing_field = false;
-		Eigen::VectorXd V_sizing_field;
-		Eigen::VectorXi T_sizing_field;
-		Eigen::VectorXd values_sizing_field;
-		std::function<double( const Vector3& )> get_sizing_field_value;	 // get sizing field value for an point
 
 #ifdef NEW_ENVELOPE
 		std::vector<double> input_epsr_tags;  // same length as the list of input faces

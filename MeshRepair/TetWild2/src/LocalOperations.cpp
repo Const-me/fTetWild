@@ -734,96 +734,14 @@ bool floatTetWild::is_out_envelope( Mesh& mesh, int v_id, const Vector3& new_pos
 #else
 				bool is_out = sample_triangle_and_check_is_out( vs, mesh.params.dd, mesh.params.eps_2, tree, prev_facet );
 #endif
-				if( !mesh.params.envelope_log.empty() )
-				{
-					if( envelope_log_csv_cnt < 1e5 )
-					{
-						std::ostringstream ss;
-						ss << std::setprecision( 17 );
-						for( const auto& v : vs )
-						{
-							ss << v[ 0 ] << ',' << v[ 1 ] << ',' << v[ 2 ] << ',';
-						}
-						ss << is_out << "\n";
-						std::string tmp = ss.str();
-						envelope_log_csv += tmp;
-						envelope_log_csv_cnt += 1;
-					}
-					else
-					{
-						std::ofstream fout( mesh.params.envelope_log );
-						fout << envelope_log_csv;
-						fout.close();
-						mesh.params.envelope_log = "";
-					}
-				}
 				if( is_out )
 					return true;
 #endif
-
-				//                int cnt = 0;
-				//                const unsigned int ps_size = ps.size();
-				//                for (unsigned int i = ps_size / 2; ; i = (i + 1) % ps_size) {//check from the middle
-				//                    GEO2::vec3 &current_point = ps[i];
-				//                    sq_distg = current_point.distance2(nearest_point);
-				//                    sf_tree.nearest_facet_with_hint(current_point, prev_facet, nearest_point, sq_distg);
-				//                    sq_dist = sq_distg;
-				//                    if (sq_dist > mesh.params.eps_2)
-				//                        return true;
-				//                    cnt++;
-				//                    if (cnt >= ps_size)
-				//                        break;
-				//                }
 			}
 		}
 	}
 
 	return false;
-
-	//    GEO2::vec3 init_point(new_pos[0], new_pos[1], new_pos[2]);
-	//    GEO2::vec3 nearest_point;
-	//    double sq_distg;
-	//    GEO2::index_t prev_facet = sf_tree.nearest_facet(init_point, nearest_point, sq_distg);
-	//    Scalar sq_dist = sq_distg;
-	//    if(sq_dist > mesh.params.eps_2)
-	//        return true;
-	//
-	//    std::vector<GEO2::vec3> ps;
-	//    for (int t_id:mesh.tet_vertices[v_id].conn_tets) {
-	//        for (int j = 0; j < 4; j++) {
-	//            if (mesh.tets[t_id][j] != v_id && mesh.tets[t_id].is_surface_fs[j] < 0) {
-	//                std::array<Vector3, 3> vs;
-	//                for(int k=0;k<3;k++){
-	//                    if(mesh.tets[t_id][mod4(j + 1 + k)] == v_id)
-	//                        vs[k] = new_pos;
-	//                    else
-	//                        vs[k] = mesh.tet_vertices[mesh.tets[t_id][(j + 1 + k) % 4]].pos;
-	//                }
-	//
-	//                ps.clear();
-	////                sample_triangle({{mesh.tet_vertices[mesh.tets[t_id][(j + 1) % 4]].pos,
-	////                                         mesh.tet_vertices[mesh.tets[t_id][(j + 2) % 4]].pos,
-	////                                         mesh.tet_vertices[mesh.tets[t_id][(j + 3) % 4]].pos}}, ps, mesh.params.dd);
-	//                sample_triangle(vs, ps, mesh.params.dd);
-	//
-	//                int cnt = 0;
-	//                const unsigned int ps_size = ps.size();
-	//                for (unsigned int i = ps_size / 2; ; i = (i + 1) % ps_size) {//check from the middle
-	//                    GEO2::vec3 &current_point = ps[i];
-	//                    sq_distg = current_point.distance2(nearest_point);
-	//                    sf_tree.nearest_facet_with_hint(current_point, prev_facet, nearest_point, sq_distg);
-	//                    sq_dist = sq_distg;
-	//                    if (sq_dist > mesh.params.eps_2)
-	//                        return true;
-	//                    cnt++;
-	//                    if (cnt >= ps_size)
-	//                        break;
-	//                }
-	//            }
-	//        }
-	//    }
-	//
-	//    return false;
 }
 
 void floatTetWild::sample_triangle( const std::array<Vector3, 3>& vs, std::vector<GEO2::vec3>& ps, Scalar sampling_dist )
