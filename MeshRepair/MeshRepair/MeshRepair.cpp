@@ -3,6 +3,7 @@
 #include "SourceMesh.h"
 #include <geogram/basic/common.h>
 #include "meshRepairMain.h"
+// #include "../TetWild2/Utils/RobustPredicates.h"
 
 namespace MeshRepair
 {
@@ -31,6 +32,7 @@ namespace MeshRepair
 
 	DLLEXPORT HRESULT COMLIGHTCALL createMeshRepair( iMeshRepair** rdi )
 	{
+		// RobustPredicates::exactinit();
 		return ComLight::Object<MeshRepair>::create( rdi );
 	}
 

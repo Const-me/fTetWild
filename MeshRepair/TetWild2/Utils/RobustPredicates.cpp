@@ -117,8 +117,9 @@
 #include <stdafx.h>
 #include "RobustPredicates.h"
 #include <math.h>
+// #include "designTimeUtils.h"
 
-namespace RodustPredicates
+namespace RobustPredicates
 {
 	/* Which of the following two methods of finding the absolute values is      */
 	/*   fastest is compiler-dependent.  A few compilers can inline and optimize */
@@ -342,13 +343,28 @@ namespace RodustPredicates
 	Square( a1, _j, _1 );                            \
 	Two_Two_Sum( _j, _1, _l, _2, x5, x4, x3, x2 )
 
-#if false
+#if 1
+	static const double splitter = 0x1.0000002p+27;
+	static const double epsilon = 0x1.p-53;
+	static const double resulterrbound = 0x1.8000000000002p-52;
+	static const double ccwerrboundA = 0x1.8000000000004p-52;
+	static const double ccwerrboundB = 0x1.0000000000003p-52;
+	static const double ccwerrboundC = 0x1.2000000000004p-103;
+	static const double o3derrboundA = 0x1.c000000000007p-51;
+	static const double o3derrboundB = 0x1.8000000000007p-52;
+	static const double o3derrboundC = 0x1.a000000000009p-102;
+	static const double iccerrboundA = 0x1.4000000000006p-50;
+	static const double iccerrboundB = 0x1.0000000000006p-51;
+	static const double iccerrboundC = 0x1.6000000000009p-101;
+	static const double isperrboundA = 0x1.0000000000007p-49;
+	static const double isperrboundB = 0x1.4000000000009p-51;
+	static const double isperrboundC = 0x1.1c0000000000bp-100;
+
 	void exactinit()
 	{
 		__debugbreak();
 	}
 #else
-#include "designTimeUtils.h"
 
 	double splitter; /* = 2^ceiling(p / 2) + 1.  Used to split floats in half. */
 	double epsilon;	 /* = 2^(-p).  Used to estimate roundoff errors. */

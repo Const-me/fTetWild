@@ -1,6 +1,6 @@
 #pragma once
 
-namespace RodustPredicates
+namespace RobustPredicates
 {
 	void exactinit();
 
@@ -26,7 +26,6 @@ namespace RodustPredicates
 	// A positive value if the point pe lies inside the sphere passing through pa, pb, pc, and pd;
 	// A negative value  if it lies outside;
 	// Zero if the five points are cospherical.
-	// The points pa, pb, pc, and pd must be ordered so that they have a positive orientation (as defined by orient3d()), or the sign of the result will be
-	// reversed.
+	// The points pa, pb, pc, and pd must be ordered so that they have a positive orientation as defined by orient3d(), or the sign of the result will be reversed.
 	double insphere( const double* pa, const double* pb, const double* pc, const double* pd, const double* pe );
 }  // namespace RodustPredicates

@@ -71,9 +71,9 @@ namespace GEO2
 	class NearestNeighborSearch
 	{
 	  public:
-		  using coord_index_t = uint8_t;
-		  using index_t = uint32_t;
-		  using signed_index_t = int;
+		using coord_index_t = uint8_t;
+		using index_t = uint32_t;
+		using signed_index_t = int;
 
 		/**
 		 * \brief Sets the points and create the search data structure.
@@ -233,4 +233,4 @@ namespace GEO2
 		const double* points_;
 		bool exact_;
 	};
-}  // namespace GEO
+}  // namespace GEO2

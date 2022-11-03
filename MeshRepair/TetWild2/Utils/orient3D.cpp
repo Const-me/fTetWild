@@ -76,7 +76,7 @@ namespace GEO2
 
 	Sign orient_3d( const double* p0, const double* p1, const double* p2, const double* p3 )
 	{
-		double d = RodustPredicates::orient3d( p0, p1, p2, p3 );
+		double d = RobustPredicates::orient3d( p0, p1, p2, p3 );
 		Sign result = orient_3d_filter( p0, p1, p2, p3 );
 		__debugbreak();
 		return result;

@@ -55,6 +55,6 @@ void dbgPrintCppLiteral( const char* name, double val )
 	CStringA message;
 	message.AppendFormat( "static const double %s = ", name );
 	printDouble( message, val );
-	message.AppendChar( '\n' );
+	message.Append( ";\r\n" );
 	OutputDebugStringA( message );
 }
