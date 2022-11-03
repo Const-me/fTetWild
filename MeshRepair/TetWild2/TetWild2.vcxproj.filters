@@ -96,16 +96,14 @@
     <ClInclude Include="Utils\Geogram2.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="Utils\Mesh\setMeshData.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
     <ClInclude Include="Utils\Mesh\TriangleMesh.h">
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Mesh\reorderUtils.h" />
-    <ClInclude Include="Utils\miscUtils.hpp" />
+    <ClInclude Include="Utils\miscUtils.h" />
     <ClInclude Include="Utils\BoundingBox.hpp" />
     <ClInclude Include="Utils\Mesh\TriMeshWrapper.h" />
+    <ClInclude Include="Utils\Mesh\MeshBase.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp" />
@@ -191,15 +189,14 @@
     <ClCompile Include="Utils\Geogram2.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="Utils\Mesh\setMeshData.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
     <ClCompile Include="Utils\Mesh\TriangleMesh.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
     <ClCompile Include="Utils\Mesh\TriangleMesh.reorder.cpp" />
     <ClCompile Include="Utils\Mesh\reorderUtils.cpp" />
     <ClCompile Include="Utils\Mesh\TriMeshWrapper.cpp" />
+    <ClCompile Include="Utils\Mesh\MeshBase.cpp" />
+    <ClCompile Include="Utils\miscUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="external">

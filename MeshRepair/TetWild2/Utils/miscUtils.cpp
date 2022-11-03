@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "setMeshData.h"
+#include "miscUtils.h"
 
 void upcastFloats( double* rdi, size_t length, const float* vb )
 {
@@ -33,19 +33,4 @@ void upcastFloats( double* rdi, size_t length, const float* vb )
 		vb++;
 		*rdi = f;
 	}
-}
-
-HRESULT assignMeshVertices( GEO2::Mesh& mesh, size_t count, const float* vb ) 
-{
-	return mesh.assignVertices( count, vb );
-}
-
-HRESULT assignMeshTriangles( GEO2::Mesh& mesh, size_t count, const uint32_t* ib ) 
-{
-	return mesh.assignTriangles( count, ib );
-}
-
-HRESULT copyMeshData( const GEO2::Mesh& mesh, std::vector<floatTetWild::Vector3>& vb, std::vector<floatTetWild::Vector3i>& ib ) 
-{
-	return mesh.copyData( vb, ib );
 }

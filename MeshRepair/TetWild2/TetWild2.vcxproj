@@ -94,13 +94,13 @@
     <ClInclude Include="external\Predicates.hpp" />
     <ClInclude Include="external\Rational.h" />
     <ClInclude Include="external\WindingNumber.h" />
+    <ClInclude Include="Utils\Mesh\MeshBase.h" />
     <ClInclude Include="Utils\BoundingBox.hpp" />
-    <ClInclude Include="Utils\miscUtils.hpp" />
+    <ClInclude Include="Utils\miscUtils.h" />
     <ClInclude Include="Utils\Mesh\reorderUtils.h" />
     <ClInclude Include="Utils\Mesh\TriangleMesh.h" />
     <ClInclude Include="Utils\Geogram2.h" />
     <ClInclude Include="includeEigen.h" />
-    <ClInclude Include="Utils\Mesh\setMeshData.h" />
     <ClInclude Include="src\AABBWrapper.h" />
     <ClInclude Include="src\auto_table.hpp" />
     <ClInclude Include="src\CSGTreeParser.hpp" />
@@ -137,10 +137,10 @@
     <ClCompile Include="external\MshSaver.cpp" />
     <ClCompile Include="external\Predicates.cpp" />
     <ClCompile Include="external\triangle_triangle_intersection.cpp" />
+    <ClCompile Include="Utils\Mesh\MeshBase.cpp" />
     <ClCompile Include="Utils\Mesh\reorderUtils.cpp" />
     <ClCompile Include="Utils\Mesh\TriangleMesh.cpp" />
     <ClCompile Include="Utils\Geogram2.cpp" />
-    <ClCompile Include="Utils\Mesh\setMeshData.cpp" />
     <ClCompile Include="src\AABBWrapper.cpp" />
     <ClCompile Include="src\auto_table.cpp" />
     <ClCompile Include="src\CSGTreeParser.cpp" />
@@ -165,6 +165,7 @@
     <ClCompile Include="TetWild2.cpp" />
     <ClCompile Include="Utils\Mesh\TriangleMesh.reorder.cpp" />
     <ClCompile Include="Utils\Mesh\TriMeshWrapper.cpp" />
+    <ClCompile Include="Utils\miscUtils.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
