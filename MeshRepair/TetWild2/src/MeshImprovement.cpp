@@ -1392,6 +1392,10 @@ void floatTetWild::apply_sizingfield( Mesh& mesh, AABBWrapper& tree )
 	auto& tets = mesh.tets;
 
 	GEO2::TetraMesh bg_mesh;
+#if 1
+	bg_mesh.assignVertices( mesh.params.V_sizing_field.rows() / 3, mesh.params.V_sizing_field.data() );
+	bg_mesh.assignElements( mesh.params.T_sizing_field.rows() / 4, (const uint32_t*)mesh.params.T_sizing_field.data() );
+#else
 	bg_mesh.generateVertices( mesh.params.V_sizing_field.rows() / 3,
 	  [ & ]( uint32_t i )
 	  {
@@ -1405,13 +1409,14 @@ void floatTetWild::apply_sizingfield( Mesh& mesh, AABBWrapper& tree )
 		  const int* rsi = &mesh.params.T_sizing_field( i * 4 );
 		  return _mm_loadu_si128( (const __m128i*)rsi );
 	  } );
+#endif
 
 	GEO2::MeshCellsAABB bg_aabb( bg_mesh, false );
 
 	auto get_sizing_field_value = [ & ]( const Vector3& p )
 	{
 		GEO2::vec3 geo_p( p[ 0 ], p[ 1 ], p[ 2 ] );
-		int bg_t_id = bg_aabb.containing_tet( geo_p );
+		int bg_t_id = bg_aabb.containingElement( geo_p );
 		if( bg_t_id == GEO2::MeshCellsAABB::NO_TET )
 			return -1.;
 

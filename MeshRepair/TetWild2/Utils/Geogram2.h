@@ -8,6 +8,7 @@
 #include "Mesh/TriMeshWrapper.h"
 #include "Mesh/TriangleMesh.h"
 #include "Mesh/TetrahedralMesh.h"
+#include "Mesh/TetrahedralMeshAABB.h"
 #include "Mesh/TetraMeshWrapper.h"
 
 namespace GEO2
@@ -53,9 +54,10 @@ namespace GEO2
 
 	// using Mesh = TriMeshWrapper;
 	using Mesh = TriangleMesh;
-	using TetraMesh = ::TetraMeshWrapper;
-	using MeshCellsAABB = ::MeshCellsAABBWrapper;
-	// using TetraMesh = ::TetrahedralMesh;
+	// using TetraMesh = ::TetraMeshWrapper;
+	// using MeshCellsAABB = ::MeshCellsAABBWrapper;
+	using TetraMesh = ::TetrahedralMesh;
+	using MeshCellsAABB = ::TetrahedralMeshAABB;
 
 	namespace Geom
 	{

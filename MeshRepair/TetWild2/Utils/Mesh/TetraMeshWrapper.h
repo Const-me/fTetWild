@@ -41,7 +41,7 @@ class MeshCellsAABBWrapper : private GEO::MeshCellsAABB
 	{
 	}
 
-	uint32_t containing_tet( const GEO::vec3& p, bool exact = true )
+	uint32_t containingElement( const GEO::vec3& p, bool exact = true ) const
 	{
 		return MeshCellsAABB::containing_tet( p, exact );
 	}
