@@ -1419,10 +1419,10 @@ void floatTetWild::apply_sizingfield( Mesh& mesh, AABBWrapper& tree )
 		std::array<Vector3, 4> vs;
 		for( int j = 0; j < 4; j++ )
 		{
-			vs[ j ] = Vector3( mesh.params.V_sizing_field( mesh.params.T_sizing_field( bg_t_id * 4 + j ) * 3 ),
-			  mesh.params.V_sizing_field( mesh.params.T_sizing_field( bg_t_id * 4 + j ) * 3 + 1 ),
-			  mesh.params.V_sizing_field( mesh.params.T_sizing_field( bg_t_id * 4 + j ) * 3 + 2 ) );
+			const int tmp = mesh.params.T_sizing_field( bg_t_id * 4 + j ) * 3;
+			vs[ j ] = Vector3( mesh.params.V_sizing_field( tmp ), mesh.params.V_sizing_field( tmp + 1 ), mesh.params.V_sizing_field( tmp + 2 ) );
 		}
+
 		double value = 0;
 		for( int j = 0; j < 4; j++ )
 		{
