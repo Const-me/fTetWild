@@ -105,6 +105,7 @@
     <ClInclude Include="Utils\reorderUtils.h" />
     <ClInclude Include="Utils\miscUtils.hpp" />
     <ClInclude Include="Utils\BoundingBox.hpp" />
+    <ClInclude Include="Utils\TriMeshWrapper.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp" />
