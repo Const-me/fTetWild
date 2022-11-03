@@ -246,6 +246,10 @@ namespace floatTetWild
 				V_d[ i * 3 + j ] = tet_vertices[ i ].pos[ j ];
 		}
 
+		// TODO: Delaunay
+		__debugbreak();
+		return;
+#if 0
 		GEO2::Delaunay::initialize();
 		GEO2::Delaunay_var T = GEO2::Delaunay::create( 3, "BDEL" );
 		T->set_vertices( n_pts, V_d.data() );
@@ -359,5 +363,6 @@ namespace floatTetWild
 		match_bbox_fs( mesh, min, max );
 
 		//        MeshIO::write_mesh("delaunay.msh", mesh);
+#endif
 	}
 }  // namespace floatTetWild

@@ -11,7 +11,6 @@
 #include "Types.hpp"
 #include <array>
 #include <vector>
-#include <geogram/mesh/mesh.h>
 
 namespace floatTetWild
 {
@@ -39,7 +38,7 @@ namespace floatTetWild
 		//( in % of  max((xmax-xmin), (ymax-ymin), (zmax-zmin)) of the input points)
 		Scalar box_scale = 1 / 15.0;
 
-		// epsilon presents the tolerence permited (in % of the box diagonal)
+		// epsilon presents the tolerance permitted (in % of the box diagonal)
 		Scalar eps_rel = 1e-3;
 
 		// initial target edge length at every vertex(in % of the box diagonal)
@@ -106,10 +105,6 @@ namespace floatTetWild
 			eps = eps_usable - eps_delta * ( stage - 1 );
 #endif
 
-			//        dd /= 1.6;
-			//        eps_delta = dd / std::sqrt(3);
-			//        eps       = eps_input - eps_delta * stage;
-			//        dd /= 1.2;
 			eps_2 = eps * eps;
 
 			eps_coplanar = eps * 0.2;  // better to set it as eps-related
@@ -120,7 +115,6 @@ namespace floatTetWild
 			eps_simplification = eps * 0.8;
 			eps_2_simplification = eps_simplification * eps_simplification;
 			dd_simplification = dd / eps * eps_simplification;
-			//            dd_simplification = dd;
 
 			if( min_edge_len_rel < 0 )
 				min_edge_len_rel = eps_rel;
@@ -130,19 +124,6 @@ namespace floatTetWild
 			collapse_threshold = ideal_edge_length * ( 4 / 5.0 );
 			split_threshold_2 = split_threshold * split_threshold;
 			collapse_threshold_2 = collapse_threshold * collapse_threshold;
-
-			std::cout << "bbox_diag_length = " << bbox_diag_length << std::endl;
-			std::cout << "ideal_edge_length = " << ideal_edge_length << std::endl;
-
-			std::cout << "stage = " << stage << std::endl;
-			std::cout << "eps_input = " << eps_input << std::endl;
-			std::cout << "eps = " << eps << std::endl;
-			std::cout << "eps_simplification = " << eps_simplification << std::endl;
-			std::cout << "eps_coplanar = " << eps_coplanar << std::endl;
-
-			std::cout << "dd = " << dd << std::endl;
-			std::cout << "dd_simplification = " << dd_simplification << std::endl;
-
 			return true;
 		}
 	};

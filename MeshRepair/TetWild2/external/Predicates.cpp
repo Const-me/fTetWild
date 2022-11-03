@@ -1,11 +1,7 @@
 #include "stdafx.h"
 #include "Predicates.hpp"
-// extern "C" floatTetWild::Scalar orient3d(const floatTetWild::Scalar *pa, const floatTetWild::Scalar *pb, const floatTetWild::Scalar *pc, const
-// floatTetWild::Scalar *pd); extern "C" floatTetWild::Scalar orient2d(const floatTetWild::Scalar *pa, const floatTetWild::Scalar *pb, const
-// floatTetWild::Scalar *pc);
 #include <igl/predicates/predicates.h>
 
-#include <geogram/delaunay/delaunay_3d.h>
 namespace floatTetWild
 {
 #define GEO_PREDICATES false

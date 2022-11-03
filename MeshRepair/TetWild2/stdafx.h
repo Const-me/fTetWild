@@ -12,8 +12,9 @@
 // Eigen
 #include "includeEigen.h"
 
-// Geogram
-#include <geogram/mesh/mesh_geometry.h>
-#include <geogram/basic/common.h>
-#include <geogram/mesh/mesh.h>
-#include <geogram/basic/geometry.h>
+// HRESULT codes
+#ifdef _MSC_VER
+#define WIN32_LEAN_AND_MEAN
+#define	NOMINMAX
+#endif
+#include "../ComLightLib/hresult.h"

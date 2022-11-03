@@ -1,8 +1,6 @@
 #include "stdafx.h"
 #include "LocalOperations.h"
 #include "AABBWrapper.h"
-#include <geogram/mesh/mesh_reorder.h>
-#include <geogram/basic/geometry_nd.h>
 #include "TriangleInsertion.h"
 
 void setSingleTriangle( GEO2::Mesh& m )

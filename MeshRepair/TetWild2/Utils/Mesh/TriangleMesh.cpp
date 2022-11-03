@@ -42,8 +42,8 @@ void TriangleMesh::clearMesh( bool keepMemory )
 
 HRESULT TriangleMesh::copyData( std::vector<floatTetWild::Vector3>& vb, std::vector<floatTetWild::Vector3i>& ib ) const
 {
-	static_assert( sizeof( floatTetWild::Vector3 ) == sizeof( GEO::vec3 ), "sizeof" );
-	static_assert( sizeof( floatTetWild::Vector3i ) == sizeof( GEO::vec3i ), "sizeof" );
+	static_assert( sizeof( floatTetWild::Vector3 ) == sizeof( GEO2::vec3 ), "sizeof" );
+	static_assert( sizeof( floatTetWild::Vector3i ) == sizeof( GEO2::vec3i ), "sizeof" );
 
 	// Extract the data, store in different types
 	try

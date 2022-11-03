@@ -230,7 +230,7 @@ int sub_sub_cross_sub_dot( real a[ 3 ], real b[ 3 ], real c[ 3 ], real d[ 3 ] );
 inline int sub_sub_cross_sub_dot( real pa[ 3 ], real pb[ 3 ], real pc[ 3 ], real pd[ 3 ] )
 {
 	//    const real result = orient3d(pa, pb, pc, pd);
-	auto result = -GEO2::PCK::orient_3d( pa, pb, pc, pd );
+	auto result = -GEO2::orient_3d( pa, pb, pc, pd );
 	if( result > 0 )
 		return 1;
 	else if( result < 0 )

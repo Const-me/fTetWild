@@ -322,7 +322,7 @@ namespace GEO2
 		NN.nb_visited += ( e - b );
 		double R = NN.furthest_neighbor_sq_dist();
 		index_t nb = e - b;
-		const index_t* geo_restrict idx = &point_index_[ b ];
+		const index_t* idx = &point_index_[ b ];
 
 		// TODO: check generated ASM (I'd like to have AVX here).
 		// We may need to dispatch according to dimension.

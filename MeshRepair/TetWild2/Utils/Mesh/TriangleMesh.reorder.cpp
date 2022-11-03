@@ -7,9 +7,8 @@
 // BSD license allows that
 namespace
 {
-	using GEO::vec3;
-	using GEO::vec3i;
-	using GEO::vector;
+	using GEO2::vec3;
+	using GEO2::vec3i;
 
 	/**
 	 * \brief Splits a sequence into two ordered halves.
@@ -169,7 +168,7 @@ namespace
 		}
 
 	  public:
-		HilbertSort3d( const MESH& M, vector<uint32_t>::iterator b, vector<uint32_t>::iterator e, ptrdiff_t limit = 1 )
+		HilbertSort3d( const MESH& M, std::vector<uint32_t>::iterator b, std::vector<uint32_t>::iterator e, ptrdiff_t limit = 1 )
 			: M_( M )
 		{
 			assert( e >= b );
@@ -192,7 +191,7 @@ namespace
 
 	  private:
 		const MESH& M_;
-		vector<uint32_t>::iterator m0_, m1_, m2_, m3_, m4_, m5_, m6_, m7_, m8_;
+		std::vector<uint32_t>::iterator m0_, m1_, m2_, m3_, m4_, m5_, m6_, m7_, m8_;
 	};
 
 	void morton_vsort_3d( const std::vector<GEO2::vec3>& vec, std::vector<uint32_t>& reordered )

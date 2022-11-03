@@ -11,6 +11,8 @@
 #include <cassert>
 #include <queue>
 #include <random>
+// TODO: remove this
+#include <iostream>
 
 namespace floatTetWild
 {

@@ -10,7 +10,6 @@
 // to generate delaunay mesh using the 3d model along with points of the box
 #include "Mesh.hpp"
 #include "Types.hpp"
-#include <geogram/delaunay/delaunay_3d.h>
 #include "AABBWrapper.h"
 
 namespace floatTetWild

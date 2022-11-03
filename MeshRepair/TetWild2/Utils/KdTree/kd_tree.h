@@ -518,7 +518,7 @@ namespace GEO2
 	 *  in general Kd-tree query time dominates construction time in
 	 *  most of the algorithms that use a Kd-tree.
 	 */
-	class GEOGRAM_API AdaptiveKdTree : public KdTree
+	class AdaptiveKdTree : public KdTree
 	{
 	  public:
 		/**

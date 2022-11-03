@@ -44,10 +44,10 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir);$(SolutionDir)..\3rdparty\geogram\src\lib;$(SolutionDir)..\3rdparty\libigl\include;$(SolutionDir)..\3rdparty\libigl\external\eigen;$(SolutionDir)..\3rdparty\json\include;$(SolutionDir)..\..\mpir\sandybridge\Inc;$(SolutionDir)..\3rdparty\libigl\cmake\..\external\predicates;$(SolutionDir)..\3rdparty\libigl\external\predicates;$(SolutionDir)..\build\predicates;$(SolutionDir)..\3rdparty\spdlog\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir);$(SolutionDir)..\3rdparty\libigl\include;$(SolutionDir)..\3rdparty\libigl\external\eigen;$(SolutionDir)..\3rdparty\json\include;$(SolutionDir)..\..\mpir\sandybridge\Inc;$(SolutionDir)..\3rdparty\libigl\cmake\..\external\predicates;$(SolutionDir)..\3rdparty\libigl\external\predicates;$(SolutionDir)..\build\predicates;$(SolutionDir)..\3rdparty\spdlog\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(ProjectDir);$(SolutionDir)..\3rdparty\geogram\src\lib;$(SolutionDir)..\3rdparty\libigl\include;$(SolutionDir)..\3rdparty\libigl\external\eigen;$(SolutionDir)..\3rdparty\json\include;$(SolutionDir)..\..\mpir\sandybridge\Inc;$(SolutionDir)..\3rdparty\libigl\cmake\..\external\predicates;$(SolutionDir)..\3rdparty\libigl\external\predicates;$(SolutionDir)..\build\predicates;$(SolutionDir)..\3rdparty\spdlog\include;$(SolutionDir)..\3rdparty\libigl\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir);$(SolutionDir)..\3rdparty\libigl\include;$(SolutionDir)..\3rdparty\libigl\external\eigen;$(SolutionDir)..\3rdparty\json\include;$(SolutionDir)..\..\mpir\sandybridge\Inc;$(SolutionDir)..\3rdparty\libigl\cmake\..\external\predicates;$(SolutionDir)..\3rdparty\libigl\external\predicates;$(SolutionDir)..\build\predicates;$(SolutionDir)..\3rdparty\spdlog\include;$(SolutionDir)..\3rdparty\libigl\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -84,6 +84,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Utils\designTimeUtils.h" />
     <ClInclude Include="external\bfs_orient.h" />
     <ClInclude Include="external\Exception.h" />
     <ClInclude Include="external\FastWindingNumber.hpp" />
@@ -94,6 +95,8 @@
     <ClInclude Include="external\Predicates.hpp" />
     <ClInclude Include="external\Rational.h" />
     <ClInclude Include="external\WindingNumber.h" />
+    <ClInclude Include="Utils\RobustPredicates.h" />
+    <ClInclude Include="Utils\orient3D.h" />
     <ClInclude Include="Utils\KdTree\kd_tree.h" />
     <ClInclude Include="Utils\KdTree\nn_search.h" />
     <ClInclude Include="Utils\NearestSearch.h" />
@@ -126,9 +129,9 @@
     <ClInclude Include="src\Types.hpp" />
     <ClInclude Include="src\VertexSmoothing.h" />
     <ClInclude Include="stdafx.h" />
-    <ClInclude Include="Utils\Mesh\TriMeshWrapper.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Utils\designTimeUtils.cpp" />
     <ClCompile Include="external\bfs_orient.cpp" />
     <ClCompile Include="external\FastWindingNumber.cpp" />
     <ClCompile Include="external\getRSS.c">
@@ -141,6 +144,8 @@
     <ClCompile Include="external\MshSaver.cpp" />
     <ClCompile Include="external\Predicates.cpp" />
     <ClCompile Include="external\triangle_triangle_intersection.cpp" />
+    <ClCompile Include="Utils\RobustPredicates.cpp" />
+    <ClCompile Include="Utils\orient3D.cpp" />
     <ClCompile Include="Utils\KdTree\kd_tree.cpp" />
     <ClCompile Include="Utils\KdTree\nn_search.cpp" />
     <ClCompile Include="Utils\NearestSearch.cpp" />
@@ -172,7 +177,6 @@
     </ClCompile>
     <ClCompile Include="TetWild2.cpp" />
     <ClCompile Include="Utils\Mesh\TriangleMesh.reorder.cpp" />
-    <ClCompile Include="Utils\Mesh\TriMeshWrapper.cpp" />
     <ClCompile Include="Utils\miscUtils.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

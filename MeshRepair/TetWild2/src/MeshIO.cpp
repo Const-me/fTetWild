@@ -11,18 +11,10 @@
 #include "MeshImprovement.h"
 #include "../external/MshSaver.h"
 #include "Logger.hpp"
-
 #include <igl/Timer.h>
 #include <igl/boundary_facets.h>
 #include <igl/remove_unreferenced.h>
 #include <igl/write_triangle_mesh.h>
-
-#include <geogram/mesh/mesh_geometry.h>
-#include <geogram/mesh/mesh_io.h>
-#include <geogram/mesh/mesh_reorder.h>
-#include <geogram/mesh/mesh_repair.h>
-#include <geogram/numerics/predicates.h>
-
 #include <numeric>
 
 namespace floatTetWild

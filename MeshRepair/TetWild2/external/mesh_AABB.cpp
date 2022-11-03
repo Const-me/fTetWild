@@ -45,8 +45,6 @@
 
 #include "stdafx.h"
 #include "mesh_AABB.h"
-#include <geogram/mesh/mesh_geometry.h>
-#include <geogram/basic/geometry_nd.h>
 #include "../Utils/BoundingBox.hpp"
 
 namespace
@@ -79,7 +77,7 @@ namespace
 	 */
 	index_t max_node_index( index_t node_index, index_t b, index_t e )
 	{
-		geo_debug_assert( e > b );
+		assert( e > b );
 		if( b + 1 == e )
 		{
 			return node_index;
@@ -107,10 +105,10 @@ namespace
 	 *  - element: the index of the element
 	 */
 	template<class GET_BBOX>
-	void init_bboxes_recursive( const Mesh& M, vector<Box>& bboxes, index_t node_index, index_t b, index_t e, const GET_BBOX& get_bbox )
+	void init_bboxes_recursive( const Mesh& M, std::vector<Box>& bboxes, index_t node_index, index_t b, index_t e, const GET_BBOX& get_bbox )
 	{
-		geo_debug_assert( node_index < bboxes.size() );
-		geo_debug_assert( b != e );
+		assert( node_index < bboxes.size() );
+		assert( b != e );
 		if( b + 1 == e )
 		{
 			get_bbox( M, bboxes[ node_index ], b );
@@ -119,12 +117,12 @@ namespace
 		index_t m = b + ( e - b ) / 2;
 		index_t childl = 2 * node_index;
 		index_t childr = 2 * node_index + 1;
-		geo_debug_assert( childl < bboxes.size() );
-		geo_debug_assert( childr < bboxes.size() );
+		assert( childl < bboxes.size() );
+		assert( childr < bboxes.size() );
 		init_bboxes_recursive( M, bboxes, childl, b, m, get_bbox );
 		init_bboxes_recursive( M, bboxes, childr, m, e, get_bbox );
-		geo_debug_assert( childl < bboxes.size() );
-		geo_debug_assert( childr < bboxes.size() );
+		assert( childl < bboxes.size() );
+		assert( childr < bboxes.size() );
 		bbox_union( bboxes[ node_index ], bboxes[ childl ], bboxes[ childr ] );
 	}
 
@@ -333,7 +331,7 @@ namespace floatTetWild
 	void MeshFacetsAABBWithEps::nearest_facet_recursive(
 	  const vec3& p, index_t& nearest_f, vec3& nearest_point, double& sq_dist, index_t n, index_t b, index_t e ) const
 	{
-		geo_debug_assert( e > b );
+		assert( e > b );
 
 		// If node is a leaf: compute point-facet distance
 		// and replace current if nearer
@@ -386,7 +384,7 @@ namespace floatTetWild
 	void MeshFacetsAABBWithEps::facet_in_envelope_recursive(
 	  const vec3& p, double sq_epsilon, index_t& nearest_f, vec3& nearest_point, double& sq_dist, index_t n, index_t b, index_t e ) const
 	{
-		geo_debug_assert( e > b );
+		assert( e > b );
 
 		if( sq_dist <= sq_epsilon )
 		{

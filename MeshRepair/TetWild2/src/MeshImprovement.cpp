@@ -23,6 +23,8 @@
 #include <igl/winding_number.h>
 #include "../external/MshLoader.h"
 #include "../Utils/Geogram2.h"
+// TODO: remove this
+#include <iostream>
 
 //#define USE_FWN true
 

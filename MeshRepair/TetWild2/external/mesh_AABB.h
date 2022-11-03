@@ -223,7 +223,7 @@ namespace floatTetWild
 		template<class ACTION>
 		void bbox_intersect_recursive( ACTION& action, const GEO2::Box& box, GEO2::index_t node, GEO2::index_t b, GEO2::index_t e ) const
 		{
-			geo_debug_assert( e != b );
+			assert( e != b );
 
 			// Prune sub-tree that does not have intersection
 			if( !bboxes_overlap( box, bboxes_[ node ] ) )
@@ -272,8 +272,8 @@ namespace floatTetWild
 		void intersect_recursive(
 		  ACTION& action, GEO2::index_t node1, GEO2::index_t b1, GEO2::index_t e1, GEO2::index_t node2, GEO2::index_t b2, GEO2::index_t e2 ) const
 		{
-			geo_debug_assert( e1 != b1 );
-			geo_debug_assert( e2 != b2 );
+			assert( e1 != b1 );
+			assert( e2 != b2 );
 
 			// Since we are intersecting the AABBTree with *itself*,
 			// we can prune half of the cases by skipping the test
@@ -373,7 +373,7 @@ namespace floatTetWild
 		bool segment_intersection_recursive( const GEO2::vec3& q1, const GEO2::vec3& q2, GEO2::index_t n, GEO2::index_t b, GEO2::index_t e ) const;
 
 	  protected:
-		GEO2::vector<GEO2::Box> bboxes_;
+		std::vector<GEO2::Box> bboxes_;
 		const GEO2::Mesh& mesh_;
 	};
 
