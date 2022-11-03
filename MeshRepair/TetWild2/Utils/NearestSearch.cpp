@@ -2,7 +2,7 @@
 #include "NearestSearch.h"
 using namespace GEO2;
 
-void NearestSearch::buildTree( size_t count, const vec3* data )
+void NearestSearch::buildTree( const std::vector<vec3>& data )
 {
 	__debugbreak();
 }

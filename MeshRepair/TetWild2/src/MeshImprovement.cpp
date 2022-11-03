@@ -624,11 +624,25 @@ void floatTetWild::operation( const std::vector<Vector3>& input_vertices, const 
 	}
 }
 
-#include <geogram/points/kd_tree.h>
+// https://stackoverflow.com/a/16286146/126995
+template<class T>
+class queue_clearable : public std::queue<T>
+{
+  public:
+	void clear()
+	{
+		std::queue<T>::c.clear();
+	}
+};
+
+inline GEO2::vec3 castVertex( const floatTetWild::Vector3& eigen )
+{
+	return GEO2::vec3 { eigen[ 0 ], eigen[ 1 ], eigen[ 2 ] };
+}
+
 bool floatTetWild::update_scaling_field( Mesh& mesh, Scalar max_energy )
 {
 	//    return false;
-
 	cout << "updating sclaing field ..." << endl;
 	bool is_hit_min_edge_length = false;
 
@@ -680,30 +694,30 @@ bool floatTetWild::update_scaling_field( Mesh& mesh, Scalar max_energy )
 	}
 
 	GEO2::NearestSearch nnsearch;
+	std::unordered_set<int> is_visited;
+	queue_clearable<int> v_queue;
+	std::vector<GEO2::vec3> pts;
+
 	for( int n = 0; n < N; n++ )
 	{
 		if( v_ids[ n ].size() == 0 )
 			continue;
 
 		Scalar radius = radius0 / std::pow( 2, n );
+		is_visited.clear();
+		v_queue.clear();
+		pts.clear();
 
-		std::unordered_set<int> is_visited;
-		std::queue<int> v_queue;
-
-		std::vector<double> pts;  // geogram needs double []
 		pts.reserve( v_ids[ n ].size() * 3 );
 		for( int i = 0; i < v_ids[ n ].size(); i++ )
 		{
-			pts.push_back( mesh.tet_vertices[ v_ids[ n ][ i ] ].pos[ 0 ] );
-			pts.push_back( mesh.tet_vertices[ v_ids[ n ][ i ] ].pos[ 1 ] );
-			pts.push_back( mesh.tet_vertices[ v_ids[ n ][ i ] ].pos[ 2 ] );
-
+			pts.push_back( castVertex( mesh.tet_vertices[ v_ids[ n ][ i ] ].pos ) );
 			v_queue.push( v_ids[ n ][ i ] );
 			is_visited.insert( v_ids[ n ][ i ] );
 			scale_multipliers[ v_ids[ n ][ i ] ] = refine_scale;
 		}
 		// construct the kdtree
-		nnsearch.buildTree( v_ids[ n ].size(), (const GEO2::vec3*)pts.data() );
+		nnsearch.buildTree( pts );
 
 		while( !v_queue.empty() )
 		{
@@ -716,7 +730,7 @@ bool floatTetWild::update_scaling_field( Mesh& mesh, Scalar max_energy )
 				{
 					if( is_visited.find( mesh.tets[ t_id ][ j ] ) != is_visited.end() )
 						continue;
-					const GEO2::vec3 p{ mesh.tet_vertices[ mesh.tets[ t_id ][ j ] ].pos[ 0 ], mesh.tet_vertices[ mesh.tets[ t_id ][ j ] ].pos[ 1 ],
+					const GEO2::vec3 p { mesh.tet_vertices[ mesh.tets[ t_id ][ j ] ].pos[ 0 ], mesh.tet_vertices[ mesh.tets[ t_id ][ j ] ].pos[ 1 ],
 					  mesh.tet_vertices[ mesh.tets[ t_id ][ j ] ].pos[ 2 ] };
 					const double sq_dist = nnsearch.getNearestPointSqDist( p );
 					Scalar dis = sqrt( sq_dist );
