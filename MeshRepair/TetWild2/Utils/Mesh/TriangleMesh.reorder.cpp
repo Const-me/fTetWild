@@ -353,6 +353,7 @@ namespace
 void TriangleMesh::reorderMorton()
 {
 	std::vector<uint32_t> order;
+	order.reserve( std::max( vertices.size(), triangles.size() ) );
 
 	// Step #1, reorder vertices
 	morton_vsort_3d( vertices, order );
@@ -367,6 +368,7 @@ void TriangleMesh::reorderMorton()
 void TetrahedralMesh::reorderMorton()
 {
 	std::vector<uint32_t> order;
+	order.reserve( std::max( (size_t)vertices.size(), elements.size() ) );
 
 	// Step #1, reorder vertices
 	morton_vsort_3d( vertices, order );
