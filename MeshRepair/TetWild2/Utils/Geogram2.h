@@ -5,10 +5,10 @@
 #include <geogram/delaunay/delaunay_3d.h>
 #include <geogram/mesh/mesh_partition.h>
 #include <geogram/points/nn_search.h>
-#include <geogram/mesh/mesh_AABB.h>
 #include "Mesh/TriMeshWrapper.h"
 #include "Mesh/TriangleMesh.h"
 #include "Mesh/TetrahedralMesh.h"
+#include "Mesh/TetraMeshWrapper.h"
 
 namespace GEO2
 {
@@ -53,8 +53,8 @@ namespace GEO2
 
 	// using Mesh = TriMeshWrapper;
 	using Mesh = TriangleMesh;
-	using GEO::MeshCellsAABB;
-	using TetraMesh = GEO::Mesh;
+	using TetraMesh = ::TetraMeshWrapper;
+	using MeshCellsAABB = ::MeshCellsAABBWrapper;
 	// using TetraMesh = ::TetrahedralMesh;
 
 	namespace Geom

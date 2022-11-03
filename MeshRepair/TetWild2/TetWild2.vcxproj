@@ -94,6 +94,7 @@
     <ClInclude Include="external\Predicates.hpp" />
     <ClInclude Include="external\Rational.h" />
     <ClInclude Include="external\WindingNumber.h" />
+    <ClInclude Include="Utils\Mesh\TetraMeshWrapper.h" />
     <ClInclude Include="Utils\Mesh\TetrahedralMesh.h" />
     <ClInclude Include="Utils\Mesh\MeshBase.h" />
     <ClInclude Include="Utils\BoundingBox.hpp" />
@@ -138,6 +139,7 @@
     <ClCompile Include="external\MshSaver.cpp" />
     <ClCompile Include="external\Predicates.cpp" />
     <ClCompile Include="external\triangle_triangle_intersection.cpp" />
+    <ClCompile Include="Utils\Mesh\TetraMeshWrapper.cpp" />
     <ClCompile Include="Utils\Mesh\TetrahedralMesh.cpp" />
     <ClCompile Include="Utils\Mesh\MeshBase.cpp" />
     <ClCompile Include="Utils\Mesh\reorderUtils.cpp" />
