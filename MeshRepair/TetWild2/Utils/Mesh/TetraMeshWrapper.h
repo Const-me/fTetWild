@@ -31,11 +31,6 @@ class TetraMeshWrapper : private GEO::Mesh
 			cells.set_vertex( i, 3, _mm_extract_epi32( vec, 3 ) );
 		}
 	}
-
-	void connectCells()
-	{
-		cells.connect();
-	}
 };
 
 class MeshCellsAABBWrapper : private GEO::MeshCellsAABB
