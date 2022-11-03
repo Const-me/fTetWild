@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="GeogramDelaunay.cpp" />
+    <ClCompile Include="geogram\delaunay\parallel_delaunay_3d.cpp" />
+    <ClCompile Include="geogram\delaunay\delaunay.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="geogram\delaunay\parallel_delaunay_3d.h" />
+    <ClInclude Include="geogram\delaunay\cavity.h" />
+    <ClInclude Include="geogram\delaunay\delaunay.h" />
+    <ClInclude Include="GeogramDelaunay.h" />
+  </ItemGroup>
+</Project>
