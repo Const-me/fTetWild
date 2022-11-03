@@ -15,17 +15,15 @@ namespace GEO2
 	using GEO::geo_sgn;
 	using GEO::geo_sqr;
 
-	using GEO::NO_FACET;
 	using GEO::vec3;
 	using GEO::vector;
+	using GEO::Delaunay;
+	using GEO::Delaunay_var;
 	namespace PCK
 	{
 		using GEO::PCK::orient_3d;
 	}
-	using GEO::bbox_diagonal;
-	using GEO::Delaunay;
-	using GEO::Delaunay_var;
-	using GEO::MESH_ORDER_MORTON;
+	constexpr uint32_t NO_FACET = GEO::NO_FACET;
 
 	using GEO::cross;
 	using GEO::distance;
@@ -45,17 +43,4 @@ namespace GEO2
 
 	// using Mesh = TriMeshWrapper;
 	using Mesh = TriangleMesh;
-
-	namespace Geom
-	{
-		inline const vec3& mesh_vertex( const GEO2::Mesh& M, index_t v )
-		{
-			return M.getVertex( v );
-		}
-	}  // namespace Geom
-
-	inline double bbox_diagonal( const GEO2::Mesh& M )
-	{
-		return M.boxDiagonal();
-	}
 }  // namespace GEO2

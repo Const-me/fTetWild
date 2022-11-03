@@ -24,7 +24,7 @@ namespace floatTetWild
 		MeshFacetsAABBWithEps sf_tree;
 
 		//// initialization
-		inline Scalar get_sf_diag() const { return GEO2::bbox_diagonal( sf_mesh ); }
+		inline Scalar get_sf_diag() const { return sf_mesh.boxDiagonal(); }
 
 		AABBWrapper( const GEO2::Mesh& sf_mesh )
 			: sf_mesh( sf_mesh )
