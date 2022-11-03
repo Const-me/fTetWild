@@ -230,11 +230,11 @@ inline __m256i mul3_epi64( __m256i v )
 #endif
 
 template<int COORD>
-inline double TetrahedralMesh::elementCenterX4( uint32_t idxCell ) const
+inline double TetrahedralMesh::elementCenterX4( uint32_t idxElement ) const
 {
 	static_assert( COORD >= 0 && COORD < 3, "bug somewhere" );
 
-	const __m128i cell = elements[ idxCell ];
+	const __m128i cell = elements[ idxElement ];
 
 #ifdef __AVX2__
 	// Upcast element indices into int64
@@ -252,20 +252,21 @@ inline double TetrahedralMesh::elementCenterX4( uint32_t idxCell ) const
 
 	// Load all 4 values with a single gather instruction
 	__m256d values = _mm256_i64gather_pd( (const double*)vertexPointer(), offset, sizeof( double ) );
+
 	// Compute horizontal sum of the values
 	return hadd_pd( values );
 #else
-	uint32_t v0 = (uint32_t)_mm_cvtsi128_si32( cell );
-	uint32_t v1 = (uint32_t)_mm_extract_epi32( cell, 1 );
-	uint32_t v2 = (uint32_t)_mm_extract_epi32( cell, 2 );
 	uint32_t v3 = (uint32_t)_mm_extract_epi32( cell, 3 );
+	uint32_t v2 = (uint32_t)_mm_extract_epi32( cell, 2 );
+	uint32_t v1 = (uint32_t)_mm_extract_epi32( cell, 1 );
+	uint32_t v0 = (uint32_t)_mm_cvtsi128_si32( cell );
 
-	const double* p0 = (const double*)&vertices[ v0 ];
-	const double* p1 = (const double*)&vertices[ v1 ];
-	const double* p2 = (const double*)&vertices[ v2 ];
 	const double* p3 = (const double*)&vertices[ v3 ];
+	const double* p2 = (const double*)&vertices[ v2 ];
+	const double* p1 = (const double*)&vertices[ v1 ];
+	const double* p0 = (const double*)&vertices[ v0 ];
 
-	return ( p0[ COORD ] + p2[ COORD ] ) + ( p1[ COORD ] + p3[ COORD ] );
+	return ( p3[ COORD ] + p1[ COORD ] ) + ( p2[ COORD ] + p0[ COORD ] );
 #endif
 }
 

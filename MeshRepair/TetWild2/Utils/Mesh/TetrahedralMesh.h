@@ -8,9 +8,9 @@ class TetrahedralMesh : public MeshBase
 
   public:
 
-	// Compute 4.0 * specified coordinate of the center of the triangle
+	// Compute 4.0 * specified coordinate of the center of the element
 	template<int COORD>
-	inline double elementCenterX4( uint32_t idxCell ) const;
+	inline double elementCenterX4( uint32_t idxElement ) const;
 
 	size_t countElements() const
 	{
