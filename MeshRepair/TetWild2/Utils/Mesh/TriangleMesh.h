@@ -1,13 +1,14 @@
 #pragma once
 #include "MeshBase.h"
-#include <geogram/basic/geometry.h>
 
 // Triangular surface mesh in 3D
-class TriangleMesh: public MeshBase
+class TriangleMesh : public MeshBase
 {
-	GEO::vector<GEO::vec3i> triangles;
+	std::vector<GEO2::vec3i> triangles;
 
   public:
+	using vec3i = GEO2::vec3i;
+
 	// Compute 3.0 * specified coordinate of the center of the triangle
 	template<int COORD>
 	inline double triangleCenterX3( uint32_t idxTri ) const;
@@ -22,15 +23,15 @@ class TriangleMesh: public MeshBase
 		return triangles.size();
 	}
 
-	const GEO::vec3i* trianglePointer() const
+	const vec3i* trianglePointer() const
 	{
 		return triangles.data();
 	}
-	GEO::vec3i* trianglePointer()
+	vec3i* trianglePointer()
 	{
 		return triangles.data();
 	}
-	const GEO::vec3i& getTriangle( uint32_t t ) const
+	const vec3i& getTriangle( uint32_t t ) const
 	{
 		return triangles[ t ];
 	}
@@ -48,17 +49,17 @@ class TriangleMesh: public MeshBase
 	}
 
 	// Get constant pointers to all vertices of the specified triangle
-	void getTriangleVertices( uint32_t tri, const GEO::vec3** p1, const GEO::vec3** p2, const GEO::vec3** p3 ) const
+	void getTriangleVertices( uint32_t tri, const vec3** p1, const vec3** p2, const vec3** p3 ) const
 	{
-		const GEO::vec3i& t = getTriangle( tri );
+		const vec3i& t = getTriangle( tri );
 		*p1 = &getVertex( t.x );
 		*p2 = &getVertex( t.y );
 		*p3 = &getVertex( t.z );
 	}
 
-	const GEO::vec3& getFirstTriangleVertex( uint32_t tri ) const
+	const vec3& getFirstTriangleVertex( uint32_t tri ) const
 	{
-		const GEO::vec3i& t = getTriangle( tri );
+		const vec3i& t = getTriangle( tri );
 		return getVertex( t.x );
 	}
 
@@ -66,7 +67,7 @@ class TriangleMesh: public MeshBase
 	void generateTriangles( uint32_t count, Lambda lambda )
 	{
 		triangles.resize( count );
-		GEO::vec3i* rdi = triangles.data();
+		vec3i* rdi = triangles.data();
 		for( uint32_t i = 0; i < count; i++, rdi++ )
 			*rdi = lambda( i );
 	}

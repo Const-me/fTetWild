@@ -382,7 +382,6 @@ namespace floatTetWild
 		using namespace GEO2;
 		const vec3 *p1, *p2, *p3;
 		M.getTriangleVertices( f, &p1, &p2, &p3 );
-		double lambda1, lambda2, lambda3;  // barycentric coords, not used.
-		squared_dist = Geom::point_triangle_squared_distance( p, *p1, *p2, *p3, nearest_p, lambda1, lambda2, lambda3 );
+		squared_dist = point_triangle_squared_distance( p, *p1, *p2, *p3, nearest_p );
 	}
 }  // namespace floatTetWild

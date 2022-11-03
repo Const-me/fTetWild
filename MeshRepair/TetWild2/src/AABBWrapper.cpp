@@ -8,7 +8,7 @@
 void setSingleTriangle( GEO2::Mesh& m )
 {
 	m.generateVertices( 1, []( uint32_t ) { return GEO2::vec3( 0, 0, 0 ); } );
-	m.generateTriangles( 1, []( uint32_t ) { return GEO::vec3i( 0, 0, 0 ); } );
+	m.generateTriangles( 1, []( uint32_t ) { return GEO2::vec3i { 0, 0, 0 }; } );
 }
 
 void generateEdgeTriangles( GEO2::Mesh& m, uint32_t count )
@@ -16,7 +16,7 @@ void generateEdgeTriangles( GEO2::Mesh& m, uint32_t count )
 	m.generateTriangles( count,
 	  []( uint32_t i )
 	  {
-		  GEO::vec3i res;
+		  GEO2::vec3i res;
 		  res.x = res.y = (int)i * 2;
 		  res.z = res.x + 1;
 		  return res;

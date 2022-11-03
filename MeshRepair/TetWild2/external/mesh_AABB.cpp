@@ -67,7 +67,7 @@ namespace
 		BoundingBox bb( &p1->x );
 		bb.extend( &p2->x );
 		bb.extend( &p3->x );
-		bb.store( B.xyz_min, B.xyz_max );
+		bb.store( B );
 	}
 
 	/**
@@ -126,26 +126,6 @@ namespace
 		geo_debug_assert( childl < bboxes.size() );
 		geo_debug_assert( childr < bboxes.size() );
 		bbox_union( bboxes[ node_index ], bboxes[ childl ], bboxes[ childr ] );
-	}
-
-	/**
-	 * \brief Computes the squared distance between a point and a Box.
-	 * \param[in] p the point
-	 * \param[in] B the box
-	 * \return the squared distance between \p p and \p B
-	 * \pre p is inside B
-	 */
-	double inner_point_box_squared_distance( const vec3& p, const Box& B )
-	{
-		geo_debug_assert( B.contains( p ) );
-		double result = geo_sqr( p[ 0 ] - B.xyz_min[ 0 ] );
-		result = std::min( result, geo_sqr( p[ 0 ] - B.xyz_max[ 0 ] ) );
-		for( coord_index_t c = 1; c < 3; ++c )
-		{
-			result = std::min( result, geo_sqr( p[ c ] - B.xyz_min[ c ] ) );
-			result = std::min( result, geo_sqr( p[ c ] - B.xyz_max[ c ] ) );
-		}
-		return result;
 	}
 
 	/**
@@ -217,13 +197,13 @@ namespace
 		//  The three tetrahedra formed by the segment and the three edges
 		// of the triangle should have the same sign, else there is no
 		// intersection.
-		int s1 = geo_sgn( Geom::tetra_signed_volume( q1, q2, p1, p2 ) );
-		int s2 = geo_sgn( Geom::tetra_signed_volume( q1, q2, p2, p3 ) );
+		int s1 = geo_sgn( tetra_signed_volume( q1, q2, p1, p2 ) );
+		int s2 = geo_sgn( tetra_signed_volume( q1, q2, p2, p3 ) );
 		if( s1 != s2 )
 		{
 			return false;
 		}
-		int s3 = geo_sgn( Geom::tetra_signed_volume( q1, q2, p3, p1 ) );
+		int s3 = geo_sgn( tetra_signed_volume( q1, q2, p3, p1 ) );
 		return ( s2 == s3 );
 	}
 
@@ -347,7 +327,7 @@ namespace floatTetWild
 		nearest_f = b;
 
 		nearest_point = mesh_.getFirstTriangleVertex( nearest_f );
-		sq_dist = Geom::distance2( p, nearest_point );
+		sq_dist = distance2( p, nearest_point );
 	}
 
 	void MeshFacetsAABBWithEps::nearest_facet_recursive(

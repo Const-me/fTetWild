@@ -59,4 +59,10 @@ class BoundingBox
 		_mm_storeu_pd( pMax, xyMax );
 		_mm_store_sd( pMax + 2, zMax );
 	}
+
+	void store( GEO2::Box& rdi ) const
+	{
+		// TODO [low]: rework into 3 aligned stores, using unpacklo and blend to combine vectors
+		store( rdi.xyz_min.data(), rdi.xyz_max.data() );
+	}
 };

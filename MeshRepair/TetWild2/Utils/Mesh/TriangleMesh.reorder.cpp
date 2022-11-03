@@ -38,7 +38,7 @@ namespace
 	template<int COORD, bool UP>
 	struct Hilbert_vcmp
 	{
-		Hilbert_vcmp( const vector<vec3>& vertexBuffer )
+		Hilbert_vcmp( const std::vector<GEO2::vec3>& vertexBuffer )
 			: vb( vertexBuffer )
 		{
 			static_assert( COORD >= 0 && COORD < 3, "Wrong template argument" );
@@ -55,7 +55,7 @@ namespace
 		}
 
 	  private:
-		const vector<vec3>& vb;
+		const std::vector<GEO2::vec3>& vb;
 
 		double load( uint32_t idx ) const
 		{
@@ -195,12 +195,12 @@ namespace
 		vector<uint32_t>::iterator m0_, m1_, m2_, m3_, m4_, m5_, m6_, m7_, m8_;
 	};
 
-	void morton_vsort_3d( const vector<vec3>& vec, std::vector<uint32_t>& reordered )
+	void morton_vsort_3d( const std::vector<GEO2::vec3>& vec, std::vector<uint32_t>& reordered )
 	{
 		reordered.resize( vec.size() );
 		std::iota( reordered.begin(), reordered.end(), (uint32_t)0 );
 		// HilbertSort3d<Hilbert_vcmp, vector<vec3>> sorter( vec, reordered.begin(), reordered.end() );
-		HilbertSort3d<Morton_vcmp, vector<vec3>> sorter( vec, reordered.begin(), reordered.end() );
+		HilbertSort3d<Morton_vcmp, std::vector<GEO2::vec3>> sorter( vec, reordered.begin(), reordered.end() );
 	}
 }  // namespace
 

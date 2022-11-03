@@ -679,6 +679,7 @@ bool floatTetWild::update_scaling_field( Mesh& mesh, Scalar max_energy )
 		v_ids[ n ].push_back( i );
 	}
 
+	GEO2::NearestSearch nnsearch;
 	for( int n = 0; n < N; n++ )
 	{
 		if( v_ids[ n ].size() == 0 )
@@ -702,8 +703,7 @@ bool floatTetWild::update_scaling_field( Mesh& mesh, Scalar max_energy )
 			scale_multipliers[ v_ids[ n ][ i ] ] = refine_scale;
 		}
 		// construct the kdtree
-		GEO2::NearestNeighborSearch_var nnsearch = GEO2::NearestNeighborSearch::create( 3, "BNN" );
-		nnsearch->set_points( int( v_ids[ n ].size() ), pts.data() );
+		nnsearch.buildTree( v_ids[ n ].size(), (const GEO2::vec3*)pts.data() );
 
 		while( !v_queue.empty() )
 		{
@@ -716,11 +716,9 @@ bool floatTetWild::update_scaling_field( Mesh& mesh, Scalar max_energy )
 				{
 					if( is_visited.find( mesh.tets[ t_id ][ j ] ) != is_visited.end() )
 						continue;
-					GEO2::index_t _;
-					double sq_dist;
-					const double p[ 3 ] = { mesh.tet_vertices[ mesh.tets[ t_id ][ j ] ].pos[ 0 ], mesh.tet_vertices[ mesh.tets[ t_id ][ j ] ].pos[ 1 ],
+					const GEO2::vec3 p{ mesh.tet_vertices[ mesh.tets[ t_id ][ j ] ].pos[ 0 ], mesh.tet_vertices[ mesh.tets[ t_id ][ j ] ].pos[ 1 ],
 					  mesh.tet_vertices[ mesh.tets[ t_id ][ j ] ].pos[ 2 ] };
-					nnsearch->get_nearest_neighbors( 1, p, &_, &sq_dist );
+					const double sq_dist = nnsearch.getNearestPointSqDist( p );
 					Scalar dis = sqrt( sq_dist );
 
 					if( dis < radius )
@@ -1382,7 +1380,7 @@ void floatTetWild::correct_tracked_surface_orientation( Mesh& mesh, AABBWrapper&
 			Vector3 c =
 			  ( mesh.tet_vertices[ t[ ( j + 1 ) % 4 ] ].pos + mesh.tet_vertices[ t[ ( j + 2 ) % 4 ] ].pos + mesh.tet_vertices[ t[ ( j + 3 ) % 4 ] ].pos ) / 3;
 			int f_id = tree.get_nearest_face_sf( c );
-			const GEO::vec3 *fv1, *fv2, *fv3;
+			const GEO2::vec3 *fv1, *fv2, *fv3;
 			tree.sf_mesh.getTriangleVertices( f_id, &fv1, &fv2, &fv3 );
 			auto nf = GEO2::cross( ( *fv2 - *fv1 ), ( *fv3 - *fv1 ) );
 			Vector3 n, nt;

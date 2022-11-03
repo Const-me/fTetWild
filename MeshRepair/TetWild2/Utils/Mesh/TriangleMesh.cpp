@@ -4,11 +4,11 @@
 
 HRESULT TriangleMesh::assignTriangles( size_t count, const uint32_t* ib )
 {
-	static_assert( sizeof( GEO::vec3i ) == 12, "sizeof" );
+	static_assert( sizeof( vec3i ) == 12, "sizeof" );
 
 	try
 	{
-		const GEO::vec3i* rsi = (const GEO::vec3i*)ib;
+		const vec3i* rsi = (const vec3i*)ib;
 		triangles.assign( rsi, rsi + count );
 		return S_OK;
 	}
@@ -21,7 +21,7 @@ HRESULT TriangleMesh::assignTriangles( size_t count, const uint32_t* ib )
 double TriangleMesh::boxDiagonal() const
 {
 	BoundingBox box;
-	for( const GEO::vec3& vert : vertices )
+	for( const vec3& vert : vertices )
 	{
 		const double* rsi = (const double*)&vert;
 		box.extend( rsi );

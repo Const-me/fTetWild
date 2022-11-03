@@ -3020,7 +3020,7 @@ bool floatTetWild::is_uninserted_face_covered(
 		bool is_valid = false;
 		for( auto& f : faces )
 		{
-			double dis_2 = GEO2::Geom::point_triangle_squared_distance(
+			double dis_2 = GEO2::point_triangle_squared_distance(
 			  p, to_geo_p( mesh.tet_vertices[ f[ 0 ] ].pos ), to_geo_p( mesh.tet_vertices[ f[ 1 ] ].pos ), to_geo_p( mesh.tet_vertices[ f[ 2 ] ].pos ) );
 			if( dis_2 < mesh.params.eps_2 )
 			{
@@ -3270,7 +3270,7 @@ void floatTetWild::check_track_surface_fs( Mesh& mesh, std::vector<std::array<st
 				{
 					vs[ k ] = GEO2::vec3( mesh.tet_vertices[ f[ k ] ].pos[ 0 ], mesh.tet_vertices[ f[ k ] ].pos[ 1 ], mesh.tet_vertices[ f[ k ] ].pos[ 2 ] );
 				}
-				double dis_2 = GEO2::Geom::point_triangle_squared_distance( p, vs[ 0 ], vs[ 1 ], vs[ 2 ] );
+				double dis_2 = point_triangle_squared_distance( p, vs[ 0 ], vs[ 1 ], vs[ 2 ] );
 				if( dis_2 <= eps )
 				{
 					is_inside = true;
