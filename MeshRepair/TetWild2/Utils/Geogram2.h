@@ -6,7 +6,7 @@
 #include <geogram/mesh/mesh_partition.h>
 #include <geogram/points/nn_search.h>
 #include <geogram/mesh/mesh_AABB.h>
-#include "TriMeshWrapper.hpp"
+#include "TriMeshWrapper.h"
 #include "TriangleMesh.h"
 
 namespace GEO2
@@ -53,6 +53,7 @@ namespace GEO2
 
 	using TetraMesh = GEO::Mesh;
 	using Mesh = TriMeshWrapper;
+	// using Mesh = TriangleMesh;
 
 	namespace Geom
 	{

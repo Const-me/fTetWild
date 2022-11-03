@@ -2,11 +2,13 @@
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/mesh/mesh_reorder.h>
+#include "../src/Types.hpp"
 
 // A wrapper around geogram's mesh
 class TriMeshWrapper
 {
 	GEO::Mesh m;
+
   public:
 	using index_t = GEO::index_t;
 	using vec3 = GEO::vec3;
@@ -153,5 +155,60 @@ class TriMeshWrapper
 	void reorderMorton()
 	{
 		GEO::mesh_reorder( m, GEO::MESH_ORDER_MORTON );
+	}
+
+	uint32_t countTriangles() const
+	{
+		return m.facets.nb();
+	}
+
+	void getTriangleVertices( uint32_t tri, const GEO::vec3** p1, const GEO::vec3** p2, const GEO::vec3** p3 ) const
+	{
+		index_t c = m.facets.corners_begin( tri );
+		*p1 = &GEO::Geom::mesh_vertex( m, m.facet_corners.vertex( c ) );
+		++c;
+		*p2 = &GEO::Geom::mesh_vertex( m, m.facet_corners.vertex( c ) );
+		++c;
+		*p3 = &GEO::Geom::mesh_vertex( m, m.facet_corners.vertex( c ) );
+	}
+
+	// Set vertex buffer of the mesh, upcasting coordinates to FP64
+	HRESULT assignVertices( size_t count, const float* vb );
+	// Set index buffer of the mesh
+	HRESULT assignTriangles( size_t count, const uint32_t* ib );
+	HRESULT copyData( std::vector<floatTetWild::Vector3>& vb, std::vector<floatTetWild::Vector3i>& ib ) const;
+
+	const GEO::vec3& getFirstTriangleVertex( uint32_t tri ) const
+	{
+		index_t v = m.facet_corners.vertex( m.facets.corners_begin( tri ) );
+		return GEO::Geom::mesh_vertex( m, v );
+	}
+
+	template<class Lambda>
+	void generateVertices( uint32_t count, Lambda lambda )
+	{
+		m.vertices.clear();
+		m.vertices.create_vertices( count );
+		for( uint32_t i = 0; i < count; i++ )
+			m.vertices.point( i ) = lambda( i );
+	}
+
+	template<class Lambda>
+	void generateTriangles( uint32_t count, Lambda lambda )
+	{
+		m.facets.clear();
+		m.facets.create_triangles( count );
+		for( uint32_t i = 0; i < count; i++ ) 
+		{
+			const GEO::vec3i tri = lambda( i );
+			m.facets.set_vertex( i, 0, tri.x );
+			m.facets.set_vertex( i, 1, tri.y );
+			m.facets.set_vertex( i, 2, tri.z );
+		}
+	}
+
+	void clearMesh()
+	{
+		m.clear( false, true );
 	}
 };

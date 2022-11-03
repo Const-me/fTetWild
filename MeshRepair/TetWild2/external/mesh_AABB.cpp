@@ -47,6 +47,7 @@
 #include "mesh_AABB.h"
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/basic/geometry_nd.h>
+#include "../Utils/BoundingBox.hpp"
 
 namespace
 {
@@ -60,22 +61,13 @@ namespace
 	 */
 	void get_facet_bbox( const Mesh& M, Box& B, index_t f )
 	{
-		index_t c = M.facets.corners_begin( f );
-		const double* p = M.vertices.point_ptr( M.facet_corners.vertex( c ) );
-		for( coord_index_t coord = 0; coord < 3; ++coord )
-		{
-			B.xyz_min[ coord ] = p[ coord ];
-			B.xyz_max[ coord ] = p[ coord ];
-		}
-		for( ++c; c < M.facets.corners_end( f ); ++c )
-		{
-			p = M.vertices.point_ptr( M.facet_corners.vertex( c ) );
-			for( coord_index_t coord = 0; coord < 3; ++coord )
-			{
-				B.xyz_min[ coord ] = std::min( B.xyz_min[ coord ], p[ coord ] );
-				B.xyz_max[ coord ] = std::max( B.xyz_max[ coord ], p[ coord ] );
-			}
-		}
+		const vec3 *p1, *p2, *p3;
+		M.getTriangleVertices( f, &p1, &p2, &p3 );
+
+		BoundingBox bb( &p1->x );
+		bb.extend( &p2->x );
+		bb.extend( &p3->x );
+		bb.store( B.xyz_min, B.xyz_max );
 	}
 
 	/**
@@ -134,29 +126,6 @@ namespace
 		geo_debug_assert( childl < bboxes.size() );
 		geo_debug_assert( childr < bboxes.size() );
 		bbox_union( bboxes[ node_index ], bboxes[ childl ], bboxes[ childr ] );
-	}
-
-	/**
-	 * \brief Finds the nearest point in a mesh facet from a query point.
-	 * \param[in] M the mesh
-	 * \param[in] p the query point
-	 * \param[in] f index of the facet in \p M
-	 * \param[out] nearest_p the point of facet \p f nearest to \p p
-	 * \param[out] squared_dist the squared distance between
-	 *  \p p and \p nearest_p
-	 * \pre the mesh \p M is triangulated
-	 */
-	void get_point_facet_nearest_point( const Mesh& M, const vec3& p, index_t f, vec3& nearest_p, double& squared_dist )
-	{
-		geo_debug_assert( M.facets.nb_vertices( f ) == 3 );
-		index_t c = M.facets.corners_begin( f );
-		const vec3& p1 = Geom::mesh_vertex( M, M.facet_corners.vertex( c ) );
-		++c;
-		const vec3& p2 = Geom::mesh_vertex( M, M.facet_corners.vertex( c ) );
-		++c;
-		const vec3& p3 = Geom::mesh_vertex( M, M.facet_corners.vertex( c ) );
-		double lambda1, lambda2, lambda3;  // barycentric coords, not used.
-		squared_dist = Geom::point_triangle_squared_distance( p, p1, p2, p3, nearest_p, lambda1, lambda2, lambda3 );
 	}
 
 	/**
@@ -267,14 +236,9 @@ namespace
 	 */
 	bool segment_mesh_facet_intersection( const vec3& q1, const vec3& q2, const Mesh& M, index_t f )
 	{
-		geo_debug_assert( M.facets.nb_vertices( f ) == 3 );
-		index_t c = M.facets.corners_begin( f );
-		const vec3& p1 = Geom::mesh_vertex( M, M.facet_corners.vertex( c ) );
-		++c;
-		const vec3& p2 = Geom::mesh_vertex( M, M.facet_corners.vertex( c ) );
-		++c;
-		const vec3& p3 = Geom::mesh_vertex( M, M.facet_corners.vertex( c ) );
-		return segment_triangle_intersection( q1, q2, p1, p2, p3 );
+		const vec3 *p1, *p2, *p3;
+		M.getTriangleVertices( f, &p1, &p2, &p3 );
+		return segment_triangle_intersection( q1, q2, *p1, *p2, *p3 );
 	}
 
 	/**
@@ -349,9 +313,9 @@ namespace floatTetWild
 		// if(reorder) {
 		//     mesh_reorder(mesh_, MESH_ORDER_MORTON);
 		// }
-		bboxes_.resize( max_node_index( 1, 0, mesh_.facets.nb() ) + 1  // <-- this is because size == max_index + 1 !!!
+		bboxes_.resize( max_node_index( 1, 0, mesh_.countTriangles() ) + 1	// <-- this is because size == max_index + 1 !!!
 		);
-		init_bboxes_recursive( mesh_, bboxes_, 1, 0, mesh_.facets.nb(), get_facet_bbox );
+		init_bboxes_recursive( mesh_, bboxes_, 1, 0, mesh_.countTriangles(), get_facet_bbox );
 	}
 
 	void MeshFacetsAABBWithEps::get_nearest_facet_hint( const vec3& p, index_t& nearest_f, vec3& nearest_point, double& sq_dist ) const
@@ -362,7 +326,7 @@ namespace floatTetWild
 		// For a large mesh (20M facets) this gains up to 10%
 		// performance as compared to picking nearest_f randomly.
 		index_t b = 0;
-		index_t e = mesh_.facets.nb();
+		index_t e = mesh_.countTriangles();
 		index_t n = 1;
 		while( e != b + 1 )
 		{
@@ -382,8 +346,7 @@ namespace floatTetWild
 		}
 		nearest_f = b;
 
-		index_t v = mesh_.facet_corners.vertex( mesh_.facets.corners_begin( nearest_f ) );
-		nearest_point = Geom::mesh_vertex( mesh_, v );
+		nearest_point = mesh_.getFirstTriangleVertex( nearest_f );
 		sq_dist = Geom::distance2( p, nearest_point );
 	}
 
@@ -500,7 +463,7 @@ namespace floatTetWild
 
 	bool MeshFacetsAABBWithEps::segment_intersection( const vec3& q1, const vec3& q2 ) const
 	{
-		return segment_intersection_recursive( q1, q2, 1, 0, mesh_.facets.nb() );
+		return segment_intersection_recursive( q1, q2, 1, 0, mesh_.countTriangles() );
 	}
 
 	bool MeshFacetsAABBWithEps::segment_intersection_recursive( const vec3& q1, const vec3& q2, index_t n, index_t b, index_t e ) const

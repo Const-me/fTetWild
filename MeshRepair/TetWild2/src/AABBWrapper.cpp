@@ -5,9 +5,32 @@
 #include <geogram/basic/geometry_nd.h>
 #include "TriangleInsertion.h"
 
+void setSingleTriangle( GEO2::Mesh& m )
+{
+	m.generateVertices( 1, []( uint32_t ) { return GEO2::vec3( 0, 0, 0 ); } );
+	m.generateTriangles( 1, []( uint32_t ) { return GEO::vec3i( 0, 0, 0 ); } );
+}
+
+void generateEdgeTriangles( GEO2::Mesh& m, uint32_t count )
+{
+	m.generateTriangles( count,
+	  []( uint32_t i )
+	  {
+		  GEO::vec3i res;
+		  res.x = res.y = (int)i * 2;
+		  res.z = res.x + 1;
+		  return res;
+	  } );
+}
+
+inline GEO2::vec3 castVertex( const floatTetWild::Vector3& eigen )
+{
+	return GEO2::vec3 { eigen[ 0 ], eigen[ 1 ], eigen[ 2 ] };
+}
+
 void floatTetWild::AABBWrapper::init_b_mesh_and_tree( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, Mesh& mesh )
 {
-	b_mesh.clear( false, false );
+	b_mesh.clearMesh();
 	std::vector<std::vector<int>> conn_tris( input_vertices.size() );
 	std::vector<std::array<int, 2>> all_edges;
 	all_edges.reserve( input_faces.size() * 3 );
@@ -31,39 +54,17 @@ void floatTetWild::AABBWrapper::init_b_mesh_and_tree( const std::vector<Vector3>
 	  input_vertices, input_faces, std::vector<bool>( input_faces.size(), true ), std::vector<bool>( input_faces.size(), true ), _, _1, b_edges );
 
 	if( b_edges.empty() )
-	{
-		b_mesh.vertices.clear();
-		b_mesh.vertices.create_vertices( 1 );
-		b_mesh.vertices.point( 0 ) = GEO2::vec3( 0, 0, 0 );
-		b_mesh.facets.clear();
-		b_mesh.facets.create_triangles( 1 );
-		b_mesh.facets.set_vertex( 0, 0, 0 );
-		b_mesh.facets.set_vertex( 0, 1, 0 );
-		b_mesh.facets.set_vertex( 0, 2, 0 );
-	}
+		setSingleTriangle( b_mesh );
 	else
 	{
-		b_mesh.vertices.clear();
-		b_mesh.vertices.create_vertices( (int)b_edges.size() * 2 );
-		int cnt = 0;
-		for( auto& e : b_edges )
-		{
-			for( int j = 0; j < 2; j++ )
-			{
-				GEO2::vec3& p = b_mesh.vertices.point( cnt++ );
-				p[ 0 ] = input_vertices[ e[ j ] ][ 0 ];
-				p[ 1 ] = input_vertices[ e[ j ] ][ 1 ];
-				p[ 2 ] = input_vertices[ e[ j ] ][ 2 ];
-			}
-		}
-		b_mesh.facets.clear();
-		b_mesh.facets.create_triangles( (int)b_edges.size() );
-		for( int i = 0; i < b_edges.size(); i++ )
-		{
-			b_mesh.facets.set_vertex( i, 0, i * 2 );
-			b_mesh.facets.set_vertex( i, 1, i * 2 );
-			b_mesh.facets.set_vertex( i, 2, i * 2 + 1 );
-		}
+		b_mesh.generateVertices( b_edges.size() * 2,
+		  [ & ]( uint32_t i )
+		  {
+			  const auto& edge = b_edges[ i / 2 ];
+			  return castVertex( input_vertices[ edge[ i % 2 ] ] );
+		  } );
+
+		generateEdgeTriangles( b_mesh, b_edges.size() );
 	}
 
 	b_mesh.reorderMorton();
@@ -100,56 +101,26 @@ void floatTetWild::AABBWrapper::init_tmp_b_mesh_and_tree( const std::vector<Vect
   const std::vector<std::array<int, 2>>& b_edges1, const Mesh& mesh, const std::vector<std::array<int, 2>>& b_edges2 )
 {
 	if( b_edges1.empty() && b_edges2.empty() )
-	{
-		tmp_b_mesh.vertices.clear();
-		tmp_b_mesh.vertices.create_vertices( 1 );
-		tmp_b_mesh.vertices.point( 0 ) = GEO2::vec3( 0, 0, 0 );
-		tmp_b_mesh.facets.clear();
-		tmp_b_mesh.facets.create_triangles( 1 );
-		tmp_b_mesh.facets.set_vertex( 0, 0, 0 );
-		tmp_b_mesh.facets.set_vertex( 0, 1, 0 );
-		tmp_b_mesh.facets.set_vertex( 0, 2, 0 );
-	}
+		setSingleTriangle( tmp_b_mesh );
 	else
 	{
-		tmp_b_mesh.vertices.clear();
-		tmp_b_mesh.vertices.create_vertices( (int)( b_edges1.size() + b_edges2.size() ) * 2 );
-		int cnt = 0;
-		for( auto& e : b_edges1 )
-		{
-			for( int j = 0; j < 2; j++ )
-			{
-				GEO2::vec3& p = tmp_b_mesh.vertices.point( cnt++ );
-				p[ 0 ] = input_vertices[ e[ j ] ][ 0 ];
-				p[ 1 ] = input_vertices[ e[ j ] ][ 1 ];
-				p[ 2 ] = input_vertices[ e[ j ] ][ 2 ];
-			}
-		}
-		for( auto& e : b_edges2 )
-		{
-			for( int j = 0; j < 2; j++ )
-			{
-				GEO2::vec3& p = tmp_b_mesh.vertices.point( cnt++ );
-				p[ 0 ] = mesh.tet_vertices[ e[ j ] ].pos[ 0 ];
-				p[ 1 ] = mesh.tet_vertices[ e[ j ] ].pos[ 1 ];
-				p[ 2 ] = mesh.tet_vertices[ e[ j ] ].pos[ 2 ];
-			}
-		}
+		tmp_b_mesh.generateVertices( ( b_edges1.size() + b_edges2.size() ) * 2,
+		  [ & ]( uint32_t i )
+		  {
+			  const uint32_t edge = i / 2;
+			  if( edge < b_edges1.size() )
+			  {
+				  const auto& e = b_edges1[ edge ];
+				  return castVertex( input_vertices[ e[ i % 2 ] ] );
+			  }
+			  else
+			  {
+				  const auto& e = b_edges2[ edge - b_edges1.size() ];
+				  return castVertex( mesh.tet_vertices[ e[ i % 2 ] ].pos );
+			  }
+		  } );
 
-		tmp_b_mesh.facets.clear();
-		tmp_b_mesh.facets.create_triangles( (int)b_edges1.size() + b_edges2.size() );
-		for( int i = 0; i < b_edges1.size(); i++ )
-		{
-			tmp_b_mesh.facets.set_vertex( i, 0, i * 2 );
-			tmp_b_mesh.facets.set_vertex( i, 1, i * 2 );
-			tmp_b_mesh.facets.set_vertex( i, 2, i * 2 + 1 );
-		}
-		for( int i = b_edges1.size(); i < b_edges1.size() + b_edges2.size(); i++ )
-		{
-			tmp_b_mesh.facets.set_vertex( i, 0, i * 2 );
-			tmp_b_mesh.facets.set_vertex( i, 1, i * 2 );
-			tmp_b_mesh.facets.set_vertex( i, 2, i * 2 + 1 );
-		}
+		generateEdgeTriangles( tmp_b_mesh, b_edges1.size() + b_edges2.size() );
 	}
 	tmp_b_mesh.reorderMorton();
 	tmp_b_tree = std::make_shared<MeshFacetsAABBWithEps>( tmp_b_mesh );

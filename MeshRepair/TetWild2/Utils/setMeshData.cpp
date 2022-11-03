@@ -37,78 +37,15 @@ void upcastFloats( double* rdi, size_t length, const float* vb )
 
 HRESULT assignMeshVertices( GEO2::Mesh& mesh, size_t count, const float* vb ) 
 {
-	const size_t totalFloats = count * 3;
-	GEO2::vector<double> vec;
-	try
-	{
-		vec.resize( totalFloats );
-	}
-	catch( const std::bad_alloc& )
-	{
-		return E_OUTOFMEMORY;
-	}
-
-	upcastFloats( vec.data(), totalFloats, vb );
-	mesh.vertices.assign_points( vec, 3, true );
-	return S_OK;
+	return mesh.assignVertices( count, vb );
 }
 
 HRESULT assignMeshTriangles( GEO2::Mesh& mesh, size_t count, const uint32_t* ib ) 
 {
-	const size_t totalIntegers = count * 3;
-	GEO2::vector<GEO2::index_t> vec;
-	try
-	{
-		vec.resize( totalIntegers );
-	}
-	catch( const std::bad_alloc& )
-	{
-		return E_OUTOFMEMORY;
-	}
-
-	static_assert( sizeof( GEO2::index_t ) == 4, "GEO2::index_t expected to be 4 bytes" );
-	memcpy( vec.data(), ib, totalIntegers * 4 );
-	mesh.facets.assign_triangle_mesh( vec, true );
-
-	return S_OK;
-}
-
-namespace
-{
-	inline void copyDouble3( double* rdi, const double* rsi )
-	{
-		__m128d v = _mm_loadu_pd( rsi );
-		_mm_storeu_pd( rdi, v );
-		rdi[ 2 ] = rsi[ 2 ];
-	}
+	return mesh.assignTriangles( count, ib );
 }
 
 HRESULT copyMeshData( const GEO2::Mesh& mesh, std::vector<floatTetWild::Vector3>& vb, std::vector<floatTetWild::Vector3i>& ib ) 
 {
-	// Extract the data, store in different types
-	try
-	{
-		vb.resize( mesh.vertices.nb() );
-		ib.resize( mesh.facets.nb() );
-	}
-	catch( const std::bad_alloc& )
-	{
-		return E_OUTOFMEMORY;
-	}
-
-	for( size_t i = 0; i < vb.size(); i++ )
-	{
-		const GEO2::vec3& src = mesh.vertices.point( (GEO2::index_t)i );
-		copyDouble3( vb[ i ].data(), &src.x );
-	}
-
-	for( size_t i = 0; i < ib.size(); i++ )
-	{
-		uint32_t* rdi = (uint32_t*)&ib[ i ];
-		rdi[ 0 ] = mesh.facets.vertex( (GEO2::index_t)i, 0 );
-		rdi[ 1 ] = mesh.facets.vertex( (GEO2::index_t)i, 1 );
-		rdi[ 2 ] = mesh.facets.vertex( (GEO2::index_t)i, 2 );
-	}
-
-	return S_OK;
+	return mesh.copyData( vb, ib );
 }

@@ -105,7 +105,7 @@
     <ClInclude Include="Utils\reorderUtils.h" />
     <ClInclude Include="Utils\miscUtils.hpp" />
     <ClInclude Include="Utils\BoundingBox.hpp" />
-    <ClInclude Include="Utils\TriMeshWrapper.hpp" />
+    <ClInclude Include="Utils\TriMeshWrapper.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp" />
@@ -199,6 +199,7 @@
     </ClCompile>
     <ClCompile Include="Utils\TriangleMesh.reorder.cpp" />
     <ClCompile Include="Utils\reorderUtils.cpp" />
+    <ClCompile Include="Utils\TriMeshWrapper.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="external">

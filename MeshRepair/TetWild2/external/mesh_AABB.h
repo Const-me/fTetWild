@@ -90,7 +90,7 @@ namespace floatTetWild
 		template<class ACTION>
 		void compute_facet_bbox_intersections( ACTION& action ) const
 		{
-			intersect_recursive( action, 1, 0, mesh_.facets.nb(), 1, 0, mesh_.facets.nb() );
+			intersect_recursive( action, 1, 0, mesh_.countTriangles(), 1, 0, mesh_.countTriangles() );
 		}
 
 		/**
@@ -107,7 +107,7 @@ namespace floatTetWild
 		template<class ACTION>
 		void compute_bbox_facet_bbox_intersections( const GEO2::Box& box_in, ACTION& action ) const
 		{
-			bbox_intersect_recursive( action, box_in, 1, 0, mesh_.facets.nb() );
+			bbox_intersect_recursive( action, box_in, 1, 0, mesh_.countTriangles() );
 		}
 
 		/**
@@ -121,7 +121,7 @@ namespace floatTetWild
 		{
 			GEO2::index_t nearest_facet;
 			get_nearest_facet_hint( p, nearest_facet, nearest_point, sq_dist );
-			nearest_facet_recursive( p, nearest_facet, nearest_point, sq_dist, 1, 0, mesh_.facets.nb() );
+			nearest_facet_recursive( p, nearest_facet, nearest_point, sq_dist, 1, 0, mesh_.countTriangles() );
 			return nearest_facet;
 		}
 
@@ -150,7 +150,7 @@ namespace floatTetWild
 			{
 				get_nearest_facet_hint( p, nearest_facet, nearest_point, sq_dist );
 			}
-			nearest_facet_recursive( p, nearest_facet, nearest_point, sq_dist, 1, 0, mesh_.facets.nb() );
+			nearest_facet_recursive( p, nearest_facet, nearest_point, sq_dist, 1, 0, mesh_.countTriangles() );
 		}
 
 		/*
@@ -161,7 +161,7 @@ namespace floatTetWild
 		{
 			GEO2::index_t nearest_facet;
 			get_nearest_facet_hint( p, nearest_facet, nearest_point, sq_dist );
-			facet_in_envelope_recursive( p, sq_epsilon, nearest_facet, nearest_point, sq_dist, 1, 0, mesh_.facets.nb() );
+			facet_in_envelope_recursive( p, sq_epsilon, nearest_facet, nearest_point, sq_dist, 1, 0, mesh_.countTriangles() );
 			return nearest_facet;
 		}
 
@@ -175,7 +175,7 @@ namespace floatTetWild
 			{
 				get_nearest_facet_hint( p, nearest_facet, nearest_point, sq_dist );
 			}
-			facet_in_envelope_recursive( p, sq_epsilon, nearest_facet, nearest_point, sq_dist, 1, 0, mesh_.facets.nb() );
+			facet_in_envelope_recursive( p, sq_epsilon, nearest_facet, nearest_point, sq_dist, 1, 0, mesh_.countTriangles() );
 		}
 
 		/**
@@ -377,22 +377,12 @@ namespace floatTetWild
 		const GEO2::Mesh& mesh_;
 	};
 
-}  // namespace floatTetWild
-
-namespace floatTetWild
-{
-
 	inline void get_point_facet_nearest_point( const GEO2::Mesh& M, const GEO2::vec3& p, GEO2::index_t f, GEO2::vec3& nearest_p, double& squared_dist )
 	{
 		using namespace GEO2;
-		geo_debug_assert( M.facets.nb_vertices( f ) == 3 );
-		index_t c = M.facets.corners_begin( f );
-		const vec3& p1 = Geom::mesh_vertex( M, M.facet_corners.vertex( c ) );
-		++c;
-		const vec3& p2 = Geom::mesh_vertex( M, M.facet_corners.vertex( c ) );
-		++c;
-		const vec3& p3 = Geom::mesh_vertex( M, M.facet_corners.vertex( c ) );
+		const vec3 *p1, *p2, *p3;
+		M.getTriangleVertices( f, &p1, &p2, &p3 );
 		double lambda1, lambda2, lambda3;  // barycentric coords, not used.
-		squared_dist = Geom::point_triangle_squared_distance( p, p1, p2, p3, nearest_p, lambda1, lambda2, lambda3 );
+		squared_dist = Geom::point_triangle_squared_distance( p, *p1, *p2, *p3, nearest_p, lambda1, lambda2, lambda3 );
 	}
 }  // namespace floatTetWild

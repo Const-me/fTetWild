@@ -1573,10 +1573,9 @@ void floatTetWild::correct_tracked_surface_orientation( Mesh& mesh, AABBWrapper&
 			Vector3 c =
 			  ( mesh.tet_vertices[ t[ ( j + 1 ) % 4 ] ].pos + mesh.tet_vertices[ t[ ( j + 2 ) % 4 ] ].pos + mesh.tet_vertices[ t[ ( j + 3 ) % 4 ] ].pos ) / 3;
 			int f_id = tree.get_nearest_face_sf( c );
-			const auto& fv1 = tree.sf_mesh.vertices.point( tree.sf_mesh.facets.vertex( f_id, 0 ) );
-			const auto& fv2 = tree.sf_mesh.vertices.point( tree.sf_mesh.facets.vertex( f_id, 1 ) );
-			const auto& fv3 = tree.sf_mesh.vertices.point( tree.sf_mesh.facets.vertex( f_id, 2 ) );
-			auto nf = GEO2::cross( ( fv2 - fv1 ), ( fv3 - fv1 ) );
+			const GEO::vec3 *fv1, *fv2, *fv3;
+			tree.sf_mesh.getTriangleVertices( f_id, &fv1, &fv2, &fv3 );
+			auto nf = GEO2::cross( ( *fv2 - *fv1 ), ( *fv3 - *fv1 ) );
 			Vector3 n, nt;
 			n << nf[ 0 ], nf[ 1 ], nf[ 2 ];
 			//
