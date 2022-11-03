@@ -52,8 +52,8 @@ namespace GEO2
 	}  // namespace Geom
 
 	using TetraMesh = GEO::Mesh;
-	using Mesh = TriMeshWrapper;
-	// using Mesh = TriangleMesh;
+	// using Mesh = TriMeshWrapper;
+	using Mesh = TriangleMesh;
 
 	namespace Geom
 	{
