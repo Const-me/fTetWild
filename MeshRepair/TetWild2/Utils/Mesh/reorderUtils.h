@@ -19,8 +19,8 @@ void remapIndicesImpl( uint32_t* pointer, size_t length, const std::vector<uint3
 template<class E, class TA>
 inline void remapIndices( std::vector<E, TA>& vec, const std::vector<uint32_t>& order )
 {
-	assert( 0 == ( sizeof( E ) % 4 ) );
-
-	size_t length = vec.size() * ( sizeof( E ) / 4 );
+	static_assert( 0 == ( sizeof( E ) % 4 ), "remapIndices() requires uint32_t numbers" );
+	constexpr size_t integersPerElement = sizeof( E ) / 4;
+	const size_t length = vec.size() * integersPerElement;
 	remapIndicesImpl( (uint32_t*)vec.data(), length, order );
 }

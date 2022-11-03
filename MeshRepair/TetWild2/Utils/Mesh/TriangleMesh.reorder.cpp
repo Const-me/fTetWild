@@ -1,8 +1,7 @@
 #include "stdafx.h"
 #include "TriangleMesh.h"
-#include <numeric>
+#include "TetrahedralMesh.h"
 #include "reorderUtils.h"
-#include <geogram/basic/process.h>
 
 // The implementation was copy-pasted from there:
 // https://github.com/BrunoLevy/geogram/blob/main/src/lib/geogram/mesh/mesh_reorder.cpp
@@ -215,12 +214,59 @@ inline double TriangleMesh::triangleCenterX3( uint32_t idxTri ) const
 	uint32_t v0 = (uint32_t)tri.x;
 	uint32_t v1 = (uint32_t)tri.y;
 	uint32_t v2 = (uint32_t)tri.z;
-	assert( v0 < vertices.size() && v1 < vertices.size() && v2 < vertices.size() );
 
 	const double* p0 = (const double*)&vertices[ v0 ];
 	const double* p1 = (const double*)&vertices[ v1 ];
 	const double* p2 = (const double*)&vertices[ v2 ];
 	return p0[ COORD ] + p1[ COORD ] + p2[ COORD ];
+}
+
+#ifdef __AVX2__
+inline __m256i mul3_epi64( __m256i v )
+{
+	__m256i v2 = _mm256_add_epi64( v, v );
+	return _mm256_add_epi64( v2, v );
+}
+#endif
+
+template<int COORD>
+inline double TetrahedralMesh::elementCenterX4( uint32_t idxCell ) const
+{
+	static_assert( COORD >= 0 && COORD < 3, "bug somewhere" );
+
+	const __m128i cell = elements[ idxCell ];
+
+#ifdef __AVX2__
+	// Upcast element indices into int64
+	__m256i offset = _mm256_cvtepu32_epi64( cell );
+	// Multiply by 3 to get indices of double elements in the vertex buffer
+	offset = mul3_epi64( offset );
+
+	// Unless the coordinate is 0, offset by 1 or 2
+	if( COORD > 0 )
+	{
+		__m128i tmp = _mm_cvtsi32_si128( COORD );
+		__m256i u64 = _mm256_broadcastq_epi64( tmp );
+		offset = _mm256_add_epi64( offset, u64 );
+	}
+
+	// Load all 4 values with a single gather instruction
+	__m256d values = _mm256_i64gather_pd( (const double*)vertexPointer(), offset, sizeof( double ) );
+	// Compute horizontal sum of the values
+	return hadd_pd( values );
+#else
+	uint32_t v0 = (uint32_t)_mm_cvtsi128_si32( cell );
+	uint32_t v1 = (uint32_t)_mm_extract_epi32( cell, 1 );
+	uint32_t v2 = (uint32_t)_mm_extract_epi32( cell, 2 );
+	uint32_t v3 = (uint32_t)_mm_extract_epi32( cell, 3 );
+
+	const double* p0 = (const double*)&vertices[ v0 ];
+	const double* p1 = (const double*)&vertices[ v1 ];
+	const double* p2 = (const double*)&vertices[ v2 ];
+	const double* p3 = (const double*)&vertices[ v3 ];
+
+	return ( p0[ COORD ] + p2[ COORD ] ) + ( p1[ COORD ] + p3[ COORD ] );
+#endif
 }
 
 namespace
@@ -263,6 +309,44 @@ namespace
 
 		HilbertSort3d<Morton_fcmp, TriangleMesh> sorter( mesh, reordered.begin(), reordered.end() );
 	}
+
+	template<int COORD, bool UP>
+	struct Hilbert_ccmp
+	{
+		Hilbert_ccmp( const TetrahedralMesh& m )
+			: mesh( m )
+		{
+			static_assert( COORD >= 0 && COORD < 3, "Wrong template argument" );
+		}
+
+		bool operator()( uint32_t i1, uint32_t i2 )
+		{
+			double a = load( i1 );
+			double b = load( i2 );
+			if( UP )  // TODO: upgrade to C++/17, replace with if constexpr
+				return a < b;
+			else
+				return a > b;
+		}
+
+	  private:
+		const TetrahedralMesh& mesh;
+
+		double load( uint32_t idx ) const
+		{
+			return mesh.elementCenterX4<COORD>( idx );
+		}
+	};
+
+	template<int COORD, bool UP>
+	using Morton_ccmp = Hilbert_ccmp<COORD, true>;
+
+	void morton_csort_3d( const TetrahedralMesh& mesh, std::vector<uint32_t>& reordered )
+	{
+		reordered.resize( mesh.countElements() );
+		std::iota( reordered.begin(), reordered.end(), (uint32_t)0 );
+		HilbertSort3d<Morton_ccmp, TetrahedralMesh> sorter( mesh, reordered.begin(), reordered.end() );
+	}
 }  // namespace
 
 void TriangleMesh::reorderMorton()
@@ -277,4 +361,18 @@ void TriangleMesh::reorderMorton()
 	// Step #2, reorder triangles
 	morton_fsort_3d( *this, order );
 	reorderVector( triangles, order );
+}
+
+void TetrahedralMesh::reorderMorton()
+{
+	std::vector<uint32_t> order;
+
+	// Step #1, reorder vertices
+	morton_vsort_3d( vertices, order );
+	reorderVector( vertices, order );
+	remapIndices( elements, order );
+
+	// Step #2, reorder elements
+	morton_csort_3d( *this, order );
+	reorderVector( elements, order );
 }

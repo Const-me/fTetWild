@@ -8,6 +8,7 @@
 #include <geogram/mesh/mesh_AABB.h>
 #include "Mesh/TriMeshWrapper.h"
 #include "Mesh/TriangleMesh.h"
+#include "Mesh/TetrahedralMesh.h"
 
 namespace GEO2
 {
@@ -40,7 +41,6 @@ namespace GEO2
 	using GEO::Attribute;
 	using GEO::mesh_partition;
 	using GEO::MESH_PARTITION_HILBERT;
-	using GEO::MeshCellsAABB;
 	using GEO::NearestNeighborSearch;
 	using GEO::NearestNeighborSearch_var;
 
@@ -51,9 +51,11 @@ namespace GEO2
 		using GEO::Geom::tetra_signed_volume;
 	}  // namespace Geom
 
-	using TetraMesh = GEO::Mesh;
 	// using Mesh = TriMeshWrapper;
 	using Mesh = TriangleMesh;
+	using GEO::MeshCellsAABB;
+	using TetraMesh = GEO::Mesh;
+	// using TetraMesh = ::TetrahedralMesh;
 
 	namespace Geom
 	{

@@ -104,6 +104,7 @@
     <ClInclude Include="Utils\BoundingBox.hpp" />
     <ClInclude Include="Utils\Mesh\TriMeshWrapper.h" />
     <ClInclude Include="Utils\Mesh\MeshBase.h" />
+    <ClInclude Include="Utils\Mesh\TetrahedralMesh.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp" />
@@ -197,6 +198,7 @@
     <ClCompile Include="Utils\Mesh\TriMeshWrapper.cpp" />
     <ClCompile Include="Utils\Mesh\MeshBase.cpp" />
     <ClCompile Include="Utils\miscUtils.cpp" />
+    <ClCompile Include="Utils\Mesh\TetrahedralMesh.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="external">
