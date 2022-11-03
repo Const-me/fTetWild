@@ -1,8 +1,5 @@
 #include "stdafx.h"
 #include "SourceMesh.h"
-#include "../TetWild2/Utils/setMeshData.h"
-#include "../TetWild2/Utils/TriangleMesh.h"
-#include <geogram/mesh/mesh_reorder.h>
 using namespace MeshRepair;
 
 HRESULT SourceMesh::createMesh( uint32_t countVertices, const float* vb, uint32_t countTriangles, const uint32_t* ib )
@@ -12,14 +9,15 @@ HRESULT SourceMesh::createMesh( uint32_t countVertices, const float* vb, uint32_
 	if( nullptr == vb || nullptr == ib )
 		return E_POINTER;
 
-	CHECK( assignMeshVertices( mesh, countVertices, vb ) );
-	CHECK( assignMeshTriangles( mesh, countTriangles, ib ) );
+	
+	CHECK( mesh.assignVertices( countVertices, vb ) );
+	CHECK( mesh.assignTriangles( countTriangles, ib ) );
 
 	// See MeshIO::load_mesh function in the original code
 	mesh.reorderMorton();
 
 	// Extract the data, store as different types
-	CHECK( copyMeshData( mesh, input_vertices, input_faces ) );
+	CHECK( mesh.copyData( input_vertices, input_faces ) );
 	try
 	{
 		input_tags.clear();

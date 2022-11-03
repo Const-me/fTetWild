@@ -6,8 +6,8 @@
 #include <geogram/mesh/mesh_partition.h>
 #include <geogram/points/nn_search.h>
 #include <geogram/mesh/mesh_AABB.h>
-#include "TriMeshWrapper.h"
-#include "TriangleMesh.h"
+#include "Mesh/TriMeshWrapper.h"
+#include "Mesh/TriangleMesh.h"
 
 namespace GEO2
 {

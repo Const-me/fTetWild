@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "TriangleMesh.h"
 #include "setMeshData.h"
-#include "BoundingBox.hpp"
+#include "../BoundingBox.hpp"
 
 // Set vertex buffer of the mesh, upcasting coordinates to FP64
 HRESULT TriangleMesh::assignVertices( size_t count, const float* vb )

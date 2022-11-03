@@ -1,6 +1,6 @@
 #pragma once
-#include "../src/Types.hpp"
-#include "Geogram2.h"
+#include <src/Types.hpp>
+#include "../Geogram2.h"
 
 // Upcast an array of FP32 into FP64
 void upcastFloats( double* rdi, size_t length, const float* vb );

@@ -1,6 +1,6 @@
 #pragma once
 #include <geogram/basic/geometry.h>
-#include "../src/Types.hpp"
+#include "../../src/Types.hpp"
 
 class TriangleMesh
 {
