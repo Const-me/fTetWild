@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "TriMeshWrapper.h"
-#include "setMeshData.h"
+#include "../miscUtils.h"
 
 HRESULT TriMeshWrapper::assignVertices( size_t count, const float* vb )
 {
@@ -39,16 +39,6 @@ HRESULT TriMeshWrapper::assignTriangles( size_t count, const uint32_t* ib )
 	return S_OK;
 }
 
-namespace
-{
-	inline void copyDouble3( double* rdi, const double* rsi )
-	{
-		__m128d v = _mm_loadu_pd( rsi );
-		_mm_storeu_pd( rdi, v );
-		rdi[ 2 ] = rsi[ 2 ];
-	}
-}
-
 HRESULT TriMeshWrapper::copyData( std::vector<floatTetWild::Vector3>& vb, std::vector<floatTetWild::Vector3i>& ib ) const
 {
 	// Extract the data, store in different types
@@ -64,16 +54,16 @@ HRESULT TriMeshWrapper::copyData( std::vector<floatTetWild::Vector3>& vb, std::v
 
 	for( size_t i = 0; i < vb.size(); i++ )
 	{
-		const GEO2::vec3& src = m.vertices.point( (GEO2::index_t)i );
+		const GEO::vec3& src = m.vertices.point( (GEO::index_t)i );
 		copyDouble3( vb[ i ].data(), &src.x );
 	}
 
 	for( size_t i = 0; i < ib.size(); i++ )
 	{
 		uint32_t* rdi = (uint32_t*)&ib[ i ];
-		rdi[ 0 ] = m.facets.vertex( (GEO2::index_t)i, 0 );
-		rdi[ 1 ] = m.facets.vertex( (GEO2::index_t)i, 1 );
-		rdi[ 2 ] = m.facets.vertex( (GEO2::index_t)i, 2 );
+		rdi[ 0 ] = m.facets.vertex( (GEO::index_t)i, 0 );
+		rdi[ 1 ] = m.facets.vertex( (GEO::index_t)i, 1 );
+		rdi[ 2 ] = m.facets.vertex( (GEO::index_t)i, 2 );
 	}
 
 	return S_OK;

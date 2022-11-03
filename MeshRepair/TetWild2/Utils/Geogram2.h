@@ -1,15 +1,10 @@
 #pragma once
 #include <geogram/basic/common.h>
 #include <geogram/basic/geometry.h>
-#include <geogram/numerics/predicates.h>
 #include <geogram/delaunay/delaunay_3d.h>
-#include <geogram/mesh/mesh_partition.h>
 #include <geogram/points/nn_search.h>
 #include "Mesh/TriMeshWrapper.h"
 #include "Mesh/TriangleMesh.h"
-#include "Mesh/TetrahedralMesh.h"
-#include "Mesh/TetrahedralMeshAABB.h"
-#include "Mesh/TetraMeshWrapper.h"
 
 namespace GEO2
 {
@@ -38,10 +33,6 @@ namespace GEO2
 	using GEO::dot;
 	using GEO::length;
 	using GEO::normalize;
-
-	using GEO::Attribute;
-	using GEO::mesh_partition;
-	using GEO::MESH_PARTITION_HILBERT;
 	using GEO::NearestNeighborSearch;
 	using GEO::NearestNeighborSearch_var;
 
@@ -54,10 +45,6 @@ namespace GEO2
 
 	// using Mesh = TriMeshWrapper;
 	using Mesh = TriangleMesh;
-	// using TetraMesh = ::TetraMeshWrapper;
-	// using MeshCellsAABB = ::MeshCellsAABBWrapper;
-	using TetraMesh = ::TetrahedralMesh;
-	using MeshCellsAABB = ::TetrahedralMeshAABB;
 
 	namespace Geom
 	{

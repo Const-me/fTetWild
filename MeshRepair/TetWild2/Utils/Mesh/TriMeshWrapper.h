@@ -2,7 +2,7 @@
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/mesh/mesh_reorder.h>
-#include "../src/Types.hpp"
+#include "../../src/Types.hpp"
 
 // A wrapper around geogram's mesh
 class TriMeshWrapper
