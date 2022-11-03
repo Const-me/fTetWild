@@ -94,6 +94,8 @@
     <ClInclude Include="external\Predicates.hpp" />
     <ClInclude Include="external\Rational.h" />
     <ClInclude Include="external\WindingNumber.h" />
+    <ClInclude Include="Utils\KdTree\kd_tree.h" />
+    <ClInclude Include="Utils\KdTree\nn_search.h" />
     <ClInclude Include="Utils\NearestSearch.h" />
     <ClInclude Include="Utils\GeometricPrimitives.h" />
     <ClInclude Include="Utils\Mesh\MeshBase.h" />
@@ -139,6 +141,8 @@
     <ClCompile Include="external\MshSaver.cpp" />
     <ClCompile Include="external\Predicates.cpp" />
     <ClCompile Include="external\triangle_triangle_intersection.cpp" />
+    <ClCompile Include="Utils\KdTree\kd_tree.cpp" />
+    <ClCompile Include="Utils\KdTree\nn_search.cpp" />
     <ClCompile Include="Utils\NearestSearch.cpp" />
     <ClCompile Include="Utils\GeometricPrimitives.cpp" />
     <ClCompile Include="Utils\Mesh\MeshBase.cpp" />
