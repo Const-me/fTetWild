@@ -1392,21 +1392,20 @@ void floatTetWild::apply_sizingfield( Mesh& mesh, AABBWrapper& tree )
 	auto& tets = mesh.tets;
 
 	GEO2::TetraMesh bg_mesh;
-	bg_mesh.vertices.clear();
-	bg_mesh.vertices.create_vertices( (int)mesh.params.V_sizing_field.rows() / 3 );
-	for( int i = 0; i < mesh.params.V_sizing_field.rows() / 3; i++ )
-	{
-		GEO2::vec3& p = bg_mesh.vertices.point( i );
-		for( int j = 0; j < 3; j++ )
-			p[ j ] = mesh.params.V_sizing_field( i * 3 + j );
-	}
-	bg_mesh.cells.clear();
-	bg_mesh.cells.create_tets( (int)mesh.params.T_sizing_field.rows() / 4 );
-	for( int i = 0; i < mesh.params.T_sizing_field.rows() / 4; i++ )
-	{
-		for( int j = 0; j < 4; j++ )
-			bg_mesh.cells.set_vertex( i, j, mesh.params.T_sizing_field( i * 4 + j ) );
-	}
+	bg_mesh.generateVertices( mesh.params.V_sizing_field.rows() / 3,
+	  [ & ]( uint32_t i )
+	  {
+		  const double* rsi = &mesh.params.V_sizing_field( i * 3 );
+		  return GEO2::vec3 { rsi[ 0 ], rsi[ 1 ], rsi[ 2 ] };
+	  } );
+
+	bg_mesh.generateElements( mesh.params.T_sizing_field.rows() / 4,
+	  [ & ]( uint32_t i )
+	  {
+		  const int* rsi = &mesh.params.T_sizing_field( i * 4 );
+		  return _mm_loadu_si128( (const __m128i*)rsi );
+	  } );
+
 	GEO2::MeshCellsAABB bg_aabb( bg_mesh, false );
 
 	auto get_sizing_field_value = [ & ]( const Vector3& p )

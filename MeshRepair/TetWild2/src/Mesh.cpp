@@ -243,39 +243,35 @@ namespace floatTetWild
 	// 	}
 	// }
 
+	inline GEO2::vec3 castVertex( const floatTetWild::Vector3& eigen )
+	{
+		return GEO2::vec3 { eigen[ 0 ], eigen[ 1 ], eigen[ 2 ] };
+	}
+
 	void Mesh::partition( const int n_parts, std::vector<std::vector<int>>& tets_id ) const
 	{
 		GEO2::TetraMesh M;
 		// Setup vertices
-		M.vertices.create_vertices( (int)tet_vertices.size() );
-		for( int i = 0; i < (int)M.vertices.nb(); ++i )
+		M.generateVertices( (int)tet_vertices.size(), [ & ]( uint32_t i ) { return castVertex( tet_vertices[ i ].pos ); } );
+
 		{
-			GEO2::vec3& p = M.vertices.point( i );
-			p[ 0 ] = tet_vertices[ i ][ 0 ];
-			p[ 1 ] = tet_vertices[ i ][ 1 ];
-			p[ 2 ] = tet_vertices[ i ][ 2 ];
+			int tetIndex = 0;
+			M.generateElements( get_t_num(),
+			  [ & ]( uint32_t )
+			  {
+				  while( tets[ tetIndex ].is_removed )
+					  tetIndex++;
+				  const auto& rsi = tets[ tetIndex ];
+				  return _mm_loadu_si128( (const __m128i*)&rsi.indices );
+			  } );
 		}
 
-		M.cells.create_tets( (int)get_t_num() );
+		M.connectCells();
 
-		int c = 0;
-		for( int index = 0; index < (int)tets.size(); ++index )
+		// TODO: implement partitioning algorithm, plus that extra attribute for original indices
 		{
-			if( tets[ index ].is_removed )
-				continue;
-
-			for( int lv = 0; lv < 4; ++lv )
-			{
-				M.cells.set_vertex( c, lv, tets[ index ][ lv ] );
-			}
-
-			++c;
-		}
-		M.cells.connect();
-
-		{
-			c = 0;
-			GEO2::Attribute<int> original_indices( M.cells.attributes(), "indices" );
+			int c = 0;
+			GEO2::Attribute<int> original_indices( M.unwrap().cells.attributes(), "indices" );
 			for( int index = 0; index < (int)tets.size(); ++index )
 			{
 				if( tets[ index ].is_removed )
@@ -286,10 +282,10 @@ namespace floatTetWild
 		}
 
 		GEO2::vector<GEO2::index_t> facet_ptr, tet_ptr;
-		GEO2::mesh_partition( M, GEO2::MESH_PARTITION_HILBERT, facet_ptr, tet_ptr, n_parts );
+		GEO2::mesh_partition( M.unwrap(), GEO2::MESH_PARTITION_HILBERT, facet_ptr, tet_ptr, n_parts );
 		// GEO2::MESH_PARTITION_CONNECTED_COMPONENTS
 
-		GEO2::Attribute<int> original_indices( M.cells.attributes(), "indices" );
+		GEO2::Attribute<int> original_indices( M.unwrap().cells.attributes(), "indices" );
 
 		tets_id.clear();
 		tets_id.resize( tet_ptr.size() - 1 );
