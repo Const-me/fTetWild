@@ -6,18 +6,20 @@ namespace GEO2
 	double inner_point_box_squared_distance( const vec3& p, const Box& B )
 	{
 		assert( B.contains( p ) );
-		/*
-		double result = geo_sqr( p[ 0 ] - B.xyz_min[ 0 ] );
-		result = std::min( result, geo_sqr( p[ 0 ] - B.xyz_max[ 0 ] ) );
-		for( coord_index_t c = 1; c < 3; ++c )
-		{
-			result = std::min( result, geo_sqr( p[ c ] - B.xyz_min[ c ] ) );
-			result = std::min( result, geo_sqr( p[ c ] - B.xyz_max[ c ] ) );
-		}
-		return result;
-		*/
-		__debugbreak();
-		return 0;
+
+		__m128d pv = _mm_loadu_pd( &p.x );
+		__m128d minV = _mm_sub_pd( pv, _mm_load_pd( &B.xyz_min[ 0 ] ) );
+		__m128d maxV = _mm_sub_pd( _mm_loadu_pd( &B.xyz_max[ 0 ] ), pv );
+		pv = _mm_min_pd( minV, maxV );
+		pv = _mm_min_sd( pv, _mm_unpackhi_pd( pv, pv ) );
+		double res = _mm_cvtsd_f64( pv );
+
+		const double pz = p.z;
+		res = std::min( res, pz - B.xyz_min[ 2 ] );
+		res = std::min( res, B.xyz_max[ 2 ] - pz );
+
+		assert( res >= 0 );
+		return res * res;
 	}
 
 	double tetra_signed_volume( const vec3& p1, const vec3& p2, const vec3& p3, const vec3& p4 )
@@ -353,4 +355,4 @@ namespace GEO2
 		closest_point = V0 + s * edge0 + t * edge1;
 		return sqrDistance;
 	}
-}
+}  // namespace GEO2
