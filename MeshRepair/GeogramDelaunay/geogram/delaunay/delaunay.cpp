@@ -129,7 +129,7 @@ namespace GEO {
     }
     
     /************************************************************************/
-
+#if 0
     void Delaunay::initialize() {
 
 #ifdef GEOGRAM_WITH_TETGEN
@@ -191,6 +191,7 @@ namespace GEO {
         return new Delaunay_NearestNeighbors(dim);
 #endif       
     }
+#endif
 
     Delaunay::Delaunay(coord_index_t dimension) {
         set_dimension(dimension);

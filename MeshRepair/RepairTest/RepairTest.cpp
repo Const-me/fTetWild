@@ -80,10 +80,15 @@ HRESULT testRepair()
 	return S_OK;
 }
 
+void testGeogramDelaunay()
+{
+}
+
 int main()
 {
 	// testStlIO();
-	testRepair();
+	// testRepair();
+	testGeogramDelaunay();
 	printf( "Hello World!\n" );
 	return 0;
 }

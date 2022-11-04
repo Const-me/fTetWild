@@ -43,34 +43,39 @@
  *
  */
 
-#include <geogram/basic/factory.h>
-#include <geogram/basic/smart_pointer.h>
 
-namespace {
+#ifndef GEOGRAM_BASIC_PROCESS_PRIVATE
+#define GEOGRAM_BASIC_PROCESS_PRIVATE
 
-    using namespace GEO;
+#include <geogram/basic/common.h>
 
-    typedef SmartPointer<InstanceRepo::Instance> Instance_var;
-
-    typedef std::map<std::string, Instance_var> Registry;
-
-    Registry& get_registry() {
-        static Registry r;
-        return r;
-    }
-}
+/**
+ * \file geogram/basic/process_private.h
+ * \brief Internal functions for process manipulation.
+ */
 
 namespace GEO {
+    namespace Process {
+        bool os_init_threads();
+        
+        index_t os_number_of_cores();
+        
+        size_t os_used_memory();
+        
+        size_t os_max_used_memory();
+        
+        bool os_enable_FPE(bool flag);
+        
+        bool os_enable_cancel(bool flag);
+        
+        void os_install_signal_handlers();
+        
+        std::string os_executable_filename();
 
-    void InstanceRepo::add(const std::string& name, Instance* instance) {
-        Registry& r = get_registry();
-        r[name] = instance;
-    }
-
-    InstanceRepo::Instance* InstanceRepo::get(const std::string& name) {
-        const Registry& r = get_registry();
-        auto i = r.find(name);
-        return i == r.end() ? nullptr : i->second.get();
+        void os_brute_force_kill();
     }
 }
+
+
+#endif
 

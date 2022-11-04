@@ -43,76 +43,75 @@
  *
  */
 
-#include <geogram/basic/numeric.h>
-#include <stdlib.h>
+#ifndef GEOGRAM_BASIC_RANGE
+#define GEOGRAM_BASIC_RANGE
 
-#ifdef GEO_COMPILER_EMSCRIPTEN
-#pragma GCC diagnostic ignored "-Wc++11-long-long"
-#endif
+#include <geogram/basic/numeric.h>
+
+/**
+ * \file geogram/basic/range.h
+ * \brief C++-20 like helpers for manipulating ranges of integers.
+ * \note transform() not implemented yet, I need c++14 for that 
+ *  (auto return type).
+ */
 
 namespace GEO {
 
-    namespace Numeric {
+    /**
+     * \brief Wraps an integer for range-based for construct.
+     * \details Not really an iterator, rather a pseudo-index.
+     */
+    class no_iterator {
+      public:
+        no_iterator(index_t val) : val_(val) {
+	}
 
-        bool is_nan(float32 x) {
-#ifdef GEO_COMPILER_MSVC
-            return _isnan(x) || !_finite(x);	    
-#else	    
-            return std::isnan(x) || !std::isfinite(x);
-#endif	    
-        }
+	void operator++() {
+	    ++val_;
+	}
+   
+	bool operator==(const no_iterator& rhs) {
+	    return val_ == rhs.val_;
+	}
 
-        bool is_nan(float64 x) {
-#ifdef GEO_COMPILER_MSVC
-            return _isnan(x) || !_finite(x);	    	    
-#else	    
-            return std::isnan(x) || !std::isfinite(x);
-#endif	    
-        }
+	bool operator!=(const no_iterator& rhs) {
+	    return val_ != rhs.val_;
+	}
 
-        void random_reset() {
-#ifdef GEO_OS_WINDOWS
-            srand(1);
-#else
-            srandom(1);
-#endif
-        }
+	bool operator<(const no_iterator& rhs) {
+	    return val_ < rhs.val_;
+	}
 
-        int32 random_int32() {
-#ifdef GEO_OS_WINDOWS
-            return rand();
-#else
-            return int32(random() % std::numeric_limits<int32>::max());
-#endif
-        }
+	index_t operator*() const  {
+	    return val_;
+	}
 
-        float32 random_float32() {
-#if defined(GEO_OS_WINDOWS)
-            return float(rand()) / float(RAND_MAX);
-#elif defined(GEO_OS_ANDROID)
-            // TODO: find a way to call drand48()
-            // (problem at link time)
-            return
-                float(random_int32()) /
-                float(std::numeric_limits<int32>::max());
-#else
-            return float(drand48());
-#endif
-        }
+      private:
+	index_t val_;
+    };
 
-        float64 random_float64() {
-#if defined(GEO_OS_WINDOWS)
-            return double(rand()) / double(RAND_MAX);
-#elif defined(GEO_OS_ANDROID)
-            // TODO: find a way to call drand48()
-            // (problem at link time)
-            return
-                double(random_int32()) /
-                double(std::numeric_limits<int32>::max());
-#else
-            return double(drand48());
-#endif
-        }
-    }
+    /**
+     * \brief A generic range bounded by two "non-iterators".
+     */
+    template <class NO_ITERATOR> class range {
+      public:
+	typedef NO_ITERATOR no_iterator_t;
+    
+        range(NO_ITERATOR b, NO_ITERATOR e) : begin_(b), end_(e) {
+	}
+
+	NO_ITERATOR begin() const {
+	    return begin_;
+	}
+
+	NO_ITERATOR end() const {
+	    return end_;
+	}
+    
+      private:
+	NO_ITERATOR begin_;
+	NO_ITERATOR end_;
+    };
 }
 
+#endif

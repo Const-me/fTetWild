@@ -53,8 +53,9 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>GEOGRAM_WITH_PDEL;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GEOGRAM_WITH_PDEL;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -68,8 +69,9 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>GEOGRAM_WITH_PDEL;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GEOGRAM_WITH_PDEL;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -81,14 +83,51 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="GeogramDelaunay.cpp" />
+    <ClCompile Include="geogram\basic\counted.cpp" />
+    <ClCompile Include="geogram\basic\packed_arrays.cpp" />
+    <ClCompile Include="geogram\basic\process.cpp">
+      <OpenMPSupport Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</OpenMPSupport>
+      <OpenMPSupport Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</OpenMPSupport>
+    </ClCompile>
+    <ClCompile Include="geogram\basic\process_win.cpp" />
+    <ClCompile Include="geogram\basic\stopwatch.cpp" />
+    <ClCompile Include="geogram\basic\string.cpp" />
     <ClCompile Include="geogram\delaunay\delaunay.cpp" />
+    <ClCompile Include="geogram\delaunay\delaunay_3d.cpp" />
+    <ClCompile Include="geogram\delaunay\delaunay_nn.cpp" />
     <ClCompile Include="geogram\delaunay\parallel_delaunay_3d.cpp" />
+    <ClCompile Include="geogram\mesh\mesh_reorder.cpp">
+      <OpenMPSupport Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</OpenMPSupport>
+      <OpenMPSupport Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</OpenMPSupport>
+    </ClCompile>
+    <ClCompile Include="geogram\numerics\multi_precision.cpp" />
+    <ClCompile Include="geogram\numerics\predicates.cpp" />
+    <ClCompile Include="geogram\Shims\environment.cpp" />
+    <ClCompile Include="geogram\Shims\LinkerShims.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeogramDelaunay.h" />
+    <ClInclude Include="geogram\api\defs.h" />
+    <ClInclude Include="geogram\basic\assert.h" />
+    <ClInclude Include="geogram\basic\counted.h" />
+    <ClInclude Include="geogram\basic\environment.h" />
+    <ClInclude Include="geogram\basic\logger.h" />
+    <ClInclude Include="geogram\basic\packed_arrays.h" />
+    <ClInclude Include="geogram\basic\process.h" />
+    <ClInclude Include="geogram\basic\stopwatch.h" />
+    <ClInclude Include="geogram\basic\string.h" />
+    <ClInclude Include="geogram\basic\thread_sync.h" />
+    <ClInclude Include="geogram\basic\vecg.h" />
+    <ClInclude Include="geogram\bibliography\bibliography.h" />
     <ClInclude Include="geogram\delaunay\cavity.h" />
     <ClInclude Include="geogram\delaunay\delaunay.h" />
+    <ClInclude Include="geogram\delaunay\delaunay_3d.h" />
+    <ClInclude Include="geogram\delaunay\delaunay_nn.h" />
     <ClInclude Include="geogram\delaunay\parallel_delaunay_3d.h" />
+    <ClInclude Include="geogram\delaunay\periodic.h" />
+    <ClInclude Include="geogram\mesh\mesh_reorder.h" />
+    <ClInclude Include="geogram\numerics\multi_precision.h" />
+    <ClInclude Include="geogram\numerics\predicates.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

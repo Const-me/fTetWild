@@ -35,7 +35,7 @@ namespace
 	};
 }  // namespace
 
-std::unique_ptr<iDelaunay> create( bool multithreaded )
+std::unique_ptr<iDelaunay> iDelaunay::create( bool multithreaded )
 {
 	if( multithreaded )
 		return std::make_unique<Impl<GEO::ParallelDelaunay3d>>();
