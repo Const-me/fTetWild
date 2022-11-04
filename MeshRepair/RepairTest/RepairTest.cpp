@@ -87,8 +87,8 @@ void testGeogramDelaunay()
 int main()
 {
 	// testStlIO();
-	// testRepair();
-	testGeogramDelaunay();
+	testRepair();
+	// testGeogramDelaunay();
 	printf( "Hello World!\n" );
 	return 0;
 }

@@ -19,6 +19,7 @@
 #include "LocalOperations.h"
 #include "MeshImprovement.h"
 #include "MeshIO.hpp"
+#include "../../GeogramDelaunay/GeogramDelaunay.h"
 
 namespace floatTetWild
 {
@@ -246,26 +247,23 @@ namespace floatTetWild
 				V_d[ i * 3 + j ] = tet_vertices[ i ].pos[ j ];
 		}
 
-		// TODO: Delaunay
-		__debugbreak();
-		return;
-#if 0
-		GEO2::Delaunay::initialize();
-		GEO2::Delaunay_var T = GEO2::Delaunay::create( 3, "BDEL" );
-		T->set_vertices( n_pts, V_d.data() );
-		//
-		tets.resize( T->nb_cells() );
-		const auto& tet2v = T->cell_to_v();
-		for( int i = 0; i < T->nb_cells(); i++ )
+		constexpr bool multithreadedDelaunay = false;
+		auto delaunay = iDelaunay::create( multithreadedDelaunay );
+		delaunay->compute( n_pts, V_d.data() );
+		const size_t countElements = delaunay->countElements();
+		tets.resize( countElements );
+		const __m128i* const tet2v = delaunay->getElements();
+		for( size_t i = 0; i < countElements; i++ )
 		{
-			for( int j = 0; j < 4; ++j )
-			{
-				const int v_id = tet2v[ i * 4 + j ];
+			__m128i tetra = tet2v[ i ];
+			// std::swap( tets[ i ][ 1 ], tets[ i ][ 3 ] );
+			tetra = _mm_shuffle_epi32( tetra, _MM_SHUFFLE( 1, 2, 3, 0 ) );
+			_mm_storeu_si128( (__m128i*)&tets[ i ].indices, tetra );
 
-				tets[ i ][ j ] = v_id;
-				tet_vertices[ v_id ].conn_tets.push_back( i );
-			}
-			std::swap( tets[ i ][ 1 ], tets[ i ][ 3 ] );
+			tet_vertices[ _mm_cvtsi128_si32( tetra ) ].conn_tets.push_back( (int)i );
+			tet_vertices[ _mm_extract_epi32( tetra, 1 ) ].conn_tets.push_back( (int)i );
+			tet_vertices[ _mm_extract_epi32( tetra, 2 ) ].conn_tets.push_back( (int)i );
+			tet_vertices[ _mm_extract_epi32( tetra, 3 ) ].conn_tets.push_back( (int)i );
 		}
 
 		for( int i = 0; i < mesh.tets.size(); i++ )
@@ -363,6 +361,5 @@ namespace floatTetWild
 		match_bbox_fs( mesh, min, max );
 
 		//        MeshIO::write_mesh("delaunay.msh", mesh);
-#endif
 	}
 }  // namespace floatTetWild

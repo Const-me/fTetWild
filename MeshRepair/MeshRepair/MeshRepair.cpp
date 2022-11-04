@@ -21,13 +21,13 @@ namespace MeshRepair
 
 	HRESULT MeshRepair::FinalConstruct()
 	{
-		GEO::initialize();
+		// GEO::initialize();
 		return S_OK;
 	}
 
 	void MeshRepair::FinalRelease()
 	{
-		GEO::terminate();
+		// GEO::terminate();
 	}
 
 	DLLEXPORT HRESULT COMLIGHTCALL createMeshRepair( iMeshRepair** rdi )
