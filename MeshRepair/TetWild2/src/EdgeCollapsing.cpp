@@ -10,6 +10,7 @@
 #include "EdgeCollapsing.h"
 #include "LocalOperations.h"
 #include "MeshImprovement.h"  //todo: tmp
+#include "EdgesSet.h"
 #ifdef FLOAT_TETWILD_USE_TBB
 #include <tbb/task_scheduler_init.h>
 #include <tbb/parallel_for.h>
@@ -31,7 +32,7 @@ namespace floatTetWild
 {
 	namespace
 	{
-		void edge_collapsing_aux( Mesh& mesh, const AABBWrapper& tree, std::vector<std::array<int, 2>>& edges )
+		void edge_collapsing_aux( Mesh& mesh, const AABBWrapper& tree, EdgesSet& edges )
 		{
 			auto& tets = mesh.tets;
 			auto& tet_vertices = mesh.tet_vertices;
@@ -42,15 +43,16 @@ namespace floatTetWild
 
 			////init
 			std::priority_queue<ElementInQueue, std::vector<ElementInQueue>, cmp_s> ec_queue;
-			for( auto& e : edges )
-			{
-				Scalar l_2 = get_edge_length_2( mesh, e[ 0 ], e[ 1 ] );
-				if( is_collapsable_length( mesh, e[ 0 ], e[ 1 ], l_2 ) && is_collapsable_boundary( mesh, e[ 0 ], e[ 1 ], tree ) )
-				{
-					ec_queue.push( ElementInQueue( e, l_2 ) );
-					ec_queue.push( ElementInQueue( { { e[ 1 ], e[ 0 ] } }, l_2 ) );
-				}
-			}
+			edges.enumerate(
+			  [ & ]( int e0, int e1 )
+			  {
+				  Scalar l_2 = get_edge_length_2( mesh, e0, e1 );
+				  if( is_collapsable_length( mesh, e0, e1, l_2 ) && is_collapsable_boundary( mesh, e0, e1, tree ) )
+				  {
+					  ec_queue.push( ElementInQueue( e0, e1, l_2 ) );
+					  ec_queue.push( ElementInQueue( e1, e0, l_2 ) );
+				  }
+			  } );
 			edges.clear();
 
 			////collapse
@@ -95,7 +97,7 @@ namespace floatTetWild
 					if( !is_collapsable_bbox( mesh, v_ids[ 0 ], v_ids[ 1 ] ) )
 						continue;
 
-					std::vector<std::array<int, 2>> new_edges;
+					EdgesSet new_edges;
 					int result = collapse_an_edge( mesh, v_ids[ 0 ], v_ids[ 1 ], tree, new_edges, ts, tet_tss );
 					if( result == EC_SUCCESS || result == EC_SUCCESS_ENVELOPE )
 					{
@@ -103,18 +105,18 @@ namespace floatTetWild
 							suc_counter_env++;
 						suc_counter++;
 
-						for( auto& e : new_edges )
-						{
-							if( is_edge_freezed( mesh, e[ 0 ], e[ 1 ] ) )
-								continue;
-
-							Scalar l_2 = get_edge_length_2( mesh, e[ 0 ], e[ 1 ] );
-							if( is_collapsable_length( mesh, e[ 0 ], e[ 1 ], l_2 ) )
-							{
-								ec_queue.push( ElementInQueue( e, l_2 ) );
-								ec_queue.push( ElementInQueue( { { e[ 1 ], e[ 0 ] } }, l_2 ) );
-							}
-						}
+						new_edges.enumerate(
+						  [ & ]( int e0, int e1 )
+						  {
+							  if( is_edge_freezed( mesh, e0, e1 ) )
+								  return;
+							  Scalar l_2 = get_edge_length_2( mesh, e0, e1 );
+							  if( is_collapsable_length( mesh, e0, e1, l_2 ) )
+							  {
+								  ec_queue.push( ElementInQueue( e0, e1, l_2 ) );
+								  ec_queue.push( ElementInQueue( e1, e0, l_2 ) );
+							  }
+						  } );
 					}
 #if EC_POSTPROCESS
 					else
@@ -217,70 +219,13 @@ void floatTetWild::edge_collapsing( Mesh& mesh, const AABBWrapper& tree )
 	auto& tet_vertices = mesh.tet_vertices;
 	auto& tets = mesh.tets;
 
-	std::vector<std::array<int, 2>> edges;
-
-	// #ifdef FLOAT_TETWILD_USE_TBB_bug //TODO: remove bug and fix
-	//     std::vector<std::vector<int>> partition;
-	//     int num_partition = tbb::task_scheduler_init::default_num_threads();
-	//     partition.clear();
-	//     cout << "num_partition = " << num_partition << endl;
-	//     mesh.partition(num_partition, partition);
-
-	//     for (int p_id = 0; p_id < partition.size(); p_id++) {
-	//         for (int t_id: partition[p_id])
-	//             tets[t_id].scalar = p_id;
-	//     }
-	//     for (auto &v:tet_vertices) {
-	//         std::unordered_set<int> p_ids;
-	//         v.is_freezed = false;
-	//         for (int t_id: v.conn_tets) {
-	//             p_ids.insert(tets[t_id].scalar);
-	//             if (p_ids.size() > 1) {
-	//                 v.is_freezed = true;
-	//                 break;
-	//             }
-	//         }
-	//     }
-
-	//     const bool skip_freezed = true;
-	//     tbb::parallel_for(size_t(0), size_t(partition.size()), [&](size_t i) {
-	//         std::vector<std::array<int, 2>> edges;
-	//         get_all_edges(mesh, partition[i], edges, skip_freezed);
-	//         edge_collapsing_aux(mesh, tree, edges);
-	//     });
-
-	// //    for (auto &t: mesh.tets) {
-	// //        for (int j = 0; j < 3; j++) {
-	// //            if (mesh.tet_vertices[t[0]].is_freezed || mesh.tet_vertices[t[j + 1]].is_freezed) {
-	// //                std::array<int, 2> e = {{t[0], t[j + 1]}};
-	// //                if (e[0] > e[1])
-	// //                    std::swap(e[0], e[1]);
-	// //                edges.push_back(e);
-	// //            }
-	// //            if (mesh.tet_vertices[t[j + 1]].is_freezed || mesh.tet_vertices[mod3(j + 1) + 1].is_freezed) {
-	// //                std::array<int, 2> e = {{t[j + 1], t[mod3(j + 1) + 1]}};
-	// //                if (e[0] > e[1])
-	// //                    std::swap(e[0], e[1]);
-	// //                edges.push_back(e);
-	// //            }
-	// //        }
-	// //    }
-	// //    vector_unique(edges);
-	//     get_all_edges(mesh, edges);
-	//     edge_collapsing_aux(mesh, tree, edges);
-
-	//     for (auto &v:tet_vertices)
-	//         v.is_freezed = false;
-	//     for (auto &t:tets)
-	//         t.scalar = 0;
-	// #else
+	EdgesSet edges;
 	get_all_edges( mesh, edges );
 	edge_collapsing_aux( mesh, tree, edges );
-	// #endif
 }
 
-int floatTetWild::collapse_an_edge( Mesh& mesh, int v1_id, int v2_id, const AABBWrapper& tree, std::vector<std::array<int, 2>>& new_edges, int ts,
-  std::vector<int>& tet_tss, bool is_check_quality, bool is_update_tss )
+int floatTetWild::collapse_an_edge(
+  Mesh& mesh, int v1_id, int v2_id, const AABBWrapper& tree, EdgesSet& new_edges, int ts, std::vector<int>& tet_tss, bool is_check_quality, bool is_update_tss )
 {
 	auto& tet_vertices = mesh.tet_vertices;
 	auto& tets = mesh.tets;
@@ -553,10 +498,8 @@ int floatTetWild::collapse_an_edge( Mesh& mesh, int v1_id, int v2_id, const AABB
 
 	////re-push
 	for( int v_id : n1_v_ids )
-	{
 		if( v_id != v1_id )
-			new_edges.push_back( { { v2_id, v_id } } );
-	}
+			new_edges.add( v2_id, v_id );
 
 	//    for (int v_id:n_v_ids) {
 	//        new_edges.push_back({{v2_id, v_id}});

@@ -8,6 +8,7 @@
 #pragma once
 #include "Mesh.hpp"
 #include "AABBWrapper.h"
+#include "EdgesSet.h"
 
 namespace floatTetWild
 {
@@ -33,8 +34,8 @@ namespace floatTetWild
 		return GEO2::vec3( p[ 0 ], p[ 1 ], p[ 2 ] );
 	}
 
-	void get_all_edges( const Mesh& mesh, std::vector<std::array<int, 2>>& edges );
-	void get_all_edges( const Mesh& mesh, const std::vector<int>& t_ids, std::vector<std::array<int, 2>>& edges, bool skip_freezed = false );
+	void get_all_edges( const Mesh& mesh, EdgesSet& edges );
+	void get_all_edges( const Mesh& mesh, const std::vector<int>& t_ids, EdgesSet& edges, bool skip_freezed = false );
 
 	Scalar get_edge_length( const Mesh& mesh, int v1_id, int v2_id );
 	Scalar get_edge_length_2( const Mesh& mesh, int v1_id, int v2_id );
@@ -143,6 +144,11 @@ namespace floatTetWild
 		}
 		ElementInQueue( const std::array<int, 2>& ids, Scalar w )
 			: v_ids( ids )
+			, weight( w )
+		{
+		}
+		ElementInQueue( int e0, int e1, Scalar w )
+			: v_ids { e0, e1 }
 			, weight( w )
 		{
 		}

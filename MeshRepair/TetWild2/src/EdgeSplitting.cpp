@@ -24,17 +24,19 @@ void floatTetWild::edge_splitting( Mesh& mesh, const AABBWrapper& tree )
 	mesh.reset_t_empty_start();
 	mesh.reset_v_empty_start();
 
-	std::vector<std::array<int, 2>> edges;
+	EdgesSet edges;
 	get_all_edges( mesh, edges );
 
 	std::priority_queue<ElementInQueue, std::vector<ElementInQueue>, cmp_l> es_queue;
-	for( auto& e : edges )
-	{
-		Scalar l_2 = get_edge_length_2( mesh, e[ 0 ], e[ 1 ] );
-		Scalar sizing_scalar = ( tet_vertices[ e[ 0 ] ].sizing_scalar + tet_vertices[ e[ 1 ] ].sizing_scalar ) / 2;
-		if( l_2 > mesh.params.split_threshold_2 * sizing_scalar * sizing_scalar )
-			es_queue.push( ElementInQueue( e, l_2 ) );
-	}
+
+	edges.enumerate(
+	  [ & ]( int e0, int e1 )
+	  {
+		  Scalar l_2 = get_edge_length_2( mesh, e0, e1 );
+		  Scalar sizing_scalar = ( tet_vertices[ e0 ].sizing_scalar + tet_vertices[ e1 ].sizing_scalar ) / 2;
+		  if( l_2 > mesh.params.split_threshold_2 * sizing_scalar * sizing_scalar )
+			  es_queue.push( ElementInQueue( e0, e1, l_2 ) );
+	  } );
 	edges.clear();
 
 	//    if(budget > 0)

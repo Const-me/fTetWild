@@ -830,7 +830,7 @@ void floatTetWild::output_info( Mesh& mesh, const AABBWrapper& tree )
 		return;
 
 	// euler
-	std::vector<std::array<int, 2>> edges;
+	EdgesSet edges;
 	get_all_edges( mesh, edges );
 	std::vector<std::array<int, 3>> faces;
 	for( auto& t : tets )
@@ -1178,15 +1178,16 @@ int floatTetWild::get_max_p( const Mesh& mesh )
 	const Scalar B = 3;
 	const int p_ref = 1;
 
-	std::vector<std::array<int, 2>> edges;
+	EdgesSet edges;
 	get_all_edges( mesh, edges );
 	Scalar h_ref = 0;
 	// mesh.params.ideal_edge_length;
-	for( const auto& e : edges )
-	{
-		const Vector3 edge = ( mesh.tet_vertices[ e[ 0 ] ].pos - mesh.tet_vertices[ e[ 1 ] ].pos ) * scaling;
-		h_ref += edge.norm();
-	}
+	edges.enumerate(
+	  [ & ]( int e0, int e1 )
+	  {
+		  const Vector3 edge = ( mesh.tet_vertices[ e0 ].pos - mesh.tet_vertices[ e1 ].pos ) * scaling;
+		  h_ref += edge.norm();
+	  } );
 	h_ref /= edges.size();
 
 	const Scalar rho_ref = sqrt( 6. ) / 12. * h_ref;

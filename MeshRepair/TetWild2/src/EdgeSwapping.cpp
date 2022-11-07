@@ -41,14 +41,11 @@ void floatTetWild::edge_swapping( Mesh& mesh )
 		return true;
 	};
 
-	std::vector<std::array<int, 2>> edges;
+	EdgesSet edges;
 	get_all_edges( mesh, edges );
 
 	std::priority_queue<ElementInQueue, std::vector<ElementInQueue>, cmp_l> es_queue;
-	for( auto& e : edges )
-	{
-		es_queue.push( ElementInQueue( e, get_edge_length_2( mesh, e[ 0 ], e[ 1 ] ) ) );
-	}
+	edges.enumerate( [ & ]( int e0, int e1 ) { es_queue.push( ElementInQueue( e0, e1, get_edge_length_2( mesh, e0, e1 ) ) ); } );
 	edges.clear();
 
 	while( !es_queue.empty() )

@@ -118,6 +118,7 @@
     <ClInclude Include="Utils\Mesh\TriangleMesh.h">
       <Filter>Utils\Mesh</Filter>
     </ClInclude>
+    <ClInclude Include="src\EdgesSet.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp" />
@@ -223,6 +224,7 @@
       <Filter>Utils\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="external\triangle_triangle_intersection.cpp" />
+    <ClCompile Include="src\EdgesSet.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="external">

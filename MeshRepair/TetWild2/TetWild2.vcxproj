@@ -84,6 +84,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\EdgesSet.h" />
     <ClInclude Include="Utils\designTimeUtils.h" />
     <ClInclude Include="external\bfs_orient.h" />
     <ClInclude Include="external\Exception.h" />
@@ -131,6 +132,7 @@
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\EdgesSet.cpp" />
     <ClCompile Include="external\triangle_triangle_intersection.cpp" />
     <ClCompile Include="Utils\designTimeUtils.cpp" />
     <ClCompile Include="external\bfs_orient.cpp" />
