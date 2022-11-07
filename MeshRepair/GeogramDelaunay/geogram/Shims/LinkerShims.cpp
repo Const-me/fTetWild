@@ -4,7 +4,7 @@ namespace GEO
 {
 	void geo_assertion_failed( const std::string& condition_string, const std::string& file, int line )
 	{
-		// __debugbreak();
+		__debugbreak();
 	}
 	void geo_should_not_have_reached( const std::string& file, int line )
 	{

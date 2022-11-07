@@ -4,6 +4,7 @@
 #include <geogram/basic/common.h>
 #include "meshRepairMain.h"
 // #include "../TetWild2/Utils/RobustPredicates.h"
+#include "../GeogramDelaunay/geogram/numerics/predicates.h"
 
 namespace MeshRepair
 {
@@ -22,12 +23,14 @@ namespace MeshRepair
 	HRESULT MeshRepair::FinalConstruct()
 	{
 		// GEO::initialize();
+		GEO::PCK::initialize();
 		return S_OK;
 	}
 
 	void MeshRepair::FinalRelease()
 	{
 		// GEO::terminate();
+		GEO::PCK::terminate();
 	}
 
 	DLLEXPORT HRESULT COMLIGHTCALL createMeshRepair( iMeshRepair** rdi )
