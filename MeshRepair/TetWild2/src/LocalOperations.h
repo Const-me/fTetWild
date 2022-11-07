@@ -15,8 +15,6 @@ namespace floatTetWild
 	extern std::string envelope_log_csv;
 	extern int envelope_log_csv_cnt;
 
-	// void init_b_tree(const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, GEO2::Mesh& b_mesh);
-
 	int get_opp_t_id( const Mesh& mesh, int t_id, int j );
 	void set_opp_t_id( Mesh& mesh, int t_id, int j );
 	inline int get_local_f_id( int t_id, int v1_id, int v2_id, int v3_id, Mesh& mesh )
@@ -118,30 +116,16 @@ namespace floatTetWild
 
 	inline int mod4( int j )
 	{
-		//        assert(j >= 0 && j < 7);
-		//        static const std::array<int, 8> a = {{0, 1, 2, 3, 0, 1, 2, 3}};
-		//        assert(a[j] == j % 4);
-		//        return a[j];
-
-		//        return j >= 4 ? j % 4 : j;
 		return j % 4;
 	}
 
 	inline int mod3( int j )
 	{
-		//        assert(j >= 0 && j < 5);
-		//        static const std::array<int, 6> a = {{0, 1, 2, 0, 1, 2}};
-		//        assert(a[j] == j % 3);
-		//        return a[j];
 		return j % 3;
 	}
 
 	inline int mod2( int j )
 	{
-		//        assert(j >= 0 && j < 3);
-		//        static const std::array<int, 4> a = {{0, 1, 0, 1}};
-		//        assert(a[j] == j % 2);
-		//        return a[j];
 		return j % 2;
 	}
 
@@ -154,7 +138,9 @@ namespace floatTetWild
 		std::array<int, 2> v_ids;
 		Scalar weight;
 
-		ElementInQueue() {}
+		ElementInQueue()
+		{
+		}
 		ElementInQueue( const std::array<int, 2>& ids, Scalar w )
 			: v_ids( ids )
 			, weight( w )

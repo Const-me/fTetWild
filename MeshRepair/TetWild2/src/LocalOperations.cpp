@@ -1181,6 +1181,7 @@ Scalar floatTetWild::AMIPS_energy( const std::array<Scalar, 12>& T )
 		return res;
 }
 
+// TODO: manually vectorize this function, it's expensive and showed up in the profiler
 Scalar floatTetWild::AMIPS_energy_aux( const std::array<Scalar, 12>& T )
 {
 	Scalar helper_0[ 12 ];
