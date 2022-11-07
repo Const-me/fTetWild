@@ -1130,8 +1130,6 @@ bool floatTetWild::is_energy_unstable( const std::array<Scalar, 12>& T, Scalar r
 	return false;
 }
 
-int cnt_stable = 0;
-int cnt_large = 0;
 Scalar floatTetWild::AMIPS_energy( const std::array<Scalar, 12>& T )
 {
 	Scalar res = AMIPS_energy_aux( T );
@@ -1142,27 +1140,6 @@ Scalar floatTetWild::AMIPS_energy( const std::array<Scalar, 12>& T )
 
 	if( res > 1e8 )
 	{
-		//        //fortest
-		//        if (res > 1e10) {
-		//            cout << std::setprecision(16) << res << endl;
-		//            for (int i = 0; i < T.size(); i++) {
-		//                if (i % 3 == 0)
-		//                    cout << endl;
-		//                cout << T[i] << ", ";
-		//            }
-		//            cout << endl;
-		//            char c;
-		//            cin >> c;
-		//        }
-		//        //fortest
-
-		//        //fortest
-		//        cnt_large++;
-		//        if(!is_energy_unstable(T, res)){
-		//            cout<<(cnt_stable++)<<"/"<<cnt_large<<endl;
-		//        }
-		//        //fortest
-
 		if( is_degenerate(
 			  Vector3( T[ 0 ], T[ 1 ], T[ 2 ] ), Vector3( T[ 3 ], T[ 4 ], T[ 5 ] ), Vector3( T[ 6 ], T[ 7 ], T[ 8 ] ), Vector3( T[ 9 ], T[ 10 ], T[ 11 ] ) ) )
 		{
@@ -1201,9 +1178,7 @@ Scalar floatTetWild::AMIPS_energy( const std::array<Scalar, 12>& T )
 		return std::cbrt( res_r.to_double() );
 	}
 	else
-	{
 		return res;
-	}
 }
 
 Scalar floatTetWild::AMIPS_energy_aux( const std::array<Scalar, 12>& T )
@@ -1255,12 +1230,16 @@ Scalar floatTetWild::AMIPS_energy_aux( const std::array<Scalar, 12>& T )
 		 helper_8 * ( 0.5 * helper_10 + 0.5 * helper_7 - 1.5 * helper_8 + 0.5 * helper_9 ) +
 		 helper_9 * ( 0.5 * helper_10 + 0.5 * helper_7 + 0.5 * helper_8 - 1.5 * helper_9 ) ) /
 	  std::cbrt( helper_22 * helper_22 );
-	//                 * pow(pow((helper_1 - helper_2) * (helper_11 * helper_6 - helper_12 * helper_14) -
-	//                         (-helper_10 + helper_7) * (-helper_14 * helper_18 + helper_17 * helper_6) +
-	//                         (helper_3 - helper_5) * (-helper_11 * helper_18 + helper_12 * helper_17), 2),
-	//                     -0.333333333333333);
 	return res;
 }
+
+namespace
+{
+	inline double pow2( double x )
+	{
+		return x * x;
+	}
+}  // namespace
 
 void floatTetWild::AMIPS_jacobian( const std::array<Scalar, 12>& T, Vector3& result_0 )
 {
@@ -1316,7 +1295,7 @@ void floatTetWild::AMIPS_jacobian( const std::array<Scalar, 12>& T, Vector3& res
 	Scalar helper_37 = helper_22 * helper_36;
 	Scalar helper_38 = helper_4 - helper_6;
 	Scalar helper_39 = helper_23 * helper_3 - helper_24 * ( helper_32 - helper_37 ) - helper_38 * ( helper_16 * helper_36 - helper_20 * helper_31 );
-	Scalar helper_40 = pow( pow( helper_39, 2 ), -0.333333333333333 );
+	Scalar helper_40 = pow( pow2( helper_39 ), -0.333333333333333 );
 	Scalar helper_41 = 0.707106781186548 * helper_10 - 0.707106781186548 * helper_12;
 	Scalar helper_42 = 0.707106781186548 * helper_26 - 0.707106781186548 * helper_28;
 	Scalar helper_43 = 0.5 * helper_21 + 0.5 * helper_5;
@@ -1413,7 +1392,7 @@ void floatTetWild::AMIPS_hessian( const std::array<Scalar, 12>& T, Matrix3& resu
 	Scalar helper_52 = helper_50 - helper_51;
 	Scalar helper_53 = helper_49 * helper_52;
 	Scalar helper_54 = helper_32 + helper_48 - helper_53;
-	Scalar helper_55 = pow( helper_54, 2 );
+	Scalar helper_55 = pow2( helper_54 );
 	Scalar helper_56 = pow( helper_55, -0.333333333333333 );
 	Scalar helper_57 = 1.0 * helper_27 - 3.0 * helper_4 + 1.0 * helper_6 + 1.0 * helper_8;
 	Scalar helper_58 = 0.707106781186548 * helper_13;
@@ -1447,7 +1426,7 @@ void floatTetWild::AMIPS_hessian( const std::array<Scalar, 12>& T, Matrix3& resu
 	Scalar helper_84 = helper_66 * helper_82;
 	Scalar helper_85 = -helper_32 - helper_48 + helper_53;
 	Scalar helper_86 = 1.0 / helper_85;
-	Scalar helper_87 = helper_86 * pow( pow( helper_85, 2 ), -0.333333333333333 );
+	Scalar helper_87 = helper_86 * pow( pow2( helper_85 ), -0.333333333333333 );
 	Scalar helper_88 = 0.707106781186548 * helper_6;
 	Scalar helper_89 = 0.707106781186548 * helper_27;
 	Scalar helper_90 = helper_88 - helper_89;
@@ -1488,14 +1467,14 @@ void floatTetWild::AMIPS_hessian( const std::array<Scalar, 12>& T, Matrix3& resu
 	Scalar helper_118 = -helper_102 * helper_110 + helper_107 * helper_92 + helper_108 * helper_91;
 	Scalar helper_119 =
 	  helper_82 * helper_86 * ( helper_112 * ( -helper_58 + helper_59 ) - helper_113 * helper_93 - helper_114 * helper_98 + helper_115 * helper_95 );
-	result_0( 0, 0 ) = helper_56 * ( helper_57 * helper_64 * helper_65 - pow( helper_64, 2 ) * helper_83 +
+	result_0( 0, 0 ) = helper_56 * ( helper_57 * helper_64 * helper_65 - pow2( helper_64 ) * helper_83 +
 									 0.666666666666667 * helper_64 * helper_84 * ( -helper_41 + helper_46 - helper_61 + helper_63 ) + 3.0 );
 	result_0( 0, 1 ) = helper_87 * ( helper_104 - helper_105 * helper_35 + helper_106 * helper_91 );
 	result_0( 0, 2 ) = helper_87 * ( helper_106 * helper_107 + helper_111 );
 	result_0( 1, 0 ) = helper_87 * ( helper_104 + helper_116 * helper_99 );
-	result_0( 1, 1 ) = helper_56 * ( -pow( helper_117, 2 ) * helper_83 + helper_117 * helper_65 * helper_92 + helper_117 * helper_84 * helper_91 + 3.0 );
+	result_0( 1, 1 ) = helper_56 * ( -pow2( helper_117 ) * helper_83 + helper_117 * helper_65 * helper_92 + helper_117 * helper_84 * helper_91 + 3.0 );
 	result_0( 1, 2 ) = helper_87 * ( -helper_105 * helper_6 - helper_107 * helper_116 + helper_118 );
 	result_0( 2, 0 ) = helper_87 * ( -helper_105 * helper_13 + helper_111 + helper_119 * helper_99 );
 	result_0( 2, 1 ) = helper_87 * ( helper_118 - helper_119 * helper_91 );
-	result_0( 2, 2 ) = helper_56 * ( -helper_108 * helper_109 * helper_65 - 1.11111111111111 * pow( helper_109, 2 ) * helper_84 + 3.0 );
+	result_0( 2, 2 ) = helper_56 * ( -helper_108 * helper_109 * helper_65 - 1.11111111111111 * pow2( helper_109 ) * helper_84 + 3.0 );
 }
