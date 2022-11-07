@@ -23,6 +23,7 @@
 #include <igl/winding_number.h>
 #include "../external/MshLoader.h"
 #include "../Utils/Geogram2.h"
+#include "../Utils/NearestSearch.h"
 // TODO: remove this
 #include <iostream>
 

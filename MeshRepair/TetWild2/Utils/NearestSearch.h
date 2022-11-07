@@ -1,5 +1,5 @@
 #pragma once
-#include "GeometricPrimitives.h"
+#include "Geogram2.h"
 #include "KdTree/kd_tree.h"
 
 namespace GEO2

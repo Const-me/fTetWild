@@ -96,20 +96,28 @@
     <ClInclude Include="Utils\Geogram2.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="Utils\Mesh\TriangleMesh.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="Utils\Mesh\reorderUtils.h" />
     <ClInclude Include="Utils\miscUtils.h" />
     <ClInclude Include="Utils\BoundingBox.hpp" />
-    <ClInclude Include="Utils\Mesh\MeshBase.h" />
     <ClInclude Include="Utils\GeometricPrimitives.h" />
     <ClInclude Include="Utils\NearestSearch.h" />
-    <ClInclude Include="Utils\KdTree\nn_search.h" />
-    <ClInclude Include="Utils\KdTree\kd_tree.h" />
     <ClInclude Include="Utils\orient3D.h" />
     <ClInclude Include="Utils\RobustPredicates.h" />
     <ClInclude Include="Utils\designTimeUtils.h" />
+    <ClInclude Include="Utils\KdTree\kd_tree.h">
+      <Filter>Utils\KdTree</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\KdTree\nn_search.h">
+      <Filter>Utils\KdTree</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Mesh\MeshBase.h">
+      <Filter>Utils\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Mesh\reorderUtils.h">
+      <Filter>Utils\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Mesh\TriangleMesh.h">
+      <Filter>Utils\Mesh</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp" />
@@ -142,9 +150,6 @@
       <Filter>external</Filter>
     </ClCompile>
     <ClCompile Include="external\Predicates.cpp">
-      <Filter>external</Filter>
-    </ClCompile>
-    <ClCompile Include="external\triangle_triangle_intersection.cpp">
       <Filter>external</Filter>
     </ClCompile>
     <ClCompile Include="src\auto_table.cpp">
@@ -195,20 +200,29 @@
     <ClCompile Include="Utils\Geogram2.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="Utils\Mesh\TriangleMesh.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="Utils\Mesh\TriangleMesh.reorder.cpp" />
-    <ClCompile Include="Utils\Mesh\reorderUtils.cpp" />
-    <ClCompile Include="Utils\Mesh\MeshBase.cpp" />
     <ClCompile Include="Utils\miscUtils.cpp" />
-    <ClCompile Include="Utils\GeometricPrimitives.cpp" />
     <ClCompile Include="Utils\NearestSearch.cpp" />
-    <ClCompile Include="Utils\KdTree\nn_search.cpp" />
-    <ClCompile Include="Utils\KdTree\kd_tree.cpp" />
-    <ClCompile Include="Utils\orient3D.cpp" />
     <ClCompile Include="Utils\RobustPredicates.cpp" />
     <ClCompile Include="Utils\designTimeUtils.cpp" />
+    <ClCompile Include="Utils\KdTree\kd_tree.cpp">
+      <Filter>Utils\KdTree</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\KdTree\nn_search.cpp">
+      <Filter>Utils\KdTree</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Mesh\MeshBase.cpp">
+      <Filter>Utils\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Mesh\reorderUtils.cpp">
+      <Filter>Utils\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Mesh\TriangleMesh.cpp">
+      <Filter>Utils\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Mesh\TriangleMesh.reorder.cpp">
+      <Filter>Utils\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="external\triangle_triangle_intersection.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="external">
@@ -219,6 +233,12 @@
     </Filter>
     <Filter Include="Utils">
       <UniqueIdentifier>{a440e6dc-21d5-464d-8be6-93f367008cf2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utils\KdTree">
+      <UniqueIdentifier>{41bb56e7-93cb-4aa4-b4bd-8b1f1f393c04}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utils\Mesh">
+      <UniqueIdentifier>{39021daf-9711-401c-adf7-9616771cbb6b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -72,3 +72,8 @@ class TriangleMesh : public MeshBase
 			*rdi = lambda( i );
 	}
 };
+
+namespace GEO2
+{
+	using Mesh = TriangleMesh;
+}

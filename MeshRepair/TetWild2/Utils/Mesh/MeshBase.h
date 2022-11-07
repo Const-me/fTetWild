@@ -1,6 +1,6 @@
 #pragma once
 #include "../../src/Types.hpp"
-#include "../GeometricPrimitives.h"
+#include "../Geogram2.h"
 
 // Base class for meshes, contains just the vertex buffer, with 3D coordinates in FP64 precision
 class MeshBase

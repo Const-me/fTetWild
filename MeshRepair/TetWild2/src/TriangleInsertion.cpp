@@ -3272,7 +3272,7 @@ void floatTetWild::check_track_surface_fs( Mesh& mesh, std::vector<std::array<st
 				{
 					vs[ k ] = GEO2::vec3( mesh.tet_vertices[ f[ k ] ].pos[ 0 ], mesh.tet_vertices[ f[ k ] ].pos[ 1 ], mesh.tet_vertices[ f[ k ] ].pos[ 2 ] );
 				}
-				double dis_2 = point_triangle_squared_distance( p, vs[ 0 ], vs[ 1 ], vs[ 2 ] );
+				double dis_2 = GEO2::point_triangle_squared_distance( p, vs[ 0 ], vs[ 1 ], vs[ 2 ] );
 				if( dis_2 <= eps )
 				{
 					is_inside = true;

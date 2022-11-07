@@ -52,6 +52,7 @@
 
 #include <string>
 #include "../Utils/Geogram2.h"
+#include "../Utils/Mesh/TriangleMesh.h"
 
 namespace floatTetWild
 {

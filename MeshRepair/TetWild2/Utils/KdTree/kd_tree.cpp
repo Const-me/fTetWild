@@ -46,7 +46,7 @@
 
 #include <stdafx.h>
 #include "kd_tree.h"
-#include "../GeometricPrimitives.h"
+#include "../Geogram2.h"
 
 namespace
 {

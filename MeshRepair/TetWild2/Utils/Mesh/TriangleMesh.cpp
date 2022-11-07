@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "../Geogram2.h"
 #include "TriangleMesh.h"
 #include "../BoundingBox.hpp"
 

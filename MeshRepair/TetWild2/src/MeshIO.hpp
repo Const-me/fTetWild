@@ -9,7 +9,7 @@
 #pragma once
 #include "Mesh.hpp"
 #include "Types.hpp"
-#include "../Utils/Geogram2.h"
+#include "../Utils/Mesh/TriangleMesh.h"
 
 namespace floatTetWild
 {

@@ -8,7 +8,7 @@
 
 #pragma once
 #include "Types.hpp"
-#include "../Utils/Geogram2.h"
+#include "../Utils/Mesh/TriangleMesh.h"
 #include <vector>
 #include <map>
 #include <string>

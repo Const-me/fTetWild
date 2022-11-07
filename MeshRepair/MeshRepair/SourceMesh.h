@@ -1,7 +1,7 @@
 #pragma once
 #include "API/library.h"
 #include "../TetWild2/src/Mesh.hpp"
-#include "../TetWild2/Utils/Geogram2.h"
+#include "../TetWild2/Utils/Mesh/TriangleMesh.h"
 
 namespace MeshRepair
 {

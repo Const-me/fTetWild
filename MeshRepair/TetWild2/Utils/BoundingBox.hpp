@@ -1,4 +1,5 @@
 #pragma once
+#include "Geogram2.h"
 
 // Utility class to compute bounding boxes of things with SSE
 class BoundingBox
@@ -63,6 +64,6 @@ class BoundingBox
 	void store( GEO2::Box& rdi ) const
 	{
 		// TODO [low]: rework into 3 aligned stores, using unpacklo and blend to combine vectors
-		store( rdi.xyz_min.data(), rdi.xyz_max.data() );
+		store( &rdi.xyz_min[ 0 ], &rdi.xyz_max[ 0 ] );
 	}
 };
