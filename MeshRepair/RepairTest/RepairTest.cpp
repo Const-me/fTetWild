@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Utils/IndexedMesh.h"
 #include "../MeshRepair/API/interfaces.h"
+#include "Timer.h"
 
 static const LPCTSTR stlSource = LR"(C:\Temp\2remove\MeshRepair\model.stl)";
 static const LPCTSTR stlResult = LR"(C:\Temp\2remove\MeshRepair\model-result.stl)";
@@ -73,22 +74,20 @@ HRESULT testRepair()
 
 	Parameters params;
 	CComPtr<iResultMesh> result;
-	CHECK( repair->repair( source, params, &result ) );
+	{
+		Timer tt { "iMeshRepair.repair()" };
+		CHECK( repair->repair( source, params, &result ) );
+	}
 
 	CHECK( copyMesh( result, mesh ) );
 	CHECK( mesh.saveBinaryStl( stlResult ) );
 	return S_OK;
 }
 
-void testGeogramDelaunay()
-{
-}
-
 int main()
 {
 	// testStlIO();
 	testRepair();
-	// testGeogramDelaunay();
 	printf( "Hello World!\n" );
 	return 0;
 }
