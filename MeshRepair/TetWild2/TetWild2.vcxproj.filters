@@ -41,9 +41,6 @@
     <ClInclude Include="src\auto_table.hpp">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\CSGTreeParser.hpp">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="src\CutMesh.h">
       <Filter>src</Filter>
     </ClInclude>
@@ -154,9 +151,6 @@
       <Filter>external</Filter>
     </ClCompile>
     <ClCompile Include="src\auto_table.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\CSGTreeParser.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\CutMesh.cpp">

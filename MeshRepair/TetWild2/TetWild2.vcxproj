@@ -44,10 +44,10 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir);$(ProjectDir)..\GeogramDelaunay;$(SolutionDir)..\3rdparty\libigl\include;$(SolutionDir)..\3rdparty\libigl\external\eigen;$(SolutionDir)..\3rdparty\json\include;$(SolutionDir)..\..\mpir\sandybridge\Inc;$(SolutionDir)..\3rdparty\libigl\cmake\..\external\predicates;$(SolutionDir)..\3rdparty\libigl\external\predicates;$(SolutionDir)..\build\predicates;$(SolutionDir)..\3rdparty\spdlog\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir);$(ProjectDir)..\GeogramDelaunay;$(SolutionDir)..\3rdparty\libigl\include;$(SolutionDir)..\3rdparty\libigl\external\eigen;$(SolutionDir)..\..\mpir\sandybridge\Inc;$(SolutionDir)..\3rdparty\libigl\cmake\..\external\predicates;$(SolutionDir)..\3rdparty\libigl\external\predicates;$(SolutionDir)..\build\predicates;$(SolutionDir)..\3rdparty\spdlog\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(ProjectDir);$(ProjectDir)..\GeogramDelaunay;$(SolutionDir)..\3rdparty\libigl\include;$(SolutionDir)..\3rdparty\libigl\external\eigen;$(SolutionDir)..\3rdparty\json\include;$(SolutionDir)..\..\mpir\sandybridge\Inc;$(SolutionDir)..\3rdparty\libigl\cmake\..\external\predicates;$(SolutionDir)..\3rdparty\libigl\external\predicates;$(SolutionDir)..\build\predicates;$(SolutionDir)..\3rdparty\spdlog\include;$(SolutionDir)..\3rdparty\libigl\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir);$(ProjectDir)..\GeogramDelaunay;$(SolutionDir)..\3rdparty\libigl\include;$(SolutionDir)..\3rdparty\libigl\external\eigen;$(SolutionDir)..\..\mpir\sandybridge\Inc;$(SolutionDir)..\3rdparty\libigl\cmake\..\external\predicates;$(SolutionDir)..\3rdparty\libigl\external\predicates;$(SolutionDir)..\build\predicates;$(SolutionDir)..\3rdparty\spdlog\include;$(SolutionDir)..\3rdparty\libigl\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -111,7 +111,6 @@
     <ClInclude Include="includeEigen.h" />
     <ClInclude Include="src\AABBWrapper.h" />
     <ClInclude Include="src\auto_table.hpp" />
-    <ClInclude Include="src\CSGTreeParser.hpp" />
     <ClInclude Include="src\CutMesh.h" />
     <ClInclude Include="src\EdgeCollapsing.h" />
     <ClInclude Include="src\EdgeSplitting.h" />
@@ -156,7 +155,6 @@
     <ClCompile Include="Utils\Geogram2.cpp" />
     <ClCompile Include="src\AABBWrapper.cpp" />
     <ClCompile Include="src\auto_table.cpp" />
-    <ClCompile Include="src\CSGTreeParser.cpp" />
     <ClCompile Include="src\CutMesh.cpp" />
     <ClCompile Include="src\EdgeCollapsing.cpp" />
     <ClCompile Include="src\EdgeSplitting.cpp" />

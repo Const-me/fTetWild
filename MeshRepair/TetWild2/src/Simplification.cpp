@@ -24,6 +24,7 @@
 #include <tbb/parallel_sort.h>
 #include <tbb/concurrent_unordered_set.h>
 #endif
+#include <iomanip>
 
 void floatTetWild::simplify( std::vector<Vector3>& input_vertices, std::vector<Vector3i>& input_faces, std::vector<int>& input_tags, const AABBWrapper& tree,
   const Parameters& params, bool skip_simplify )

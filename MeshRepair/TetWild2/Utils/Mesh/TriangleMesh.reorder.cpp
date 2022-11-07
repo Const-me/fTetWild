@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "TriangleMesh.h"
 #include "reorderUtils.h"
+#include <numeric>
 
 // The implementation was copy-pasted from there:
 // https://github.com/BrunoLevy/geogram/blob/main/src/lib/geogram/mesh/mesh_reorder.cpp

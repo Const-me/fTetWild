@@ -8,26 +8,13 @@
 
 #pragma once
 #include <Eigen/Dense>
-#include <nlohmann/json.hpp>
 
 namespace floatTetWild
 {
-#ifdef FLOAT_TETWILD_USE_FLOAT
-	typedef float Scalar;
-#define SCALAR_ZERO 1e-6
-#define SCALAR_ZERO_2 1e-12
-#define SCALAR_ZERO_3 1e-18
-#else
-	typedef double Scalar;
-#define SCALAR_ZERO 1e-8
-#define SCALAR_ZERO_2 1e-16
-#define SCALAR_ZERO_3 1e-24
-#endif
-
-	//#define STORE_SAMPLE_POINTS
-
-	// Json
-	using json = nlohmann::json;
+	using Scalar = double;
+	constexpr double SCALAR_ZERO = 1e-8;
+	constexpr double SCALAR_ZERO_2 = 1e-16;
+	constexpr double SCALAR_ZERO_3 = 1e-24;
 
 	typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> MatrixXs;
 
