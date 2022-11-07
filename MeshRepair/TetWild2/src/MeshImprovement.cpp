@@ -762,70 +762,6 @@ void floatTetWild::correct_tracked_surface_orientation( Mesh& mesh, AABBWrapper&
 	}
 }
 
-void floatTetWild::boolean_operation( Mesh& mesh, int op )
-{
-	const int OP_UNION = 0;
-	const int OP_INTERSECTION = 1;
-	const int OP_DIFFERENCE = 2;
-
-	Eigen::Matrix<Scalar, Eigen::Dynamic, 3> v1;
-	Eigen::Matrix<int, Eigen::Dynamic, 3> f1;
-	get_tracked_surface( mesh, v1, f1, 1 );
-
-	Eigen::Matrix<Scalar, Eigen::Dynamic, 3> v2;
-	Eigen::Matrix<int, Eigen::Dynamic, 3> f2;
-	get_tracked_surface( mesh, v2, f2, 2 );
-
-	Eigen::MatrixXd C( mesh.get_t_num(), 3 );
-	C.setZero();
-	int index = 0;
-	for( size_t i = 0; i < mesh.tets.size(); i++ )
-	{
-		if( mesh.tets[ i ].is_removed )
-			continue;
-		for( int j = 0; j < 4; j++ )
-			C.row( index ) += mesh.tet_vertices[ mesh.tets[ i ][ j ] ].pos.cast<double>();
-		C.row( index ) /= 4.0;
-		index++;
-	}
-
-	Eigen::VectorXd w1, w2;
-	//    if(!mesh.params.use_general_wn) {
-	//        floatTetWild::fast_winding_number(Eigen::MatrixXd(v1.cast<double>()), Eigen::MatrixXi(f1), C, w1);
-	//        floatTetWild::fast_winding_number(Eigen::MatrixXd(v2.cast<double>()), Eigen::MatrixXi(f2), C, w2);
-	//    }else
-	{
-		igl::winding_number( Eigen::MatrixXd( v1.cast<double>() ), Eigen::MatrixXi( f1 ), C, w1 );
-		igl::winding_number( Eigen::MatrixXd( v2.cast<double>() ), Eigen::MatrixXi( f2 ), C, w2 );
-	}
-
-	int cnt = 0;
-	for( int t_id = 0; t_id < mesh.tets.size(); ++t_id )
-	{
-		auto& t = mesh.tets[ t_id ];
-		if( t.is_removed )
-			continue;
-		switch( op )
-		{
-		case OP_UNION:
-			if( w1( cnt ) <= 0.5 && w2( cnt ) <= 0.5 )
-				t.is_removed = true;
-			break;
-		case OP_INTERSECTION:
-			if( w1( cnt ) <= 0.5 || w2( cnt ) <= 0.5 )
-				t.is_removed = true;
-			break;
-		case OP_DIFFERENCE:
-			if( w1( cnt ) <= 0.5 || w2( cnt ) > 0.5 )
-				t.is_removed = true;
-			break;
-		}
-		cnt++;
-	}
-
-	//    output_surface(mesh, "inner.stl");
-}
-
 void floatTetWild::filter_outside( Mesh& mesh, bool invert_faces )
 {
 	Eigen::MatrixXd C( mesh.get_t_num(), 3 );
@@ -868,9 +804,7 @@ void floatTetWild::filter_outside( Mesh& mesh, bool invert_faces )
 		if( t.is_removed )
 			continue;
 		if( W( index ) <= 0.5 )
-		{
 			t.is_removed = true;
-		}
 		else
 			n_tets++;
 		index++;
@@ -956,26 +890,12 @@ void floatTetWild::filter_outside( Mesh& mesh, const std::vector<Vector3>& input
 		if( t.is_removed )
 			continue;
 		if( W( index ) <= 0.5 )
-		{
 			t.is_removed = true;
-		}
 		else
 			n_tets++;
 		index++;
 	}
 
-	//    if (n_tets <= 0) {
-	//        if (invert_faces)
-	//            logger().error("Empty mesh, problem with inverted faces");
-	//        else {
-	//            for (int t_id = 0; t_id < mesh.tets.size(); ++t_id) {
-	//                auto &t = mesh.tets[t_id];
-	//                t.is_removed = old_flags[t_id];
-	//            }
-	//            logger().debug("Empty mesh trying to reverse the faces");
-	//            filter_outside(mesh, true);
-	//        }
-	//    }
 
 	for( auto& v : mesh.tet_vertices )
 	{
@@ -1059,7 +979,6 @@ void floatTetWild::mark_outside( Mesh& mesh, bool invert_faces )
 		C.row( index ) /= 4.0;
 		index++;
 	}
-	//    C.conservativeResize(index, 3);
 
 	Eigen::Matrix<Scalar, Eigen::Dynamic, 3> V;
 	Eigen::Matrix<int, Eigen::Dynamic, 3> F;
@@ -1071,9 +990,6 @@ void floatTetWild::mark_outside( Mesh& mesh, bool invert_faces )
 		F.col( 2 ) = tmp;
 	}
 	Eigen::VectorXd W;
-	//    if(!mesh.params.use_general_wn)
-	//        floatTetWild::fast_winding_number(Eigen::MatrixXd(V.cast<double>()), Eigen::MatrixXi(F), C, W);
-	//    else
 	igl::winding_number( Eigen::MatrixXd( V.cast<double>() ), Eigen::MatrixXi( F ), C, W );
 
 	index = 0;
@@ -1099,9 +1015,7 @@ void floatTetWild::mark_outside( Mesh& mesh, bool invert_faces )
 		else
 		{
 			for( auto& t : mesh.tets )
-			{
 				t.is_outside = false;
-			}
 			logger().debug( "Empty mesh trying to reverse the faces" );
 			mark_outside( mesh, true );
 		}
@@ -1165,19 +1079,6 @@ void floatTetWild::untangle( Mesh& mesh )
 		}
 		if( cnt_on_surface == 0 )
 			continue;
-
-		//        //fortest
-		//        bool is_output = false;
-		//        if(t.is_surface_fs[max_j] != NOT_SURFACE && cnt_on_surface>1 &&
-		//                std::abs(max_area - areas[(max_j + 1) % 4] - areas[(max_j + 2) % 4] - areas[(max_j + 3) % 4]) < zero_area*10){
-		//            cout<<std::abs(max_area - areas[(max_j + 1) % 4] - areas[(max_j + 2) % 4] - areas[(max_j + 3) % 4])<<endl;
-		//            cout<<"zero_area = "<<zero_area<<endl;
-		//            cout<<"cnt_on_surface = "<<cnt_on_surface<<endl;
-		//            is_output = true;
-		//            pausee();
-		//        }
-		//        int old_cnt = cnt;
-		//        //fortest
 
 		if( has_degenerate_face )
 		{
@@ -1268,15 +1169,6 @@ void floatTetWild::untangle( Mesh& mesh )
 				}
 			}
 		}
-
-		//        //fortest
-		//        if(is_output){
-		//            if(old_cnt!=cnt) {
-		//                cout<<"success"<<endl;
-		//                pausee();
-		//            }
-		//        }
-		//        //fortest
 	}
 	cout << "fixed " + std::to_string( cnt ) + " tangled element" << endl;
 }
@@ -1655,7 +1547,6 @@ void floatTetWild::manifold_edges( Mesh& mesh )
 			cout << t_id << ": ";
 			tets[ t_id ].print();
 		}
-		//        pausee();
 
 		// split
 		std::vector<int> new_t_ids;
@@ -1690,22 +1581,6 @@ void floatTetWild::manifold_edges( Mesh& mesh )
 				tet_vertices[ dup_v_id ].conn_tets.push_back( new_t_id );
 			}
 		}
-
-		//        for (int i = 0; i < old_t_ids.size(); i++) {
-		//            cout<<"old_t "<<old_t_ids[i]<<":";
-		//            tets[old_t_ids[i]].print();
-		//            for(int j=0;j<4;j++) {
-		//                cout << "\tv"<<tets[old_t_ids[i]][j]<<":";
-		//                vector_print(tet_vertices[tets[old_t_ids[i]][j]].conn_tets);
-		//            }
-		//            cout<<"new_t "<<new_t_ids[i]<<":";
-		//            tets[new_t_ids[i]].print();
-		//            for(int j=0;j<4;j++) {
-		//                cout << "\tv"<<tets[new_t_ids[i]][j]<<":";
-		//                vector_print(tet_vertices[tets[new_t_ids[i]][j]].conn_tets);
-		//            }
-		//        }
-		//        pausee();
 
 		// push new edges into the queue
 		old_t_ids.insert( old_t_ids.end(), new_t_ids.begin(), new_t_ids.end() );
@@ -1824,82 +1699,10 @@ void floatTetWild::manifold_vertices( Mesh& mesh )
 		}
 		//
 		if( tet_groups.size() < 2 )
-		{
 			continue;
-
-			//            std::vector<std::array<int, 2>> tmp_edges;
-			//            for (int t_id:tet_groups[0]) {
-			//                for (int j = 0; j < 4; j++) {
-			//                    if (tets[t_id][j] == b_v_id)
-			//                        continue;
-			//                    int opp_t_id = get_opp_t_id(mesh, t_id, j);
-			//                    if(opp_t_id == OPP_T_ID_BOUNDARY){
-			//                        int k = 0;
-			//                        for (; k < 3; k++) {
-			//                            if (tets[t_id][(j + 1 + k) % 4] == b_v_id)
-			//                                break;
-			//                        }
-			////                        //fortest
-			////                        tets[t_id].print();
-			////                        cout<<b_v_id<<" "<<j<<endl;
-			////                        cout<<k<<endl;
-			////                        cout<<tets[t_id][(j + 1 + (k + 1) % 3) % 4]<<" "<< tets[t_id][(j + 1 + (k + 2) % 3) % 4]<<endl;
-			////                        pausee();
-			////                        //fortest
-			//                        tmp_edges.push_back(
-			//                                {{tets[t_id][(j + 1 + (k + 1) % 3) % 4], tets[t_id][(j + 1 + (k + 2) % 3) % 4]}});
-			//                    }
-			//                }
-			//            }
-			//            std::vector<int> tmp_vs;
-			//            for(auto& e:tmp_edges) {
-			//                tmp_vs.push_back(e[0]);
-			//                tmp_vs.push_back(e[1]);
-			//            }
-			//            vector_unique(tmp_vs);
-			//            std::map<int, std::vector<int>> conn_e4v;
-			//            for(int i=0;i<tmp_edges.size();i++){
-			//                conn_e4v[tmp_edges[i][0]].push_back(i);
-			//                conn_e4v[tmp_edges[i][1]].push_back(i);
-			//            }
-			//
-			//            int cnt_es = 1;
-			//            int cur_e_id = 0;
-			//            int start_v_id = tmp_edges[cur_e_id][0];
-			//            int cur_v_id = tmp_edges[cur_e_id][1];
-			//            while(cnt_es<tmp_edges.size()) {
-			//                int next_e_id = -1;
-			//                for (int e_id: conn_e4v[cur_v_id]) {
-			//                    if (e_id != cur_e_id) {
-			//                        next_e_id = e_id;
-			//                        break;
-			//                    }
-			//                }
-			//                if (next_e_id < 0)
-			//                    break;
-			//                cur_v_id = cur_v_id == tmp_edges[next_e_id][0] ? tmp_edges[next_e_id][1] : tmp_edges[next_e_id][0];
-			//                cur_e_id = next_e_id;
-			//                cnt_es++;
-			//                if(cur_v_id == start_v_id)
-			//                    break;
-			//            }
-			//
-			//            if (cnt_es == tmp_edges.size())
-			//                continue;
-			//
-			//            cout<<"XXXXXXXXXXXX"<<endl;
-		}
 
 		cout << "find non-manifold vertex " << b_v_id << endl;
 
-		//        if(tet_groups.size() == 1){
-		//            for (int i = 1; i < tet_groups[0].size(); i++) {
-		//                tet_vertices.push_back(tet_vertices[b_v_id]);
-		//                int t_id = tet_groups[0][i];
-		//                int j = tets[t_id].find(b_v_id);
-		//                tets[t_id][j] = tet_vertices.size() - 1;
-		//            }
-		//        } else {
 		for( int i = 1; i < tet_groups.size(); i++ )
 		{
 			tet_vertices.push_back( tet_vertices[ b_v_id ] );
@@ -1909,7 +1712,6 @@ void floatTetWild::manifold_vertices( Mesh& mesh )
 				tets[ t_id ][ j ] = tet_vertices.size() - 1;
 			}
 		}
-		//        }
 	}
 }
 
@@ -2090,10 +1892,7 @@ void floatTetWild::manifold_surface( Mesh& mesh, Eigen::MatrixXd& V, Eigen::Matr
 	for( int i = 0; i < B.rows(); i++ )
 	{
 		if( !B( i, 0 ) )
-		{
 			cnt++;
-			//            cout << "non-manifold " << i << " " << V.row(i) << endl;
-		}
 	}
 	cout << cnt << endl;
 	// fortest
