@@ -63,9 +63,7 @@ namespace floatTetWild
 		{
 		}
 		MeshVertex() {}
-
 		Vector3 pos;
-		// Vector3 input_pos;
 
 		inline Scalar& operator[]( const int index )
 		{
@@ -79,7 +77,6 @@ namespace floatTetWild
 			return pos[ index ];
 		}
 
-		//        std::unordered_set<int> conn_tets;
 		std::vector<int> conn_tets;
 
 		bool is_on_surface = false;
