@@ -243,7 +243,7 @@ namespace GEO
 		VertexMesh M( nb_vertices, vertices, stride );
 		if( dimension == 3 )
 		{
-			HilbertSort3d<Hilbert_vcmp, VertexMesh>( M, m, e );
+			HilbertSort3d<Hilbert_vcmp, VertexMesh> hs3d( M, m, e );
 		}
 		/* else if( dimension == 2 )
 		{
