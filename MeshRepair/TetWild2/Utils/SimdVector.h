@@ -8,17 +8,6 @@ namespace Simd
 	{
 		__m128d xy, z;
 
-	  public:
-		static Vec3 load3( const double* rsi )
-		{
-			return Vec3 { _mm_loadu_pd( rsi ), _mm_load_sd( rsi + 2 ) };
-		}
-		void store3( double* rdi ) const
-		{
-			_mm_storeu_pd( rdi, xy );
-			_mm_store_sd( rdi + 2, z );
-		}
-
 		Vec3 operator-( const Vec3& b ) const
 		{
 			return Vec3 { _mm_sub_pd( xy, b.xy ), _mm_sub_pd( z, b.z ) };
@@ -43,6 +32,17 @@ namespace Simd
 			return _mm_unpackhi_pd( xy, xy );
 		}
 	};
+
+	inline Vec3 load3( const double* rsi )
+	{
+		return Vec3 { _mm_loadu_pd( rsi ), _mm_load_sd( rsi + 2 ) };
+	}
+
+	inline void store3( double* rdi, Vec3 v )
+	{
+		_mm_storeu_pd( rdi, v.xy );
+		_mm_store_sd( rdi + 2, v.z );
+	}
 
 	inline double dot( const Vec3& a, const Vec3& b )
 	{

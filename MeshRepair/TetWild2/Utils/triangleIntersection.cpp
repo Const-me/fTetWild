@@ -169,8 +169,10 @@ namespace
 
 	// clang-format on
 	using Vec = Simd::Vec3;
-	using Simd::dot;
 	using Simd::cross;
+	using Simd::dot;
+	using Simd::load3;
+	using Simd::store3;
 
 	struct Context
 	{
@@ -190,34 +192,34 @@ namespace
 			{
 				if( sub_sub_cross_sub_dot( r1, q2, p1, p2 ) > 0 )
 				{
-					const Vec p1v = Vec::load3( p1 );
-					const Vec p2v = Vec::load3( p2 );
+					const Vec p1v = load3( p1 );
+					const Vec p2v = load3( p2 );
 					Vec v1 = p1v - p2v;
-					Vec v2 = p1v - Vec::load3( r1 );
+					Vec v2 = p1v - load3( r1 );
 					double alpha = dot( v1, c.N2 ) / dot( v2, c.N2 );
 					v1 = v2 * alpha;
-					( p1v - v1 ).store3( c.source );
+					store3( c.source, p1v - v1 );
 					v1 = p2v - p1v;
-					v2 = p2v - Vec::load3( r2 );
+					v2 = p2v - load3( r2 );
 					alpha = dot( v1, c.N1 ) / dot( v2, c.N1 );
 					v1 = v2 * alpha;
-					( p2v - v1 ).store3( c.target );
+					store3( c.target, p2v - v1 );
 					return 1;
 				}
 				else
 				{
-					const Vec p1v = Vec::load3( p1 );
-					const Vec p2v = Vec::load3( p2 );
+					const Vec p1v = load3( p1 );
+					const Vec p2v = load3( p2 );
 					Vec v1 = p2v - p1v;
-					Vec v2 = p2v - Vec::load3( q2 );
+					Vec v2 = p2v - load3( q2 );
 					double alpha = dot( v1, c.N1 ) / dot( v2, c.N1 );
 					v1 = v2 * alpha;
-					( p2v - v1 ).store3( c.source );
+					store3( c.source, p2v - v1 );
 					v1 = p2v - p1v;
-					v2 = p2v - Vec::load3( r2 );
+					v2 = p2v - load3( r2 );
 					alpha = dot( v1, c.N1 ) / dot( v2, c.N1 );
 					v1 = v2 * alpha;
-					( p2v - v1 ).store3( c.target );
+					store3( c.target, p2v - v1 );
 					return 1;
 				}
 			}
@@ -231,35 +233,35 @@ namespace
 
 			if( sub_sub_cross_sub_dot( r1, q2, p1, p2 ) >= 0 )
 			{
-				const Vec p1v = Vec::load3( p1 );
-				const Vec p2v = Vec::load3( p2 );
+				const Vec p1v = load3( p1 );
+				const Vec p2v = load3( p2 );
 				Vec v1 = p1v - p2v;
-				Vec v2 = p1v - Vec::load3( r1 );
+				Vec v2 = p1v - load3( r1 );
 				double alpha = dot( v1, c.N2 ) / dot( v2, c.N2 );
 				v1 = v2 * alpha;
-				( p1v - v1 ).store3( c.source );
+				store3( c.source, p1v - v1 );
 				v1 = p1v - p2v;
-				v2 = p1v - Vec::load3( q1 );
+				v2 = p1v - load3( q1 );
 				alpha = dot( v1, c.N2 ) / dot( v2, c.N2 );
 				v1 = v2 * alpha;
-				( p1v - v1 ).store3( c.target );
+				store3( c.target, p1v - v1 );
 				return 1;
 			}
 			else
 			{
-				const Vec p1v = Vec::load3( p1 );
-				const Vec p2v = Vec::load3( p2 );
+				const Vec p1v = load3( p1 );
+				const Vec p2v = load3( p2 );
 
 				Vec v1 = p2v - p1v;
-				Vec v2 = p2v - Vec::load3( q2 );
+				Vec v2 = p2v - load3( q2 );
 				double alpha = dot( v1, c.N1 ) / dot( v2, c.N1 );
 				v1 = v2 * alpha;
-				( p2v - v1 ).store3( c.source );
+				store3( c.source, p2v - v1 );
 				v1 = p1v - p2v;
-				v2 = p1v - Vec::load3( q1 );
+				v2 = p1v - load3( q1 );
 				alpha = dot( v1, c.N2 ) / dot( v2, c.N2 );
 				v1 = v2 * alpha;
-				( p1v - v1 ).store3( c.target );
+				store3( c.target, p1v - v1 );
 				return 1;
 			}
 		}
@@ -288,22 +290,7 @@ namespace
 	int triangleIntersectionTestV2( const double* p1, const double* q1, const double* r1, const double* p2, const double* q2, const double* r2, bool* coplanar,
 	  double* source, double* target )
 	{
-		Context c;
-		c.coplanar = coplanar;
-		c.source = source;
-		c.target = target;
-
 		std::array<int, 3> dpqr1, dpqr2;
-
-		Vec tmp = Vec::load3( p1 );
-		Vec v1 = Vec::load3( q1 ) - tmp;
-		Vec v2 = Vec::load3( r1 ) - tmp;
-		c.N1 = cross( v1, v2 );
-
-		tmp = Vec::load3( r2 );
-		v1 = Vec::load3( p2 ) - tmp;
-		v2 = Vec::load3( q2 ) - tmp;
-		c.N2 = cross( v1, v2 );
 
 		dpqr1[ 0 ] = sub_sub_cross_sub_dot( p2, q2, r2, p1 );
 		dpqr1[ 1 ] = sub_sub_cross_sub_dot( p2, q2, r2, q1 );
@@ -311,9 +298,6 @@ namespace
 
 		if( ( ( dpqr1[ 0 ] * dpqr1[ 1 ] ) > 0 ) && ( ( dpqr1[ 0 ] * dpqr1[ 2 ] ) > 0 ) )
 			return 666;
-
-		// Compute distance signs  of p2, q2 and r2
-		// to the plane of triangle(p1,q1,r1)
 
 		dpqr2[ 0 ] = sub_sub_cross_sub_dot( p1, q1, r1, p2 );
 		dpqr2[ 1 ] = sub_sub_cross_sub_dot( p1, q1, r1, q2 );
@@ -332,6 +316,22 @@ namespace
 		const std::array<uint8_t, 6>& shuff = switch1shuffles[ index2 ];
 		const std::array<const double*, 3> pqr1 = { p1, q1, r1 };
 		const std::array<const double*, 3> pqr2 = { p2, q2, r2 };
+
+		Context c;
+		c.coplanar = coplanar;
+		c.source = source;
+		c.target = target;
+
+		Vec tmp = load3( p1 );
+		Vec v1 = load3( q1 ) - tmp;
+		Vec v2 = load3( r1 ) - tmp;
+		c.N1 = cross( v1, v2 );
+
+		tmp = load3( r2 );
+		v1 = load3( p2 ) - tmp;
+		v2 = load3( q2 ) - tmp;
+		c.N2 = cross( v1, v2 );
+
 		return triInter3D( c, pqr1[ shuff[ 0 ] ], pqr1[ shuff[ 1 ] ], pqr1[ shuff[ 2 ] ], pqr2[ shuff[ 3 ] ], pqr2[ shuff[ 4 ] ], pqr2[ shuff[ 5 ] ],
 		  dpqr2[ shuff[ 3 ] ], dpqr2[ shuff[ 4 ] ], dpqr2[ shuff[ 5 ] ] );
 	}
