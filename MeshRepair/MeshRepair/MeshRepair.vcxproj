@@ -50,6 +50,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(SolutionDir)include\;$(SolutionDir)..\3rdparty\libigl\cmake\..\external\predicates;$(SolutionDir)..\3rdparty\libigl\external\predicates;$(SolutionDir)..\build\predicates;$(SolutionDir)..\3rdparty\libigl\external\eigen;$(SolutionDir)..\3rdparty\json\include;$(SolutionDir)..\3rdparty\geogram\src\lib;$(SolutionDir)..\3rdparty\tbb\include;$(SolutionDir)..\..\mpir\sandybridge\Inc;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)tbb\Release;$(SolutionDir)..\..\mpir\sandybridge\Bin;$(LibraryPath)</LibraryPath>
+    <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -85,6 +86,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <ModuleDefinitionFile>API\MeshRepair.def</ModuleDefinitionFile>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
