@@ -593,7 +593,7 @@ int floatTetWild::is_tri_tri_cutted_hint(
 		// pausee();
 	}
 
-	bool result = triangleIntersectionTest( &p_1[ 0 ], &q_1[ 0 ], &r_1[ 0 ], &p_2[ 0 ], &q_2[ 0 ], &r_2[ 0 ], &coplanar, &s[ 0 ], &t[ 0 ] );
+	int result = triangleIntersectionTest( &p_1[ 0 ], &q_1[ 0 ], &r_1[ 0 ], &p_2[ 0 ], &q_2[ 0 ], &r_2[ 0 ], &coplanar, &s[ 0 ], &t[ 0 ] );
 	if( is_debug )
 	{
 		cout << ">>result = " << result << endl;
