@@ -18,7 +18,6 @@
 #include "../external/Predicates.hpp"
 #include "LocalOperations.h"
 #include "MeshImprovement.h"
-#include "MeshIO.hpp"
 #include "../../GeogramDelaunay/GeogramDelaunay.h"
 
 namespace floatTetWild

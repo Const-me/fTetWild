@@ -12,7 +12,7 @@
 #include "LocalOperations.h"
 
 #include <igl/remove_duplicate_vertices.h>
-#include <igl/writeOFF.h>
+// #include <igl/writeOFF.h>
 #include <igl/Timer.h>
 #include <igl/unique_rows.h>
 
@@ -989,24 +989,4 @@ void floatTetWild::check_surface( std::vector<Vector3>& input_vertices, std::vec
 	}
 	// if(!is_valid)
 	//     pausee();
-}
-
-void floatTetWild::output_component( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const std::vector<int>& input_tags )
-{
-	return;
-
-	Eigen::MatrixXd V( input_vertices.size(), 3 );
-	for( int i = 0; i < input_vertices.size(); i++ )
-		V.row( i ) = input_vertices[ i ];
-
-	const int C = 2;
-	Eigen::MatrixXi F( std::count( input_tags.begin(), input_tags.end(), C ), 3 );
-	int cnt = 0;
-	for( int i = 0; i < input_tags.size(); i++ )
-	{
-		if( input_tags[ i ] == C )
-			F.row( cnt++ ) = input_faces[ i ];
-	}
-
-	igl::writeOFF( "comp.off", V, F );
 }
