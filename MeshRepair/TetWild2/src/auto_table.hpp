@@ -22,5 +22,7 @@ namespace floatTetWild
 		static inline const std::vector<Vector4i>& get_tet_conf( const int idx, const int cfg ) { return get_tet_confs( idx )[ cfg ]; }
 		static inline const std::vector<std::array<bool, 4>>& get_surface_conf( const int idx, const int cfg ) { return get_surface_conf( idx )[ cfg ]; }
 		static inline const std::vector<Vector4i>& get_face_id_conf( const int idx, const int cfg ) { return get_face_id_conf( idx )[ cfg ]; }
+
+		using Vec4Buffer = std::vector<Vector4i>;
 	};
 }  // namespace floatTetWild

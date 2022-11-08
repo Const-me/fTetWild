@@ -116,6 +116,8 @@
       <Filter>Utils\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="src\EdgesSet.h" />
+    <ClInclude Include="Utils\cutTableData.h" />
+    <ClInclude Include="src\CutTable2.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp" />
@@ -219,6 +221,9 @@
     </ClCompile>
     <ClCompile Include="external\triangle_triangle_intersection.cpp" />
     <ClCompile Include="src\EdgesSet.cpp" />
+    <ClCompile Include="Utils\cutTableDataPrint.cpp" />
+    <ClCompile Include="src\CutTable2.cpp" />
+    <ClCompile Include="Utils\cutTableDataCompare.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="external">
@@ -236,5 +241,8 @@
     <Filter Include="Utils\Mesh">
       <UniqueIdentifier>{39021daf-9711-401c-adf7-9616771cbb6b}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\CutTable2.inl" />
   </ItemGroup>
 </Project>

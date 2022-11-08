@@ -4,6 +4,7 @@
 #include <geogram/basic/common.h>
 #include "meshRepairMain.h"
 // #include "../TetWild2/Utils/RobustPredicates.h"
+// #include "../TetWild2/Utils/cutTableData.h"
 #include "../GeogramDelaunay/geogram/numerics/predicates.h"
 
 namespace MeshRepair
@@ -24,6 +25,8 @@ namespace MeshRepair
 	{
 		// GEO::initialize();
 		GEO::PCK::initialize();
+		// printCutTableData();
+		// validateCutTableData();
 		return S_OK;
 	}
 

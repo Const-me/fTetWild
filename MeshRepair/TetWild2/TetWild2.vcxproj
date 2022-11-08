@@ -84,6 +84,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\CutTable2.h" />
     <ClInclude Include="src\EdgesSet.h" />
     <ClInclude Include="Utils\designTimeUtils.h" />
     <ClInclude Include="external\bfs_orient.h" />
@@ -96,6 +97,7 @@
     <ClInclude Include="external\Predicates.hpp" />
     <ClInclude Include="external\Rational.h" />
     <ClInclude Include="external\WindingNumber.h" />
+    <ClInclude Include="Utils\cutTableData.h" />
     <ClInclude Include="Utils\RobustPredicates.h" />
     <ClInclude Include="Utils\orient3D.h" />
     <ClInclude Include="Utils\KdTree\kd_tree.h" />
@@ -131,8 +133,10 @@
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\CutTable2.cpp" />
     <ClCompile Include="src\EdgesSet.cpp" />
     <ClCompile Include="external\triangle_triangle_intersection.cpp" />
+    <ClCompile Include="Utils\cutTableDataCompare.cpp" />
     <ClCompile Include="Utils\designTimeUtils.cpp" />
     <ClCompile Include="external\bfs_orient.cpp" />
     <ClCompile Include="external\FastWindingNumber.cpp" />
@@ -145,6 +149,7 @@
     <ClCompile Include="external\MshLoader.cpp" />
     <ClCompile Include="external\MshSaver.cpp" />
     <ClCompile Include="external\Predicates.cpp" />
+    <ClCompile Include="Utils\cutTableDataPrint.cpp" />
     <ClCompile Include="Utils\RobustPredicates.cpp" />
     <ClCompile Include="Utils\KdTree\kd_tree.cpp" />
     <ClCompile Include="Utils\KdTree\nn_search.cpp" />
@@ -176,6 +181,9 @@
     <ClCompile Include="TetWild2.cpp" />
     <ClCompile Include="Utils\Mesh\TriangleMesh.reorder.cpp" />
     <ClCompile Include="Utils\miscUtils.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\CutTable2.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

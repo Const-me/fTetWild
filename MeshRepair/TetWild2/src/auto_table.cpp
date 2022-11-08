@@ -412,7 +412,7 @@ namespace floatTetWild
 			  Vector4i( 4, 5, 1, 7 ), Vector4i( 0, 1, 2, 7 ), Vector4i( 4, 7, 6, 5 ) } },
 		  {}, {}, {}, {}, {}, {}, {} } };
 
-		assert( !table[ idx ].empty() );
+		// assert( !table[ idx ].empty() );
 		return table[ idx ];
 	}
 
@@ -1240,7 +1240,7 @@ namespace floatTetWild
 			  { { false, true, false, false } } } },
 		  {}, {}, {}, {}, {}, {}, {} } };
 
-		assert( !table[ idx ].empty() );
+		// assert( !table[ idx ].empty() );
 		return table[ idx ];
 	}
 
@@ -1753,7 +1753,7 @@ namespace floatTetWild
 			  Vector4i( -1, -1, -1, 2 ), Vector4i( -1, -1, -1, 2 ), Vector4i( -1, -1, -1, 3 ), Vector4i( -1, -1, -1, -1 ) } },
 		  {}, {}, {}, {}, {}, {}, {} } };
 
-		assert( !table[ idx ].empty() );
+		// assert( !table[ idx ].empty() );
 		return table[ idx ];
 	}
 

@@ -14,7 +14,8 @@
 #include "LocalOperations.h"
 #include "../external/Predicates.hpp"
 #include "MeshIO.hpp"
-#include "auto_table.hpp"
+// #include "auto_table.hpp"
+#include "CutTable2.h"
 #include "Logger.hpp"
 #include "intersections.h"
 #include "MeshImprovement.h"  //fortest
@@ -1525,7 +1526,7 @@ bool floatTetWild::subdivide_tets( int insert_f_id, Mesh& mesh, CutMesh& cut_mes
 		}
 
 		/////
-		auto get_centroid = [ & ]( const std::vector<Vector4i>& config, int lv_id, Vector3& c )
+		auto get_centroid = [ & ]( const CutTable::Vec4Buffer& config, int lv_id, Vector3& c )
 		{
 			std::vector<int> n_ids;
 			for( const auto& tet : config )
@@ -1555,7 +1556,7 @@ bool floatTetWild::subdivide_tets( int insert_f_id, Mesh& mesh, CutMesh& cut_mes
 
 		auto check_config = [ & ]( int diag_config_id, std::vector<std::pair<int, Vector3>>& centroids )
 		{
-			const std::vector<Vector4i>& config = CutTable::get_tet_conf( config_id, diag_config_id );
+			const auto& config = CutTable::get_tet_conf( config_id, diag_config_id );
 			Scalar min_q = -666;
 			int cnt = 0;
 			std::map<int, int> map_lv_to_c;
