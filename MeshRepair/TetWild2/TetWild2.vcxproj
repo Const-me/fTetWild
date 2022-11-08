@@ -131,6 +131,7 @@
     <ClInclude Include="src\Types.hpp" />
     <ClInclude Include="src\VertexSmoothing.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="Utils\SimdVector.h" />
     <ClInclude Include="Utils\triangleIntersection.h" />
   </ItemGroup>
   <ItemGroup>

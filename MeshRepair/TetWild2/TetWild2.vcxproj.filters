@@ -119,6 +119,7 @@
     <ClInclude Include="Utils\cutTableData.h" />
     <ClInclude Include="src\CutTable2.h" />
     <ClInclude Include="Utils\triangleIntersection.h" />
+    <ClInclude Include="Utils\SimdVector.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp" />

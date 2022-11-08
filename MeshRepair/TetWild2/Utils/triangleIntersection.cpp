@@ -1,6 +1,7 @@
 #include <stdafx.h>
 #include "triangleIntersection.h"
 #include "Geogram2.h"
+#include "SimdVector.h"
 
 extern "C++" int tri_tri_intersection_test_3d(
   double p1[ 3 ], double q1[ 3 ], double r1[ 3 ], double p2[ 3 ], double q2[ 3 ], double r2[ 3 ], int* coplanar, double source[ 3 ], double target[ 3 ] );
@@ -16,23 +17,6 @@ namespace
 		*coplanar = ( 0 != cp );
 		return res;
 	}
-
-#define SUB( dest, v1, v2 )        \
-	dest[ 0 ] = v1[ 0 ] - v2[ 0 ]; \
-	dest[ 1 ] = v1[ 1 ] - v2[ 1 ]; \
-	dest[ 2 ] = v1[ 2 ] - v2[ 2 ]
-
-#define CROSS( dest, v1, v2 )                          \
-	dest[ 0 ] = v1[ 1 ] * v2[ 2 ] - v1[ 2 ] * v2[ 1 ]; \
-	dest[ 1 ] = v1[ 2 ] * v2[ 0 ] - v1[ 0 ] * v2[ 2 ]; \
-	dest[ 2 ] = v1[ 0 ] * v2[ 1 ] - v1[ 1 ] * v2[ 0 ]
-
-#define DOT( v1, v2 ) ( v1[ 0 ] * v2[ 0 ] + v1[ 1 ] * v2[ 1 ] + v1[ 2 ] * v2[ 2 ] )
-
-#define SCALAR( dest, alpha, v ) \
-	dest[ 0 ] = alpha * v[ 0 ];  \
-	dest[ 1 ] = alpha * v[ 1 ];  \
-	dest[ 2 ] = alpha * v[ 2 ]
 
 	inline int sub_sub_cross_sub_dot( const double* pa, const double* pb, const double* pc, const double* pd )
 	{
@@ -184,11 +168,14 @@ namespace
 	};
 
 	// clang-format on
+	using Vec = Simd::Vec3;
+	using Simd::dot;
+	using Simd::cross;
 
 	struct Context
 	{
-		std::array<double, 3> N1;
-		std::array<double, 3> N2;
+		Vec N1;
+		Vec N2;
 		double* source;
 		double* target;
 		bool* coplanar;
@@ -197,40 +184,40 @@ namespace
 	// CONSTRUCT_INTERSECTION macro, reworked into a function
 	int constructIntersection( Context& c, const double* p1, const double* q1, const double* r1, const double* p2, const double* q2, const double* r2 )
 	{
-		std::array<double, 3> v1;
-		std::array<double, 3> v2;
-		double alpha;
-
 		if( sub_sub_cross_sub_dot( q1, r2, p1, p2 ) > 0 )
 		{
 			if( sub_sub_cross_sub_dot( r1, r2, p1, p2 ) <= 0 )
 			{
 				if( sub_sub_cross_sub_dot( r1, q2, p1, p2 ) > 0 )
 				{
-					SUB( v1, p1, p2 );
-					SUB( v2, p1, r1 );
-					alpha = DOT( v1, c.N2 ) / DOT( v2, c.N2 );
-					SCALAR( v1, alpha, v2 );
-					SUB( c.source, p1, v1 );
-					SUB( v1, p2, p1 );
-					SUB( v2, p2, r2 );
-					alpha = DOT( v1, c.N1 ) / DOT( v2, c.N1 );
-					SCALAR( v1, alpha, v2 );
-					SUB( c.target, p2, v1 );
+					const Vec p1v = Vec::load3( p1 );
+					const Vec p2v = Vec::load3( p2 );
+					Vec v1 = p1v - p2v;
+					Vec v2 = p1v - Vec::load3( r1 );
+					double alpha = dot( v1, c.N2 ) / dot( v2, c.N2 );
+					v1 = v2 * alpha;
+					( p1v - v1 ).store3( c.source );
+					v1 = p2v - p1v;
+					v2 = p2v - Vec::load3( r2 );
+					alpha = dot( v1, c.N1 ) / dot( v2, c.N1 );
+					v1 = v2 * alpha;
+					( p2v - v1 ).store3( c.target );
 					return 1;
 				}
 				else
 				{
-					SUB( v1, p2, p1 );
-					SUB( v2, p2, q2 );
-					alpha = DOT( v1, c.N1 ) / DOT( v2, c.N1 );
-					SCALAR( v1, alpha, v2 );
-					SUB( c.source, p2, v1 );
-					SUB( v1, p2, p1 );
-					SUB( v2, p2, r2 );
-					alpha = DOT( v1, c.N1 ) / DOT( v2, c.N1 );
-					SCALAR( v1, alpha, v2 );
-					SUB( c.target, p2, v1 );
+					const Vec p1v = Vec::load3( p1 );
+					const Vec p2v = Vec::load3( p2 );
+					Vec v1 = p2v - p1v;
+					Vec v2 = p2v - Vec::load3( q2 );
+					double alpha = dot( v1, c.N1 ) / dot( v2, c.N1 );
+					v1 = v2 * alpha;
+					( p2v - v1 ).store3( c.source );
+					v1 = p2v - p1v;
+					v2 = p2v - Vec::load3( r2 );
+					alpha = dot( v1, c.N1 ) / dot( v2, c.N1 );
+					v1 = v2 * alpha;
+					( p2v - v1 ).store3( c.target );
 					return 1;
 				}
 			}
@@ -244,30 +231,35 @@ namespace
 
 			if( sub_sub_cross_sub_dot( r1, q2, p1, p2 ) >= 0 )
 			{
-				SUB( v1, p1, p2 );
-				SUB( v2, p1, r1 );
-				alpha = DOT( v1, c.N2 ) / DOT( v2, c.N2 );
-				SCALAR( v1, alpha, v2 );
-				SUB( c.source, p1, v1 );
-				SUB( v1, p1, p2 );
-				SUB( v2, p1, q1 );
-				alpha = DOT( v1, c.N2 ) / DOT( v2, c.N2 );
-				SCALAR( v1, alpha, v2 );
-				SUB( c.target, p1, v1 );
+				const Vec p1v = Vec::load3( p1 );
+				const Vec p2v = Vec::load3( p2 );
+				Vec v1 = p1v - p2v;
+				Vec v2 = p1v - Vec::load3( r1 );
+				double alpha = dot( v1, c.N2 ) / dot( v2, c.N2 );
+				v1 = v2 * alpha;
+				( p1v - v1 ).store3( c.source );
+				v1 = p1v - p2v;
+				v2 = p1v - Vec::load3( q1 );
+				alpha = dot( v1, c.N2 ) / dot( v2, c.N2 );
+				v1 = v2 * alpha;
+				( p1v - v1 ).store3( c.target );
 				return 1;
 			}
 			else
 			{
-				SUB( v1, p2, p1 );
-				SUB( v2, p2, q2 );
-				alpha = DOT( v1, c.N1 ) / DOT( v2, c.N1 );
-				SCALAR( v1, alpha, v2 );
-				SUB( c.source, p2, v1 );
-				SUB( v1, p1, p2 );
-				SUB( v2, p1, q1 );
-				alpha = DOT( v1, c.N2 ) / DOT( v2, c.N2 );
-				SCALAR( v1, alpha, v2 );
-				SUB( c.target, p1, v1 );
+				const Vec p1v = Vec::load3( p1 );
+				const Vec p2v = Vec::load3( p2 );
+
+				Vec v1 = p2v - p1v;
+				Vec v2 = p2v - Vec::load3( q2 );
+				double alpha = dot( v1, c.N1 ) / dot( v2, c.N1 );
+				v1 = v2 * alpha;
+				( p2v - v1 ).store3( c.source );
+				v1 = p1v - p2v;
+				v2 = p1v - Vec::load3( q1 );
+				alpha = dot( v1, c.N2 ) / dot( v2, c.N2 );
+				v1 = v2 * alpha;
+				( p1v - v1 ).store3( c.target );
 				return 1;
 			}
 		}
@@ -302,15 +294,16 @@ namespace
 		c.target = target;
 
 		std::array<int, 3> dpqr1, dpqr2;
-		std::array<double, 3> v1, v2;
 
-		SUB( v1, q1, p1 );
-		SUB( v2, r1, p1 );
-		CROSS( c.N1, v1, v2 );
+		Vec tmp = Vec::load3( p1 );
+		Vec v1 = Vec::load3( q1 ) - tmp;
+		Vec v2 = Vec::load3( r1 ) - tmp;
+		c.N1 = cross( v1, v2 );
 
-		SUB( v1, p2, r2 );
-		SUB( v2, q2, r2 );
-		CROSS( c.N2, v1, v2 );
+		tmp = Vec::load3( r2 );
+		v1 = Vec::load3( p2 ) - tmp;
+		v2 = Vec::load3( q2 ) - tmp;
+		c.N2 = cross( v1, v2 );
 
 		dpqr1[ 0 ] = sub_sub_cross_sub_dot( p2, q2, r2, p1 );
 		dpqr1[ 1 ] = sub_sub_cross_sub_dot( p2, q2, r2, q1 );
