@@ -10,6 +10,7 @@
 #include "intersections.h"
 #include "../external/Predicates.hpp"
 #include "LocalOperations.h"
+#include "../Utils/triangleIntersection.h"
 
 bool floatTetWild::seg_line_intersection_2d( const std::array<Vector2, 2>& seg, const std::array<Vector2, 2>& line, Scalar& t_seg )
 {
@@ -464,15 +465,11 @@ bool floatTetWild::is_crossing( int s1, int s2 )
 	return false;
 }
 
-extern "C++" int tri_tri_intersection_test_3d( floatTetWild::Scalar p1[ 3 ], floatTetWild::Scalar q1[ 3 ], floatTetWild::Scalar r1[ 3 ],
-  floatTetWild::Scalar p2[ 3 ], floatTetWild::Scalar q2[ 3 ], floatTetWild::Scalar r2[ 3 ], int* coplanar, floatTetWild::Scalar source[ 3 ],
-  floatTetWild::Scalar target[ 3 ] );
-
 int floatTetWild::is_tri_tri_cutted( const Vector3& p1, const Vector3& p2, const Vector3& p3, const Vector3& q1, const Vector3& q2, const Vector3& q3 )
 {
 	std::array<Scalar, 3> p_1 = { { 0, 0, 0 } }, q_1 = { { 0, 0, 0 } }, r_1 = { { 0, 0, 0 } };
 	std::array<Scalar, 3> p_2 = { { 0, 0, 0 } }, q_2 = { { 0, 0, 0 } }, r_2 = { { 0, 0, 0 } };
-	int coplanar = 0;
+	bool coplanar = false;
 	std::array<Scalar, 3> s = { { 0, 0, 0 } }, t = { { 0, 0, 0 } };
 	for( int j = 0; j < 3; j++ )
 	{
@@ -484,7 +481,7 @@ int floatTetWild::is_tri_tri_cutted( const Vector3& p1, const Vector3& p2, const
 		r_2[ j ] = q3[ j ];
 	}
 
-	if( !tri_tri_intersection_test_3d( &p_1[ 0 ], &q_1[ 0 ], &r_1[ 0 ], &p_2[ 0 ], &q_2[ 0 ], &r_2[ 0 ], &coplanar, &s[ 0 ], &t[ 0 ] ) )
+	if( !triangleIntersectionTest( &p_1[ 0 ], &q_1[ 0 ], &r_1[ 0 ], &p_2[ 0 ], &q_2[ 0 ], &r_2[ 0 ], &coplanar, &s[ 0 ], &t[ 0 ] ) )
 		return CUT_EMPTY;
 
 	if( coplanar == 1 )
@@ -520,7 +517,7 @@ int floatTetWild::is_tri_tri_cutted_hint(
 {
 	std::array<Scalar, 3> p_1 = { { 0, 0, 0 } }, q_1 = { { 1, 0, 0 } }, r_1 = { { 0, 1, 0 } };
 	std::array<Scalar, 3> p_2 = { { 0, 0, 0 } }, q_2 = { { -1, -1, 0 } }, r_2 = { { 1, 1, 0 } };
-	int coplanar = 0;
+	bool coplanar = false;
 	std::array<Scalar, 3> s = { { 0, 0, 0 } }, t = { { 0, 0, 0 } };
 
 	for( int j = 0; j < 3; j++ )
@@ -596,7 +593,7 @@ int floatTetWild::is_tri_tri_cutted_hint(
 		// pausee();
 	}
 
-	int result = tri_tri_intersection_test_3d( &p_1[ 0 ], &q_1[ 0 ], &r_1[ 0 ], &p_2[ 0 ], &q_2[ 0 ], &r_2[ 0 ], &coplanar, &s[ 0 ], &t[ 0 ] );
+	bool result = triangleIntersectionTest( &p_1[ 0 ], &q_1[ 0 ], &r_1[ 0 ], &p_2[ 0 ], &q_2[ 0 ], &r_2[ 0 ], &coplanar, &s[ 0 ], &t[ 0 ] );
 	if( is_debug )
 	{
 		cout << ">>result = " << result << endl;

@@ -131,6 +131,7 @@
     <ClInclude Include="src\Types.hpp" />
     <ClInclude Include="src\VertexSmoothing.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="Utils\triangleIntersection.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\CutTable2.cpp" />
@@ -181,6 +182,7 @@
     <ClCompile Include="TetWild2.cpp" />
     <ClCompile Include="Utils\Mesh\TriangleMesh.reorder.cpp" />
     <ClCompile Include="Utils\miscUtils.cpp" />
+    <ClCompile Include="Utils\triangleIntersection.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\CutTable2.inl" />
