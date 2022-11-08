@@ -185,9 +185,17 @@ namespace
 
 	// clang-format on
 
+	struct Context
+	{
+		std::array<double, 3> N1;
+		std::array<double, 3> N2;
+		double* source;
+		double* target;
+		bool* coplanar;
+	};
+
 	// CONSTRUCT_INTERSECTION macro, reworked into a function
-	int constructIntersection( const double* p1, const double* q1, const double* r1, const double* p2, const double* q2, const double* r2,
-	  const std::array<double, 3>& N1, const std::array<double, 3>& N2, double* source, double* target )
+	int constructIntersection( Context& c, const double* p1, const double* q1, const double* r1, const double* p2, const double* q2, const double* r2 )
 	{
 		std::array<double, 3> v1;
 		std::array<double, 3> v2;
@@ -201,28 +209,28 @@ namespace
 				{
 					SUB( v1, p1, p2 );
 					SUB( v2, p1, r1 );
-					alpha = DOT( v1, N2 ) / DOT( v2, N2 );
+					alpha = DOT( v1, c.N2 ) / DOT( v2, c.N2 );
 					SCALAR( v1, alpha, v2 );
-					SUB( source, p1, v1 );
+					SUB( c.source, p1, v1 );
 					SUB( v1, p2, p1 );
 					SUB( v2, p2, r2 );
-					alpha = DOT( v1, N1 ) / DOT( v2, N1 );
+					alpha = DOT( v1, c.N1 ) / DOT( v2, c.N1 );
 					SCALAR( v1, alpha, v2 );
-					SUB( target, p2, v1 );
+					SUB( c.target, p2, v1 );
 					return 1;
 				}
 				else
 				{
 					SUB( v1, p2, p1 );
 					SUB( v2, p2, q2 );
-					alpha = DOT( v1, N1 ) / DOT( v2, N1 );
+					alpha = DOT( v1, c.N1 ) / DOT( v2, c.N1 );
 					SCALAR( v1, alpha, v2 );
-					SUB( source, p2, v1 );
+					SUB( c.source, p2, v1 );
 					SUB( v1, p2, p1 );
 					SUB( v2, p2, r2 );
-					alpha = DOT( v1, N1 ) / DOT( v2, N1 );
+					alpha = DOT( v1, c.N1 ) / DOT( v2, c.N1 );
 					SCALAR( v1, alpha, v2 );
-					SUB( target, p2, v1 );
+					SUB( c.target, p2, v1 );
 					return 1;
 				}
 			}
@@ -238,42 +246,42 @@ namespace
 			{
 				SUB( v1, p1, p2 );
 				SUB( v2, p1, r1 );
-				alpha = DOT( v1, N2 ) / DOT( v2, N2 );
+				alpha = DOT( v1, c.N2 ) / DOT( v2, c.N2 );
 				SCALAR( v1, alpha, v2 );
-				SUB( source, p1, v1 );
+				SUB( c.source, p1, v1 );
 				SUB( v1, p1, p2 );
 				SUB( v2, p1, q1 );
-				alpha = DOT( v1, N2 ) / DOT( v2, N2 );
+				alpha = DOT( v1, c.N2 ) / DOT( v2, c.N2 );
 				SCALAR( v1, alpha, v2 );
-				SUB( target, p1, v1 );
+				SUB( c.target, p1, v1 );
 				return 1;
 			}
 			else
 			{
 				SUB( v1, p2, p1 );
 				SUB( v2, p2, q2 );
-				alpha = DOT( v1, N1 ) / DOT( v2, N1 );
+				alpha = DOT( v1, c.N1 ) / DOT( v2, c.N1 );
 				SCALAR( v1, alpha, v2 );
-				SUB( source, p2, v1 );
+				SUB( c.source, p2, v1 );
 				SUB( v1, p1, p2 );
 				SUB( v2, p1, q1 );
-				alpha = DOT( v1, N2 ) / DOT( v2, N2 );
+				alpha = DOT( v1, c.N2 ) / DOT( v2, c.N2 );
 				SCALAR( v1, alpha, v2 );
-				SUB( target, p1, v1 );
+				SUB( c.target, p1, v1 );
 				return 1;
 			}
 		}
 	}
 
 	// TRI_TRI_INTER_3D macro, reworked into a function
-	int triInter3D( const double* p1, const double* q1, const double* r1, const double* p2, const double* q2, const double* r2, int dp2, int dq2, int dr2,
-	  const std::array<double, 3>& N1, const std::array<double, 3>& N2, bool* coplanar, double* source, double* target )
+	int triInter3D(
+	  Context& c, const double* p1, const double* q1, const double* r1, const double* p2, const double* q2, const double* r2, int dp2, int dq2, int dr2 )
 	{
 		const uint8_t idx = lookupShuffleIndex( dp2, dq2, dr2 );
 		if( idx == 0xFF )
 		{
 			// triangles are co-planar
-			*coplanar = true;
+			*c.coplanar = true;
 			return -1;
 		}
 
@@ -282,23 +290,27 @@ namespace
 		const std::array<const double*, 3> pqr2 = { p2, q2, r2 };
 
 		return constructIntersection(
-		  pqr1[ shuff[ 0 ] ], pqr1[ shuff[ 1 ] ], pqr1[ shuff[ 2 ] ], pqr2[ shuff[ 3 ] ], pqr2[ shuff[ 4 ] ], pqr2[ shuff[ 5 ] ], N1, N2, source, target );
+		  c, pqr1[ shuff[ 0 ] ], pqr1[ shuff[ 1 ] ], pqr1[ shuff[ 2 ] ], pqr2[ shuff[ 3 ] ], pqr2[ shuff[ 4 ] ], pqr2[ shuff[ 5 ] ] );
 	}
 
 	int triangleIntersectionTestV2( const double* p1, const double* q1, const double* r1, const double* p2, const double* q2, const double* r2, bool* coplanar,
 	  double* source, double* target )
 	{
+		Context c;
+		c.coplanar = coplanar;
+		c.source = source;
+		c.target = target;
+
 		std::array<int, 3> dpqr1, dpqr2;
 		std::array<double, 3> v1, v2;
-		std::array<double, 3> N1, N2;
 
 		SUB( v1, q1, p1 );
 		SUB( v2, r1, p1 );
-		CROSS( N1, v1, v2 );
+		CROSS( c.N1, v1, v2 );
 
 		SUB( v1, p2, r2 );
 		SUB( v2, q2, r2 );
-		CROSS( N2, v1, v2 );
+		CROSS( c.N2, v1, v2 );
 
 		dpqr1[ 0 ] = sub_sub_cross_sub_dot( p2, q2, r2, p1 );
 		dpqr1[ 1 ] = sub_sub_cross_sub_dot( p2, q2, r2, q1 );
@@ -327,8 +339,8 @@ namespace
 		const std::array<uint8_t, 6>& shuff = switch1shuffles[ index2 ];
 		const std::array<const double*, 3> pqr1 = { p1, q1, r1 };
 		const std::array<const double*, 3> pqr2 = { p2, q2, r2 };
-		return triInter3D( pqr1[ shuff[ 0 ] ], pqr1[ shuff[ 1 ] ], pqr1[ shuff[ 2 ] ], pqr2[ shuff[ 3 ] ], pqr2[ shuff[ 4 ] ], pqr2[ shuff[ 5 ] ],
-		  dpqr2[ shuff[ 3 ] ], dpqr2[ shuff[ 4 ] ], dpqr2[ shuff[ 5 ] ], N1, N2, coplanar, source, target );
+		return triInter3D( c, pqr1[ shuff[ 0 ] ], pqr1[ shuff[ 1 ] ], pqr1[ shuff[ 2 ] ], pqr2[ shuff[ 3 ] ], pqr2[ shuff[ 4 ] ], pqr2[ shuff[ 5 ] ],
+		  dpqr2[ shuff[ 3 ] ], dpqr2[ shuff[ 4 ] ], dpqr2[ shuff[ 5 ] ] );
 	}
 
 	inline bool equals( const std::array<double, 3>& a, const double* p )
