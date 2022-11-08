@@ -51,24 +51,30 @@ namespace
 		{
 			if( dq1 > 0 )
 				// TRI_TRI_INTER_3D( r1, p1, q1, p2, r2, q2, dp2, dr2, dq2 )
+				// CONSTRUCT_INTERSECTION( p1, r1, q1, r2, p2, q2 )
 				return 0;
 			else if( dr1 > 0 )
 				// TRI_TRI_INTER_3D( q1, r1, p1, p2, r2, q2, dp2, dr2, dq2 )
+				// CONSTRUCT_INTERSECTION( p1, r1, q1, q2, r2, p2 )
 				return 1;
 			else
 				// TRI_TRI_INTER_3D( p1, q1, r1, p2, q2, r2, dp2, dq2, dr2 )
+				// CONSTRUCT_INTERSECTION( p1, q1, r1, p2, q2, r2 )
 				return 2;
 		}
 		else if( dp1 < 0 )
 		{
 			if( dq1 < 0 )
 				// TRI_TRI_INTER_3D( r1, p1, q1, p2, q2, r2, dp2, dq2, dr2 )
+				// CONSTRUCT_INTERSECTION( p1, q1, r1, r2, p2, q2 )
 				return 3;
 			else if( dr1 < 0 )
 				// TRI_TRI_INTER_3D( q1, r1, p1, p2, q2, r2, dp2, dq2, dr2 )
+				// CONSTRUCT_INTERSECTION( p1, q1, r1, q2, r2, p2 )
 				return 4;
 			else
 				// TRI_TRI_INTER_3D( p1, q1, r1, p2, r2, q2, dp2, dr2, dq2 )
+				// CONSTRUCT_INTERSECTION( p1, r1, q1, p2, q2, r2 )
 				return 5;
 		}
 		else
@@ -77,27 +83,33 @@ namespace
 			{
 				if( dr1 >= 0 )
 					// TRI_TRI_INTER_3D( q1, r1, p1, p2, r2, q2, dp2, dr2, dq2 )
+					// CONSTRUCT_INTERSECTION( p1, r1, q1, q2, r2, p2 )
 					return 1;
 				else
 					// TRI_TRI_INTER_3D( p1, q1, r1, p2, q2, r2, dp2, dq2, dr2 )
+					// CONSTRUCT_INTERSECTION( p1, q1, r1, p2, q2, r2 )
 					return 2;
 			}
 			else if( dq1 > 0 )
 			{
 				if( dr1 > 0 )
 					// TRI_TRI_INTER_3D( p1, q1, r1, p2, r2, q2, dp2, dr2, dq2 )
+					// CONSTRUCT_INTERSECTION( p1, r1, q1, p2, q2, r2 )
 					return 5;
 				else
 					// TRI_TRI_INTER_3D( q1, r1, p1, p2, q2, r2, dp2, dq2, dr2 )
+					// CONSTRUCT_INTERSECTION( p1, q1, r1, q2, r2, p2 )
 					return 4;
 			}
 			else
 			{
 				if( dr1 > 0 )
 					// TRI_TRI_INTER_3D( r1, p1, q1, p2, q2, r2, dp2, dq2, dr2 )
+					// CONSTRUCT_INTERSECTION( p1, q1, r1, r2, p2, q2 )
 					return 3;
 				else if( dr1 < 0 )
 					// TRI_TRI_INTER_3D( r1, p1, q1, p2, r2, q2, dp2, dr2, dq2 )
+					// CONSTRUCT_INTERSECTION( p1, r1, q1, r2, p2, q2 )
 					return 0;
 				else
 				{
@@ -147,27 +159,12 @@ namespace
 		shuffle( 1, 2, 0,  0, 2, 1  ),
 		// TRI_TRI_INTER_3D( p1, q1, r1, p2, q2, r2, dp2, dq2, dr2 )
 		shuffle( 0, 1, 2,  0, 1, 2  ),
-
 		// TRI_TRI_INTER_3D( r1, p1, q1, p2, q2, r2, dp2, dq2, dr2 )
 		shuffle( 2, 0, 1,  0, 1, 2  ),
 		// TRI_TRI_INTER_3D( q1, r1, p1, p2, q2, r2, dp2, dq2, dr2 )
 		shuffle( 1, 2, 0,  0, 1, 2  ),
 		// TRI_TRI_INTER_3D( p1, q1, r1, p2, r2, q2, dp2, dr2, dq2 )
 		shuffle( 0, 1, 2,  0, 2, 1  ),
-/*
-		// TRI_TRI_INTER_3D( q1, r1, p1, p2, r2, q2, dp2, dr2, dq2 ) - duplicate of #1
-		shuffle( 1, 2, 0,  0, 2, 1  ),
-		// TRI_TRI_INTER_3D( p1, q1, r1, p2, q2, r2, dp2, dq2, dr2 ) - duplicate of #2
-		shuffle( 0, 1, 2,  0, 1, 2  ),
-		// TRI_TRI_INTER_3D( p1, q1, r1, p2, r2, q2, dp2, dr2, dq2 ) - duplicate of #5
-		shuffle( 0, 1, 2,  0, 2, 1  ),
-		// TRI_TRI_INTER_3D( q1, r1, p1, p2, q2, r2, dp2, dq2, dr2 ) - duplicate of #4
-		shuffle( 1, 2, 0,  0, 1, 2  ),
-		// TRI_TRI_INTER_3D( r1, p1, q1, p2, q2, r2, dp2, dq2, dr2 ) - duplicate of #3
-		shuffle( 2, 0, 1,  0, 1, 2  ),
-		// TRI_TRI_INTER_3D( r1, p1, q1, p2, r2, q2, dp2, dr2, dq2 ) - duplicate of #0
-		shuffle( 2, 0, 1,  0, 2, 1  ),
-*/
 	};
 
 	static const std::array<std::array<uint8_t, 6>, 6> switch2shuffles
