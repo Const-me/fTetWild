@@ -92,8 +92,6 @@
     <ClInclude Include="external\FastWindingNumber.hpp" />
     <ClInclude Include="external\get_mem.h" />
     <ClInclude Include="external\mesh_AABB.h" />
-    <ClInclude Include="external\MshLoader.h" />
-    <ClInclude Include="external\MshSaver.h" />
     <ClInclude Include="external\Predicates.hpp" />
     <ClInclude Include="external\Rational.h" />
     <ClInclude Include="external\WindingNumber.h" />
@@ -123,7 +121,6 @@
     <ClInclude Include="src\Logger.hpp" />
     <ClInclude Include="src\Mesh.hpp" />
     <ClInclude Include="src\MeshImprovement.h" />
-    <ClInclude Include="src\MeshIO.hpp" />
     <ClInclude Include="src\Parameters.h" />
     <ClInclude Include="src\Simplification.h" />
     <ClInclude Include="src\Statistics.h" />
@@ -148,8 +145,6 @@
     </ClCompile>
     <ClCompile Include="external\get_mem.cpp" />
     <ClCompile Include="external\mesh_AABB.cpp" />
-    <ClCompile Include="external\MshLoader.cpp" />
-    <ClCompile Include="external\MshSaver.cpp" />
     <ClCompile Include="external\Predicates.cpp" />
     <ClCompile Include="Utils\cutTableDataPrint.cpp" />
     <ClCompile Include="Utils\RobustPredicates.cpp" />
@@ -172,7 +167,6 @@
     <ClCompile Include="src\Logger.cpp" />
     <ClCompile Include="src\Mesh.cpp" />
     <ClCompile Include="src\MeshImprovement.cpp" />
-    <ClCompile Include="src\MeshIO.cpp" />
     <ClCompile Include="src\Simplification.cpp" />
     <ClCompile Include="src\TriangleInsertion.cpp" />
     <ClCompile Include="src\VertexSmoothing.cpp" />

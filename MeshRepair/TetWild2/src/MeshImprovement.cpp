@@ -14,13 +14,11 @@
 #include "EdgeSwapping.h"
 #include "VertexSmoothing.h"
 #include "Parameters.h"
-#include "MeshIO.hpp"
 #include "TriangleInsertion.h"
 #include "Statistics.h"
 #include "Logger.hpp"
 #include <igl/Timer.h>
 #include <igl/winding_number.h>
-#include "../external/MshLoader.h"
 #include "../Utils/Geogram2.h"
 #include "../Utils/NearestSearch.h"
 // TODO: remove this

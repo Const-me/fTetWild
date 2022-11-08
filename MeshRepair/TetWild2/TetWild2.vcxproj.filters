@@ -23,12 +23,6 @@
     <ClInclude Include="external\get_mem.h">
       <Filter>external</Filter>
     </ClInclude>
-    <ClInclude Include="external\MshLoader.h">
-      <Filter>external</Filter>
-    </ClInclude>
-    <ClInclude Include="external\MshSaver.h">
-      <Filter>external</Filter>
-    </ClInclude>
     <ClInclude Include="external\Predicates.hpp">
       <Filter>external</Filter>
     </ClInclude>
@@ -66,9 +60,6 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\MeshImprovement.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\MeshIO.hpp">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\Parameters.h">
@@ -145,12 +136,6 @@
     <ClCompile Include="external\getRSS.c">
       <Filter>external</Filter>
     </ClCompile>
-    <ClCompile Include="external\MshLoader.cpp">
-      <Filter>external</Filter>
-    </ClCompile>
-    <ClCompile Include="external\MshSaver.cpp">
-      <Filter>external</Filter>
-    </ClCompile>
     <ClCompile Include="external\Predicates.cpp">
       <Filter>external</Filter>
     </ClCompile>
@@ -182,9 +167,6 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\MeshImprovement.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\MeshIO.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\Simplification.cpp">
