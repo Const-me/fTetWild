@@ -56,6 +56,7 @@
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GEOGRAM_WITH_PDEL;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -72,6 +73,7 @@
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GEOGRAM_WITH_PDEL;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>

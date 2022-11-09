@@ -18,6 +18,7 @@
 #include "intersections.h"
 #include "MeshImprovement.h"  //fortest
 #include <igl/Timer.h>
+#include <Utils/randomShuffle.h>
 
 #ifdef FLOAT_TETWILD_USE_TBB
 #include <tbb/task_scheduler_init.h>
@@ -138,7 +139,8 @@ void floatTetWild::sort_input_faces(
 	if( mesh.params.not_sort_input )
 		return;
 
-	std::random_shuffle( sorted_f_ids.begin(), sorted_f_ids.end() );
+	randomShuffle( sorted_f_ids );
+	// std::random_shuffle( sorted_f_ids.begin(), sorted_f_ids.end() );
 	//    std::sort(sorted_f_ids.begin(), sorted_f_ids.end(), [&weights](int a, int b) {
 	//        return weights[a] < weights[b];
 	//    });

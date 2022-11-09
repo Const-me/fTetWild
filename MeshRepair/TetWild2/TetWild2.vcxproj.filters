@@ -111,6 +111,7 @@
     <ClInclude Include="src\CutTable2.h" />
     <ClInclude Include="Utils\triangleIntersection.h" />
     <ClInclude Include="Utils\SimdVector.h" />
+    <ClInclude Include="Utils\randomShuffle.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp" />
@@ -209,6 +210,7 @@
     <ClCompile Include="src\CutTable2.cpp" />
     <ClCompile Include="Utils\cutTableDataCompare.cpp" />
     <ClCompile Include="Utils\triangleIntersection.cpp" />
+    <ClCompile Include="Utils\randomShuffle.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="external">
