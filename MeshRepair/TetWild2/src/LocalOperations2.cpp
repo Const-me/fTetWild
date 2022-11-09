@@ -24,13 +24,13 @@ double floatTetWild::AMIPS_energy_aux_v2( const std::array<double, 12>& arr )
 	const double a10 = arr[ 10 ];
 	const double a11 = arr[ 11 ];
 
-	const double helper_6 = 0.577350269189626 * a0 - 1.15470053837925 * a3 + 0.577350269189626 * a9;
-	const double helper_11 = 0.408248290463863 * a10 + 0.408248290463863 * a1 + 0.408248290463863 * a4 - 1.22474487139159 * a7;
-	const double helper_12 = 0.577350269189626 * a10 + 0.577350269189626 * a1 - 1.15470053837925 * a4;
-	const double helper_14 = -1.22474487139159 * a6 + 0.408248290463863 * a0 + 0.408248290463863 * a3 + 0.408248290463863 * a9;
+	const double helper_6 = magic1 * a0 - magic2 * a3 + magic1 * a9;
+	const double helper_11 = magic3 * a10 + magic3 * a1 + magic3 * a4 - magic4 * a7;
+	const double helper_12 = magic1 * a10 + magic1 * a1 - magic2 * a4;
+	const double helper_14 = -magic4 * a6 + magic3 * a0 + magic3 * a3 + magic3 * a9;
 
-	const double helper_17 = 0.408248290463863 * a2 + 0.408248290463863 * a5 - 1.22474487139159 * a8 + 0.408248290463863 * a11;
-	const double helper_18 = 0.577350269189626 * a2 - 1.15470053837925 * a5 + 0.577350269189626 * a11;
+	const double helper_17 = magic3 * a2 + magic3 * a5 - magic4 * a8 + magic3 * a11;
+	const double helper_18 = magic1 * a2 - magic2 * a5 + magic1 * a11;
 
 	const double helper_19 = 0.5 * a6 + 0.5 * a3;
 	const double helper_20 = 0.5 * a4 + 0.5 * a7;
