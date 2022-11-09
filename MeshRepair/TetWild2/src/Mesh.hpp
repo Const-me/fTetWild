@@ -168,14 +168,8 @@ namespace floatTetWild
 	class Mesh
 	{
 	  public:
-		// #ifdef FLOAT_TETWILD_USE_TBB
-		//             tbb::concurrent_vector<MeshVertex> tet_vertices;
-		//             tbb::concurrent_vector<MeshTet> tets;
-		// #else
 		std::vector<MeshVertex> tet_vertices;
 		std::vector<MeshTet> tets;
-		// #endif
-
 		Parameters params;
 
 		int t_empty_start = 0;
