@@ -213,9 +213,14 @@ bool floatTetWild::find_new_pos( Mesh& mesh, const int v_id, Vector3& x )
 	auto& tets = mesh.tets;
 	auto& tet_vertices = mesh.tet_vertices;
 
-	std::vector<int> js;
+	Mesh::FindNewPosBuffers& fnpb = mesh.findNewPosBuffers;
+	std::vector<int>& js = fnpb.js;
+	js.clear();
 	js.reserve( tet_vertices[ v_id ].conn_tets.size() );
-	std::vector<std::array<Scalar, 12>> Ts;
+
+	std::vector<std::array<double, 12>>& Ts = fnpb.Ts;
+	Ts.clear();
+
 	for( int t_id : tet_vertices[ v_id ].conn_tets )
 	{
 		int j = tets[ t_id ].find( v_id );

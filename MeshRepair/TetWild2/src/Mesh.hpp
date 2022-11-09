@@ -286,5 +286,14 @@ namespace floatTetWild
 			avg_energy /= cnt;
 			return avg_energy;
 		}
+
+		// Temporary data used in find_new_pos
+		// Gonna need to rework that to a collection of the thread-load buffers
+		struct FindNewPosBuffers
+		{
+			std::vector<int> js;
+			std::vector<std::array<double, 12>> Ts;
+		};
+		FindNewPosBuffers findNewPosBuffers;
 	};
 }  // namespace floatTetWild
