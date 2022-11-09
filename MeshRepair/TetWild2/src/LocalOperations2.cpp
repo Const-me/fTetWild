@@ -107,6 +107,6 @@ double floatTetWild::AMIPS_energy_aux_v3( const std::array<double, 12>& arr )
 		a11 * ( sum2 - 4 * a11 );
 
 	mul *= -0.5;
-	const double res = mul / std::cbrt( tmpDiv * tmpDiv );
+	const double res = mul / std::pow( tmpDiv * tmpDiv, 1.0 / 3.0 );
 	return res;
 }
