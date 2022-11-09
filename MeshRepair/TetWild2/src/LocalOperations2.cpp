@@ -32,26 +32,28 @@ double floatTetWild::AMIPS_energy_aux_v2( const std::array<double, 12>& arr )
 	const double helper_17 = magic3 * a2 + magic3 * a5 - magic4 * a8 + magic3 * a11;
 	const double helper_18 = magic1 * a2 - magic2 * a5 + magic1 * a11;
 
-	const double helper_19 = 0.5 * a6 + 0.5 * a3;
-	const double helper_20 = 0.5 * a4 + 0.5 * a7;
-	const double helper_21 = 0.5 * a5 + 0.5 * a8;
+	const double helper_19 = a6 + a3;
+	const double helper_20 = a4 + a7;
+	const double helper_21 = a5 + a8;
 
 	const double tmpDiv = ( a2 - a11 ) * ( helper_11 * helper_6 - helper_12 * helper_14 ) -
 					   ( -a10 + a1 ) * ( -helper_14 * helper_18 + helper_17 * helper_6 ) +
 					   ( a0 - a9 ) * ( -helper_11 * helper_18 + helper_12 * helper_17 );
 
-	double mul = a2 * ( -1.5 * a2 + 0.5 * a11 + helper_21 ) + a10 * ( -1.5 * a10 + helper_20 + 0.5 * a1 ) +
-		 a6 * ( -1.5 * a6 + 0.5 * a0 + 0.5 * a3 + 0.5 * a9 ) +
-		 a5 * ( 0.5 * a2 - 1.5 * a5 + 0.5 * a8 + 0.5 * a11 ) +
-		 a8 * ( 0.5 * a2 + 0.5 * a5 - 1.5 * a8 + 0.5 * a11 ) + a11 * ( 0.5 * a2 - 1.5 * a11 + helper_21 ) +
-		 a0 * ( helper_19 - 1.5 * a0 + 0.5 * a9 ) + a3 * ( 0.5 * a6 + 0.5 * a0 - 1.5 * a3 + 0.5 * a9 ) +
-		 a9 * ( helper_19 + 0.5 * a0 - 1.5 * a9 ) + a1 * ( 0.5 * a10 + helper_20 - 1.5 * a1 ) +
-		 a4 * ( 0.5 * a10 + 0.5 * a1 - 1.5 * a4 + 0.5 * a7 ) +
-		 a7 * ( 0.5 * a10 + 0.5 * a1 + 0.5 * a4 - 1.5 * a7 );
+	double mul = a2 * ( -3 * a2 + a11 + helper_21 ) + 
+		a10 * ( -3 * a10 + helper_20 + a1 ) +
+		a6 * ( -3 * a6 + a0 + a3 + a9 ) +
+		a5 * ( a2 - 3 * a5 + a8 + a11 ) +
+		a8 * ( a2 + a5 - 3 * a8 + a11 ) + 
+		a11 * ( a2 - 3 * a11 + helper_21 ) +
+		a0 * ( helper_19 - 3 * a0 + a9 ) + 
+		a3 * ( a6 + a0 - 3 * a3 + a9 ) +
+		a9 * ( helper_19 + a0 - 3 * a9 ) + 
+		a1 * ( a10 + helper_20 - 3 * a1 ) +
+		a4 * ( a10 + a1 - 3 * a4 + a7 ) +
+		a7 * ( a10 + a1 + a4 - 3 * a7 );
 
-	mul *= -1.0;
-
+	mul *= -0.5;
 	const double res = mul / std::cbrt( tmpDiv * tmpDiv );
-
 	return res;
 }

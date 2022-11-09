@@ -1193,11 +1193,12 @@ namespace
 
 Scalar floatTetWild::AMIPS_energy_aux( const std::array<Scalar, 12>& T )
 {
-#if 0
+#if 1
 	return AMIPS_energy_aux_v2( T );
 #else
 	const double v1 = AMIPS_energy_aux_v1( T );
 	const double v2 = AMIPS_energy_aux_v2( T );
+	if( v1 != v2 ) __debugbreak(); return v2;
 	constexpr double eps = 1E-12;
 	if( !areEqualRel( v1, v2, eps ) )
 		__debugbreak();
