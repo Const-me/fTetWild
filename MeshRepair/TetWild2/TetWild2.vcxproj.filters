@@ -112,6 +112,7 @@
     <ClInclude Include="Utils\triangleIntersection.h" />
     <ClInclude Include="Utils\SimdVector.h" />
     <ClInclude Include="Utils\randomShuffle.h" />
+    <ClInclude Include="src\LocalOperations2.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp" />
@@ -211,6 +212,7 @@
     <ClCompile Include="Utils\cutTableDataCompare.cpp" />
     <ClCompile Include="Utils\triangleIntersection.cpp" />
     <ClCompile Include="Utils\randomShuffle.cpp" />
+    <ClCompile Include="src\LocalOperations2.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="external">

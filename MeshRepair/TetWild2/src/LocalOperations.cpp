@@ -20,6 +20,7 @@
 #include <tbb/concurrent_vector.h>
 #include <tbb/parallel_sort.h>
 #endif
+#include "LocalOperations2.h"
 
 namespace floatTetWild
 {
@@ -1130,7 +1131,7 @@ Scalar floatTetWild::AMIPS_energy( const std::array<Scalar, 12>& T )
 }
 
 // TODO: manually vectorize this function, it's expensive and showed up in the profiler
-Scalar floatTetWild::AMIPS_energy_aux( const std::array<Scalar, 12>& T )
+static Scalar AMIPS_energy_aux_v1( const std::array<Scalar, 12>& T )
 {
 	Scalar helper_0[ 12 ];
 	helper_0[ 0 ] = T[ 0 ];
@@ -1180,6 +1181,20 @@ Scalar floatTetWild::AMIPS_energy_aux( const std::array<Scalar, 12>& T )
 		 helper_9 * ( 0.5 * helper_10 + 0.5 * helper_7 + 0.5 * helper_8 - 1.5 * helper_9 ) ) /
 	  std::cbrt( helper_22 * helper_22 );
 	return res;
+}
+
+Scalar floatTetWild::AMIPS_energy_aux( const std::array<Scalar, 12>& T )
+{
+#if 0
+	return AMIPS_energy_aux_v2( T );
+#else
+	const double v1 = AMIPS_energy_aux_v1( T );
+	const double v2 = AMIPS_energy_aux_v2( T );
+	const double absDiff = std::abs( v1 - v1 );
+	if( absDiff > 1E-8 )
+		__debugbreak();
+	return v2;
+#endif
 }
 
 namespace

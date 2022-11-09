@@ -86,6 +86,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\LocalOperations2.h" />
     <ClInclude Include="Utils\randomShuffle.h" />
     <ClInclude Include="src\CutTable2.h" />
     <ClInclude Include="src\EdgesSet.h" />
@@ -135,6 +136,7 @@
     <ClInclude Include="Utils\triangleIntersection.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\LocalOperations2.cpp" />
     <ClCompile Include="Utils\randomShuffle.cpp" />
     <ClCompile Include="src\CutTable2.cpp" />
     <ClCompile Include="src\EdgesSet.cpp" />
