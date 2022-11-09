@@ -41,7 +41,7 @@ void floatTetWild::edge_swapping( Mesh& mesh )
 		return true;
 	};
 
-	EdgesSet edges;
+	EdgesSet& edges = mesh.findNewPosBuffers.edgesTemp;
 	get_all_edges( mesh, edges );
 
 	std::priority_queue<ElementInQueue, std::vector<ElementInQueue>, cmp_l> es_queue;
@@ -535,25 +535,25 @@ bool floatTetWild::remove_an_edge_56( Mesh& mesh, int v1_id, int v2_id, const st
 	n12_v_ids.push_back( n12_es[ 0 ][ 0 ] );
 	n12_v_ids.push_back( n12_es[ 0 ][ 1 ] );
 	n12_t_ids.push_back( n12_es[ 0 ][ 2 ] );
-	std::vector<bool> is_visited( 5, false );
-	is_visited[ 0 ] = true;
+	uint32_t is_visited = 1;
 	for( int i = 0; i < 3; i++ )
 	{
 		for( int j = 0; j < 5; j++ )
 		{
-			if( !is_visited[ j ] )
+			const uint32_t visitedBit = 1u << j;
+			if( 0 == ( is_visited & visitedBit ) )
 			{
 				if( n12_es[ j ][ 0 ] == n12_v_ids.back() )
 				{
-					is_visited[ j ] = true;
+					is_visited |= visitedBit;
 					n12_v_ids.push_back( n12_es[ j ][ 1 ] );
 				}
 				else if( n12_es[ j ][ 1 ] == n12_v_ids.back() )
 				{  // else if!!!!!!!!!!
-					is_visited[ j ] = true;
+					is_visited |= visitedBit;
 					n12_v_ids.push_back( n12_es[ j ][ 0 ] );
 				}
-				if( is_visited[ j ] )
+				if( 0 != ( is_visited & visitedBit ) )
 				{
 					n12_t_ids.push_back( n12_es[ j ][ 2 ] );
 					break;
@@ -561,7 +561,10 @@ bool floatTetWild::remove_an_edge_56( Mesh& mesh, int v1_id, int v2_id, const st
 			}
 		}
 	}
-	n12_t_ids.push_back( n12_es[ std::find( is_visited.begin(), is_visited.end(), false ) - is_visited.begin() ][ 2 ] );
+
+	unsigned long firstUnvisited;
+	_BitScanForward( &firstUnvisited, ~is_visited );
+	n12_t_ids.push_back( n12_es[ firstUnvisited ][ 2 ] );
 
 	////check
 	Scalar old_max_quality = 0;

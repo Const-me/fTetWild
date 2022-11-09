@@ -13,6 +13,7 @@
 #include <random>
 // TODO: remove this
 #include <iostream>
+#include "EdgesSet.h"
 
 namespace floatTetWild
 {
@@ -293,6 +294,7 @@ namespace floatTetWild
 		{
 			std::vector<int> js;
 			std::vector<std::array<double, 12>> Ts;
+			EdgesSet edgesTemp;
 		};
 		FindNewPosBuffers findNewPosBuffers;
 	};

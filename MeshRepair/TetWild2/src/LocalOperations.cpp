@@ -147,6 +147,7 @@ void floatTetWild::set_opp_t_id( Mesh& mesh, int t_id, int j )
 
 void floatTetWild::get_all_edges( const Mesh& mesh, EdgesSet& edges )
 {
+	edges.clear();
 	edges.reserve( mesh.tets.size() * 6 );
 
 	for( unsigned int i = 0; i < mesh.tets.size(); i++ )
