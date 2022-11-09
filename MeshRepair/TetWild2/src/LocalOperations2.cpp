@@ -40,16 +40,18 @@ double floatTetWild::AMIPS_energy_aux_v2( const std::array<double, 12>& arr )
 					   ( -a10 + a1 ) * ( -helper_14 * helper_18 + helper_17 * helper_6 ) +
 					   ( a0 - a9 ) * ( -helper_11 * helper_18 + helper_12 * helper_17 );
 
-	const double res =
-	  -( a2 * ( -1.5 * a2 + 0.5 * a11 + helper_21 ) + a10 * ( -1.5 * a10 + helper_20 + 0.5 * a1 ) +
+	double mul = a2 * ( -1.5 * a2 + 0.5 * a11 + helper_21 ) + a10 * ( -1.5 * a10 + helper_20 + 0.5 * a1 ) +
 		 a6 * ( -1.5 * a6 + 0.5 * a0 + 0.5 * a3 + 0.5 * a9 ) +
 		 a5 * ( 0.5 * a2 - 1.5 * a5 + 0.5 * a8 + 0.5 * a11 ) +
 		 a8 * ( 0.5 * a2 + 0.5 * a5 - 1.5 * a8 + 0.5 * a11 ) + a11 * ( 0.5 * a2 - 1.5 * a11 + helper_21 ) +
 		 a0 * ( helper_19 - 1.5 * a0 + 0.5 * a9 ) + a3 * ( 0.5 * a6 + 0.5 * a0 - 1.5 * a3 + 0.5 * a9 ) +
 		 a9 * ( helper_19 + 0.5 * a0 - 1.5 * a9 ) + a1 * ( 0.5 * a10 + helper_20 - 1.5 * a1 ) +
 		 a4 * ( 0.5 * a10 + 0.5 * a1 - 1.5 * a4 + 0.5 * a7 ) +
-		 a7 * ( 0.5 * a10 + 0.5 * a1 + 0.5 * a4 - 1.5 * a7 ) ) /
-	  std::cbrt( tmpDiv * tmpDiv );
+		 a7 * ( 0.5 * a10 + 0.5 * a1 + 0.5 * a4 - 1.5 * a7 );
+
+	mul *= -1.0;
+
+	const double res = mul / std::cbrt( tmpDiv * tmpDiv );
 
 	return res;
 }
