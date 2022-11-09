@@ -1187,19 +1187,23 @@ namespace
 {
 	bool areEqualRel( double a, double b, double epsilon )
 	{
-		return ( std::abs( a - b ) <= epsilon * std::max( std::abs( a ), std::abs( b ) ) );
+		const bool f1 = std::isfinite( a );
+		const bool f2 = std::isfinite( b );
+		if( f1 && f2 )
+			return ( std::abs( a - b ) <= epsilon * std::max( std::abs( a ), std::abs( b ) ) );
+		return f1 == f2;
 	}
-}
+}  // namespace
 
 Scalar floatTetWild::AMIPS_energy_aux( const std::array<Scalar, 12>& T )
 {
-#if 1
+#if 0
 	return AMIPS_energy_aux_v2( T );
 #else
 	const double v1 = AMIPS_energy_aux_v1( T );
-	const double v2 = AMIPS_energy_aux_v2( T );
-	if( v1 != v2 ) __debugbreak(); return v2;
-	constexpr double eps = 1E-12;
+	const double v2 = AMIPS_energy_aux_v3( T );
+	// if( v1 != v2 ) __debugbreak(); return v2;
+	constexpr double eps = 1E-5;
 	if( !areEqualRel( v1, v2, eps ) )
 		__debugbreak();
 	return v2;
