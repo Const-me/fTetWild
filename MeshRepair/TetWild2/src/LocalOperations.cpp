@@ -1183,6 +1183,14 @@ static Scalar AMIPS_energy_aux_v1( const std::array<Scalar, 12>& T )
 	return res;
 }
 
+namespace
+{
+	bool areEqualRel( double a, double b, double epsilon )
+	{
+		return ( std::abs( a - b ) <= epsilon * std::max( std::abs( a ), std::abs( b ) ) );
+	}
+}
+
 Scalar floatTetWild::AMIPS_energy_aux( const std::array<Scalar, 12>& T )
 {
 #if 0
@@ -1190,8 +1198,8 @@ Scalar floatTetWild::AMIPS_energy_aux( const std::array<Scalar, 12>& T )
 #else
 	const double v1 = AMIPS_energy_aux_v1( T );
 	const double v2 = AMIPS_energy_aux_v2( T );
-	const double absDiff = std::abs( v1 - v1 );
-	if( absDiff > 1E-8 )
+	constexpr double eps = 1E-12;
+	if( !areEqualRel( v1, v2, eps ) )
 		__debugbreak();
 	return v2;
 #endif
