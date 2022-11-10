@@ -4,8 +4,9 @@
 #include "Utils/Timer.h"
 #include "Utils/ConsoleLogSink.h"
 
-static const LPCTSTR stlSource = LR"(C:\Temp\2remove\MeshRepair\model.stl)";
-static const LPCTSTR stlResult = LR"(C:\Temp\2remove\MeshRepair\model-result.stl)";
+// static const LPCTSTR stlSource = LR"(C:\Temp\2remove\MeshRepair\model.stl)";
+static const LPCTSTR stlSource = LR"(C:\Temp\2remove\MeshRepair\dragon.stl)";
+static const LPCTSTR stlResult = LR"(C:\Temp\2remove\MeshRepair\dragon-result.stl)";
 
 namespace MeshRepair
 {
