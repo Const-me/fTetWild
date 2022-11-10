@@ -69,18 +69,7 @@ namespace floatTetWild
 			states_.emplace_back( std::forward<Args>( args )... );
 		}
 
-		void print_sum() const
-		{
-			double time = 0;
-			for( auto& s : states_ )
-			{
-				if( s.id != StateInfo::splitting_id && s.id != StateInfo::collapsing_id && s.id != StateInfo::swapping_id && s.id != StateInfo::smoothing_id )
-					time += s.time;
-			}
-			cout << -1 << ", " << time << ", " << states_.back().v_num << ", " << states_.back().t_num << ", " << states_.back().cnt_fail_inserted_face << endl;
-		}
-
-		friend std::ostream& operator<<( std::ostream& stream, const Statistics& stats )
+		/*  friend std::ostream& operator<<( std::ostream& stream, const Statistics& stats )
 		{
 			double time = 0;
 			int cnt_uninserted = 0;
@@ -97,7 +86,7 @@ namespace floatTetWild
 				   << ", " << stats.states_.back().avg_energy << ", " << cnt_uninserted << ", " << get_peak_mem() << endl;
 
 			return stream;
-		}
+		} */
 
 	  private:
 		Statistics() = default;

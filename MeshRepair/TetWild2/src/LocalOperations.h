@@ -91,13 +91,14 @@ namespace floatTetWild
 		v.erase( it );
 		return true;
 	}
+	/*
 	template<typename T>
 	void vector_print( const std::vector<T>& v, std::string s = " " )
 	{
 		for( auto i : v )
 			cout << i << s;
 		cout << endl;
-	}
+	} */
 	template<typename T>
 	bool vector_contains( const std::vector<T>& v, const T& t )
 	{

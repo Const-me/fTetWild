@@ -42,7 +42,7 @@ namespace floatTetWild
 	  const Vector3& q1, const Vector3& q2, const Vector3& q3 );						  // face of tet
 	int is_tri_tri_cutted_hint( const Vector3& p1, const Vector3& p2, const Vector3& p3,  // cutting tri
 	  const Vector3& q1, const Vector3& q2, const Vector3& q3, int hint,
-	  bool is_debug = false );	// face of tet
+	  const Logger* log = nullptr );	// face of tet
 
 	void get_bbox_face( const Vector3& p0, const Vector3& p1, const Vector3& p2, Vector3& min, Vector3& max, Scalar eps = 0 );
 	void get_bbox_tet( const Vector3& p0, const Vector3& p1, const Vector3& p2, const Vector3& p3, Vector3& min, Vector3& max, Scalar eps = 0 );

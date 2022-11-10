@@ -11,8 +11,6 @@
 #include <cassert>
 #include <queue>
 #include <random>
-// TODO: remove this
-#include <iostream>
 #include "EdgesSet.h"
 
 namespace floatTetWild
@@ -51,10 +49,6 @@ namespace floatTetWild
 #define OPP_T_ID_BOUNDARY -1
 
 #define MAX_ENERGY 1e50
-
-	using std::cin;
-	using std::cout;
-	using std::endl;
 
 	class MeshVertex
 	{
@@ -153,7 +147,10 @@ namespace floatTetWild
 			return -1;
 		}
 
-		inline void print() const { cout << indices[ 0 ] << " " << indices[ 1 ] << " " << indices[ 2 ] << " " << indices[ 3 ] << endl; }
+		inline void print( const Logger& log, int id ) const
+		{
+			log.logDebug( "%i: [ %i, %i, %i, %i ]", id, indices[ 0 ], indices[ 1 ], indices[ 2 ], indices[ 3 ] );
+		}
 
 		std::array<char, 4> is_surface_fs = { { NOT_SURFACE, NOT_SURFACE, NOT_SURFACE, NOT_SURFACE } };
 		std::array<char, 4> is_bbox_fs = { { NOT_BBOX, NOT_BBOX, NOT_BBOX, NOT_BBOX } };

@@ -20,7 +20,6 @@
 #include <tbb/parallel_sort.h>
 #include <tbb/concurrent_unordered_set.h>
 #endif
-#include <iomanip>
 
 void floatTetWild::simplify( std::vector<Vector3>& input_vertices, std::vector<Vector3i>& input_faces, std::vector<int>& input_tags, const AABBWrapper& tree,
   const Parameters& params, bool skip_simplify )
@@ -766,15 +765,17 @@ void floatTetWild::flattening( std::vector<Vector3>& input_vertices, std::vector
 
 	auto needs_flattening = []( const Vector3& n1, const Vector3& n2 )
 	{
+		/*
 		if( n1.dot( n2 ) > 0.98 )
 		{
 			cout << std::setprecision( 17 ) << n1.dot( n2 ) << endl;
 			cout << n1.norm() << " " << n2.norm() << endl;
 		}
+		*/
 		return true;
 
 		double d = std::abs( n1.dot( n2 ) - 1 );
-		cout << n1.dot( n2 ) << endl;
+		// cout << n1.dot( n2 ) << endl;
 		if( d > 1e-15 && d < 1e-5 )
 			return true;
 		return false;
@@ -901,7 +902,7 @@ void floatTetWild::flattening( std::vector<Vector3>& input_vertices, std::vector
 		//        }
 	}
 
-	cout << "flattening " << ts << " faces" << endl;
+	params.logger.logDebug( "flattening %i faces", ts );
 }
 
 floatTetWild::Scalar floatTetWild::get_angle_cos( const Vector3& p, const Vector3& p1, const Vector3& p2 )
@@ -961,7 +962,7 @@ bool floatTetWild::is_out_envelope( const std::array<Vector3, 3>& vs, const AABB
 void floatTetWild::check_surface( std::vector<Vector3>& input_vertices, std::vector<Vector3i>& input_faces, const std::vector<bool>& f_is_removed,
   const AABBWrapper& tree, const Parameters& params )
 {
-	cout << "checking surface" << endl;
+	params.logger.logDebug( "checking surface" );
 	bool is_valid = true;
 	for( int i = 0; i < input_faces.size(); i++ )
 	{
@@ -973,14 +974,15 @@ void floatTetWild::check_surface( std::vector<Vector3>& input_vertices, std::vec
 		Scalar dist = tree.dist_sf_envelope( ps, params.eps_2 );
 		if( dist > 0 )
 		{
-			cout << "is_out_sf_envelope!!" << endl;
-			is_valid = false;
+			throw std::logic_error( "is_out_sf_envelope!!" );
+			// cout << "is_out_sf_envelope!!" << endl;
+			// is_valid = false;
 			//            cout<<input_vertices[input_faces[i][0]].transpose()<<endl;
 			//            cout<<input_vertices[input_faces[i][1]].transpose()<<endl;
 			//            cout<<input_vertices[input_faces[i][2]].transpose()<<endl;
-			cout << input_faces[ i ][ 0 ] << " " << input_faces[ i ][ 1 ] << " " << input_faces[ i ][ 2 ] << endl;
-			cout << dist << endl;
-			//            //pausee();
+			// cout << input_faces[ i ][ 0 ] << " " << input_faces[ i ][ 1 ] << " " << input_faces[ i ][ 2 ] << endl;
+			// cout << dist << endl;
+			// //            //pausee();
 		}
 	}
 	// if(!is_valid)

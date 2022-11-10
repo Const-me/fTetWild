@@ -513,7 +513,7 @@ int floatTetWild::is_tri_tri_cutted( const Vector3& p1, const Vector3& p2, const
 }
 
 int floatTetWild::is_tri_tri_cutted_hint(
-  const Vector3& p1, const Vector3& p2, const Vector3& p3, const Vector3& q1, const Vector3& q2, const Vector3& q3, int hint, bool is_debug )
+  const Vector3& p1, const Vector3& p2, const Vector3& p3, const Vector3& q1, const Vector3& q2, const Vector3& q3, int hint, const Logger* log )
 {
 	std::array<Scalar, 3> p_1 = { { 0, 0, 0 } }, q_1 = { { 1, 0, 0 } }, r_1 = { { 0, 1, 0 } };
 	std::array<Scalar, 3> p_2 = { { 0, 0, 0 } }, q_2 = { { -1, -1, 0 } }, r_2 = { { 1, 1, 0 } };
@@ -554,7 +554,7 @@ int floatTetWild::is_tri_tri_cutted_hint(
 		return CUT_EMPTY;
 	}
 
-	if( is_debug )
+	if( nullptr != log )
 	{
 		//        p_1 = {{22, -27.478179999999998, 3.5}};
 		//        q_1 = {{25.5, -27.478179999999998, 0}};
@@ -594,10 +594,11 @@ int floatTetWild::is_tri_tri_cutted_hint(
 	}
 
 	int result = triangleIntersectionTest( &p_1[ 0 ], &q_1[ 0 ], &r_1[ 0 ], &p_2[ 0 ], &q_2[ 0 ], &r_2[ 0 ], &coplanar, &s[ 0 ], &t[ 0 ] );
-	if( is_debug )
+	if( nullptr != log )
 	{
-		cout << ">>result = " << result << endl;
+		log->logDebug( ">>result = %i", result );
 	}
+
 	if( result != 1 )
 	{
 		//        if (coplanar != 0) {

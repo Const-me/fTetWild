@@ -632,10 +632,10 @@ bool floatTetWild::CutMesh::get_intersecting_edges_and_points(
 		if( !is_result )
 		{
 			// fortest
-			cout << "seg_plane_intersection no result!" << endl;
-			cout << to_plane_dists[ e[ 0 ] ] << ", " << to_plane_dists[ e[ 1 ] ] << endl;
-			cout << get_to_plane_dist( mesh.tet_vertices[ v1_id ].pos ) << ", " << get_to_plane_dist( mesh.tet_vertices[ v2_id ].pos ) << endl;
-			cout << "e[0] = " << e[ 0 ] << endl;
+			mesh.logger().logWarning( "seg_plane_intersection no result!" );
+			// cout << to_plane_dists[ e[ 0 ] ] << ", " << to_plane_dists[ e[ 1 ] ] << endl;
+			// cout << get_to_plane_dist( mesh.tet_vertices[ v1_id ].pos ) << ", " << get_to_plane_dist( mesh.tet_vertices[ v2_id ].pos ) << endl;
+			// cout << "e[0] = " << e[ 0 ] << endl;
 			// fortest
 			return false;
 		}
@@ -707,7 +707,7 @@ void floatTetWild::CutMesh::get_one_ring_t_ids( std::vector<int>& old_t_ids, std
 bool floatTetWild::CutMesh::check()
 {
 	return true;
-
+	/*
 	bool is_good = true;
 	for( auto& m : map_v_ids )
 	{
@@ -724,5 +724,5 @@ bool floatTetWild::CutMesh::check()
 			is_good = false;
 		}
 	}
-	return is_good;
+	return is_good; */
 }

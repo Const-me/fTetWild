@@ -26,7 +26,8 @@ inline GEO2::vec3 castVertex( const floatTetWild::Vector3& eigen )
 	return GEO2::vec3 { eigen[ 0 ], eigen[ 1 ], eigen[ 2 ] };
 }
 
-void floatTetWild::AABBWrapper::init_b_mesh_and_tree( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, Mesh& mesh )
+void floatTetWild::AABBWrapper::init_b_mesh_and_tree(
+  const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, Mesh& mesh )
 {
 	b_mesh.clearMesh();
 	std::vector<std::vector<int>> conn_tris( input_vertices.size() );
@@ -49,7 +50,7 @@ void floatTetWild::AABBWrapper::init_b_mesh_and_tree( const std::vector<Vector3>
 	std::vector<std::array<int, 2>> b_edges;
 	std::vector<bool> _1;
 	find_boundary_edges(
-	  input_vertices, input_faces, std::vector<bool>( input_faces.size(), true ), std::vector<bool>( input_faces.size(), true ), _, _1, b_edges );
+	  input_vertices, input_faces, std::vector<bool>( input_faces.size(), true ), std::vector<bool>( input_faces.size(), true ), _, _1, b_edges, mesh.logger() );
 
 	if( b_edges.empty() )
 		setSingleTriangle( b_mesh );

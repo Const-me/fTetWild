@@ -268,8 +268,9 @@ namespace floatTetWild
 			if( is_inverted(
 				  mesh.tet_vertices[ t[ 0 ] ].pos, mesh.tet_vertices[ t[ 1 ] ].pos, mesh.tet_vertices[ t[ 2 ] ].pos, mesh.tet_vertices[ t[ 3 ] ].pos ) )
 			{
-				cout << "EXIT_INV" << endl;
-				exit( 0 );
+				// cout << "EXIT_INV" << endl;
+				// exit( 0 );
+				throw std::logic_error( "EXIT_INV" );
 			}
 		}
 

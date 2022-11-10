@@ -20,14 +20,12 @@
 #include <igl/winding_number.h>
 #include "../Utils/Geogram2.h"
 #include "../Utils/NearestSearch.h"
-// TODO: remove this
-#include <iostream>
 
 //#define USE_FWN true
 
 void floatTetWild::init( Mesh& mesh, AABBWrapper& tree )
 {
-	cout << "initializing..." << endl;
+	mesh.logger().logInfo( "initializing..." );
 	//    for (auto &t: mesh.tets) {
 	//        if (t.is_removed)
 	//            continue;
@@ -66,6 +64,7 @@ void floatTetWild::init( Mesh& mesh, AABBWrapper& tree )
 		}
 	}
 
+	/*
 	if( mesh.params.log_level < 3 )
 	{
 		int v_num, t_num;
@@ -78,6 +77,7 @@ void floatTetWild::init( Mesh& mesh, AABBWrapper& tree )
 		cout << "max_energy = " << max_energy << endl;
 		cout << "avg_energy = " << avg_energy << endl;
 	}
+	*/
 }
 
 void floatTetWild::optimization( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const std::vector<int>& input_tags,
@@ -114,12 +114,12 @@ void floatTetWild::optimization( const std::vector<Vector3>& input_vertices, con
 		if( mesh.params.stop_p > 0 )
 		{
 			int p = get_max_p( mesh );
-			cout << "p = " << p << endl;
+			mesh.logger().logDebug( "p = %i", p );
 			if( p <= mesh.params.stop_p && mesh.is_input_all_inserted )
 				break;
 		}
 
-		cout << "//////////////// pass " << it << " ////////////////" << endl;
+		mesh.logger().logDebug( "//////////////// pass %i ////////////////", it );
 		std::array<int, 5> it_ops;
 		if( it % 3 == 2 )
 			it_ops = { { ops[ 0 ], ops[ 1 ], ops[ 2 ], ops[ 3 ], 1 } };
@@ -135,7 +135,7 @@ void floatTetWild::optimization( const std::vector<Vector3>& input_vertices, con
 				mesh.params.eps += mesh.params.eps_delta;
 				mesh.params.eps_2 = mesh.params.eps * mesh.params.eps;
 				cnt_increase_epsilon--;
-				cout << "enlarge envelope, eps = " << mesh.params.eps << endl;
+				mesh.logger().logWarning( "enlarge envelope, eps = %g", mesh.params.eps );
 				//                pausee();
 			}
 		}
@@ -154,8 +154,7 @@ void floatTetWild::optimization( const std::vector<Vector3>& input_vertices, con
 					mesh.params.eps += mesh.params.eps_delta;
 					mesh.params.eps_2 = mesh.params.eps * mesh.params.eps;
 					cnt_increase_epsilon--;
-					cout << "enlarge envelope, eps = " << mesh.params.eps << endl;
-//                    pausee();
+					mesh.logger().logDebug( "enlarge envelope, eps = %g", mesh.params.eps );
 #ifdef NEW_ENVELOPE
 					tree.sf_tree_exact.init( input_vertices, input_faces, mesh.params.eps );
 #endif
@@ -196,7 +195,7 @@ void floatTetWild::optimization( const std::vector<Vector3>& input_vertices, con
 	}
 
 	////postprocessing
-	cout << "//////////////// postprocessing ////////////////" << endl;
+	mesh.logger().logInfo( "//////////////// postprocessing ////////////////" );
 	for( auto& v : mesh.tet_vertices )
 	{
 		if( v.is_removed )
@@ -214,7 +213,7 @@ void floatTetWild::cleanup_empty_slots( Mesh& mesh, double percentage )
 {
 	if( mesh.tets.size() < 9e5 )
 		return;
-	cout << mesh.tets.size() << " ==> ";
+	const size_t prevSize = mesh.tets.size();
 	///
 	const int v_end_id = mesh.tet_vertices.size() * percentage;
 	const int t_end_id = mesh.tets.size() * percentage;
@@ -267,7 +266,7 @@ void floatTetWild::cleanup_empty_slots( Mesh& mesh, double percentage )
 		for( int j = 0; j < 4; j++ )
 			t[ j ] = map_v_ids[ t[ j ] ];
 	}
-	cout << mesh.tets.size() << endl;
+	mesh.logger().logDebug( "Mesh elements count: %zu => %zu", prevSize, mesh.tets.size() );
 }
 
 void floatTetWild::operation( Mesh& mesh, AABBWrapper& tree, const std::array<int, 4>& ops )
@@ -280,75 +279,59 @@ void floatTetWild::operation( Mesh& mesh, AABBWrapper& tree, const std::array<in
 	for( int i = 0; i < ops[ 0 ]; i++ )
 	{
 		igl_timer.start();
-		cout << "edge splitting..." << endl;
+		mesh.logger().logInfo( "edge splitting..." );
 		untangle( mesh );
 		edge_splitting( mesh, tree );
 		time = igl_timer.getElapsedTime();
-		cout << "edge splitting done!" << endl;
-		cout << "time = " << time << "s" << endl;
+		mesh.logger().logInfo( "edge splitting done, in %g seconds", time );
 		v_num = mesh.get_v_num();
 		t_num = mesh.get_t_num();
 		get_max_avg_energy( mesh, max_energy, avg_energy );
-		cout << "#v = " << v_num << endl;
-		cout << "#t = " << t_num << endl;
-		cout << "max_energy = " << max_energy << endl;
-		cout << "avg_energy = " << avg_energy << endl;
+		mesh.logger().logDebug( "#v = %i, #t = %i, max_energy = %g, avg_energy = %g", v_num, t_num, max_energy, avg_energy );
 		stats().record( StateInfo::splitting_id, time, v_num, t_num, max_energy, avg_energy );
 	}
 
 	for( int i = 0; i < ops[ 1 ]; i++ )
 	{
 		igl_timer.start();
-		cout << "edge collapsing..." << endl;
+		mesh.logger().logInfo( "edge collapsing..." );
 		untangle( mesh );
 		edge_collapsing( mesh, tree );
 		time = igl_timer.getElapsedTime();
-		cout << "edge collapsing done!" << endl;
-		cout << "time = " << time << "s" << endl;
+		mesh.logger().logInfo( "edge collapsing done, in %g seconds", time );
 		v_num = mesh.get_v_num();
 		t_num = mesh.get_t_num();
 		get_max_avg_energy( mesh, max_energy, avg_energy );
-		cout << "#v = " << v_num << endl;
-		cout << "#t = " << t_num << endl;
-		cout << "max_energy = " << max_energy << endl;
-		cout << "avg_energy = " << avg_energy << endl;
+		mesh.logger().logDebug( "#v = %i, #t = %i, max_energy = %g, avg_energy = %g", v_num, t_num, max_energy, avg_energy );
 		stats().record( StateInfo::collapsing_id, time, v_num, t_num, max_energy, avg_energy );
 	}
 
 	for( int i = 0; i < ops[ 2 ]; i++ )
 	{
 		igl_timer.start();
-		cout << "edge swapping..." << endl;
+		mesh.logger().logInfo( "edge swapping..." );
 		untangle( mesh );
 		edge_swapping( mesh );
 		time = igl_timer.getElapsedTime();
-		cout << "edge swapping done!" << endl;
-		cout << "time = " << time << "s" << endl;
+		mesh.logger().logInfo( "edge swapping done, in %g seconds", time );
 		v_num = mesh.get_v_num();
 		t_num = mesh.get_t_num();
 		get_max_avg_energy( mesh, max_energy, avg_energy );
-		cout << "#v = " << v_num << endl;
-		cout << "#t = " << t_num << endl;
-		cout << "max_energy = " << max_energy << endl;
-		cout << "avg_energy = " << avg_energy << endl;
+		mesh.logger().logDebug( "#v = %i, #t = %i, max_energy = %g, avg_energy = %g", v_num, t_num, max_energy, avg_energy );
 		stats().record( StateInfo::swapping_id, time, v_num, t_num, max_energy, avg_energy );
 	}
 
 	for( int i = 0; i < ops[ 3 ]; i++ )
 	{
 		igl_timer.start();
-		cout << "vertex smoothing..." << endl;
+		mesh.logger().logInfo( "vertex smoothing..." );
 		vertex_smoothing( mesh, tree );
 		time = igl_timer.getElapsedTime();
-		cout << "vertex smoothing done!" << endl;
-		cout << "time = " << time << "s" << endl;
+		mesh.logger().logInfo( "vertex smoothing done, in %g seconds", time );
 		v_num = mesh.get_v_num();
 		t_num = mesh.get_t_num();
 		get_max_avg_energy( mesh, max_energy, avg_energy );
-		cout << "#v = " << v_num << endl;
-		cout << "#t = " << t_num << endl;
-		cout << "max_energy = " << max_energy << endl;
-		cout << "avg_energy = " << avg_energy << endl;
+		mesh.logger().logDebug( "#v = %i, #t = %i, max_energy = %g, avg_energy = %g", v_num, t_num, max_energy, avg_energy );
 		stats().record( StateInfo::smoothing_id, time, v_num, t_num, max_energy, avg_energy );
 	}
 }
@@ -427,8 +410,7 @@ inline GEO2::vec3 castVertex( const floatTetWild::Vector3& eigen )
 
 bool floatTetWild::update_scaling_field( Mesh& mesh, Scalar max_energy )
 {
-	//    return false;
-	cout << "updating sclaing field ..." << endl;
+	mesh.logger().logDebug( "updating scaling field ..." );
 	bool is_hit_min_edge_length = false;
 
 	Scalar radius0 = mesh.params.ideal_edge_length * 1.8;  // increasing the radius would increase the #v in output
@@ -449,7 +431,7 @@ bool floatTetWild::update_scaling_field( Mesh& mesh, Scalar max_energy )
 		filter_energy = 100;
 	}
 
-	cout << "filter_energy = " << filter_energy << endl;
+	mesh.logger().logDebug( "filter_energy = %g", filter_energy );
 	Scalar recover = 1.5;
 	std::vector<Scalar> scale_multipliers( mesh.tet_vertices.size(), recover );
 	Scalar refine_scale = 0.5;
@@ -553,7 +535,7 @@ bool floatTetWild::update_scaling_field( Mesh& mesh, Scalar max_energy )
 			v.sizing_scalar = new_scale;
 	}
 
-	cout << "is_hit_min_edge_length = " << is_hit_min_edge_length << endl;
+	mesh.logger().logDebug( "is_hit_min_edge_length = %g", is_hit_min_edge_length );
 	return is_hit_min_edge_length;
 }
 
@@ -1167,7 +1149,7 @@ void floatTetWild::untangle( Mesh& mesh )
 			}
 		}
 	}
-	cout << "fixed " + std::to_string( cnt ) + " tangled element" << endl;
+	mesh.logger().logInfo( "fixed %i  tangled elements", cnt );
 }
 
 void floatTetWild::smooth_open_boundary( Mesh& mesh, const AABBWrapper& tree )
@@ -1317,7 +1299,7 @@ void floatTetWild::smooth_open_boundary_aux( Mesh& mesh, const AABBWrapper& tree
 				break;
 			}
 		}
-		cout << cnt << "/" << cnt_s << endl;
+		mesh.logger().logDebug( "%i / $i", cnt, cnt_s );
 
 		/// regular optimization
 		for( auto& v : tet_vertices )
@@ -1536,14 +1518,11 @@ void floatTetWild::manifold_edges( Mesh& mesh )
 		if( tet_groups.size() < 2 )
 			continue;
 
-		cout << "find non-manifold edge " << e[ 0 ] << " " << e[ 1 ] << endl;
-		cout << tet_groups.size() << "/" << n_t_ids.size() << endl;
-		cout << e[ 0 ] << " " << e[ 1 ] << endl;
+		mesh.logger().logDebug( "find non-manifold edge %i %i", e[ 0 ], e[ 1 ] );
+		mesh.logger().logDebug( "%zu / %zu", tet_groups.size(), n_t_ids.size() );
+		mesh.logger().logDebug( "%i %i", e[ 0 ], e[ 1 ] );
 		for( int t_id : n_t_ids )
-		{
-			cout << t_id << ": ";
-			tets[ t_id ].print();
-		}
+			tets[ t_id ].print( mesh.logger(), t_id );
 
 		// split
 		std::vector<int> new_t_ids;
@@ -1698,7 +1677,7 @@ void floatTetWild::manifold_vertices( Mesh& mesh )
 		if( tet_groups.size() < 2 )
 			continue;
 
-		cout << "find non-manifold vertex " << b_v_id << endl;
+		mesh.logger().logDebug( "find non-manifold vertex %i", b_v_id );
 
 		for( int i = 1; i < tet_groups.size(); i++ )
 		{
@@ -1863,8 +1842,8 @@ void floatTetWild::manifold_surface( Mesh& mesh, Eigen::MatrixXd& V, Eigen::Matr
 		}
 		if( f_group.size() == conn_f4v[ v_id ].size() )
 			continue;
-		//
-		cout << "HHHHHHHHHHHH" << endl;
+
+		// cout << "HHHHHHHHHHHH" << endl;
 		V.conservativeResize( V.rows() + 1, V.cols() );
 		V.row( V.rows() - 1 ) = V.row( v_id );
 		for( int f_id : f_group )
@@ -1880,7 +1859,7 @@ void floatTetWild::manifold_surface( Mesh& mesh, Eigen::MatrixXd& V, Eigen::Matr
 		}
 		conn_f4v.push_back( f_group );
 	}
-
+/*
 	// fortest
 	Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic> B;
 	igl::is_vertex_manifold( F, B );
@@ -1893,4 +1872,5 @@ void floatTetWild::manifold_surface( Mesh& mesh, Eigen::MatrixXd& V, Eigen::Matr
 	}
 	cout << cnt << endl;
 	// fortest
+*/
 }
