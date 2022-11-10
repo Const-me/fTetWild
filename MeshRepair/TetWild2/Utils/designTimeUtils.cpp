@@ -17,7 +17,7 @@ namespace
 		}
 
 		const int ol = rdi.GetLength();
-		rdi.AppendFormat( "%a", f );
+		rdi.AppendFormat( "%la", f );
 
 		// For optimal readability, trim trailing zeros from mantissa. This truncates "0x1.9999a80000000p-4" into "0x1.9999a8p-4"
 		int idx = rdi.Find( "0p", ol );
@@ -47,6 +47,16 @@ namespace
 			const int trimmedCharacters = end - idx;
 			rdi.ReleaseBufferSetLength( nl - trimmedCharacters );
 		}
+
+		// Verify what was printed
+		const char* pstr = rdi;
+		pstr += ol;
+		double v = 0;
+		int ret = sscanf_s( pstr, "%la", &v );
+		if( 1 != ret )
+			__debugbreak();
+		if( v != f )
+			__debugbreak();
 	}
 }
 
