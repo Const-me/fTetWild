@@ -15,7 +15,9 @@
     <ClCompile Include="Utils\IndexedMesh.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="Timer.cpp" />
+    <ClCompile Include="Utils\Timer.cpp" />
+    <ClCompile Include="Utils\ConsoleLogSink.cpp" />
+    <ClCompile Include="Utils\ConsoleLogSink.win32.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -25,6 +27,7 @@
     <ClInclude Include="Utils\simdUtils.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="Timer.h" />
+    <ClInclude Include="Utils\Timer.h" />
+    <ClInclude Include="Utils\ConsoleLogSink.h" />
   </ItemGroup>
 </Project>

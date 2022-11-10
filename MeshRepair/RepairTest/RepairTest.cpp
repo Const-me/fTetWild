@@ -1,7 +1,8 @@
 #include "stdafx.h"
 #include "Utils/IndexedMesh.h"
 #include "../MeshRepair/API/library.h"
-#include "Timer.h"
+#include "Utils/Timer.h"
+#include "Utils/ConsoleLogSink.h"
 
 static const LPCTSTR stlSource = LR"(C:\Temp\2remove\MeshRepair\model.stl)";
 static const LPCTSTR stlResult = LR"(C:\Temp\2remove\MeshRepair\model-result.stl)";
@@ -65,7 +66,8 @@ HRESULT testRepair()
 	using namespace ComLight;
 	using namespace MeshRepair;
 	CComPtr<iMeshRepair> repair;
-	CHECK( createMeshRepair( nullptr, &repair ) );
+	ConsoleLogSink consoleLogSink;
+	CHECK( createMeshRepair( consoleLogSink, &repair ) );
 
 	CComPtr<iSourceMesh> source;
 	CHECK( createMesh( repair, mesh, source ) );
