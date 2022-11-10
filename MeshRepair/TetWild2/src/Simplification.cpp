@@ -8,14 +8,10 @@
 
 #include "stdafx.h"
 #include "Simplification.h"
-#include "Logger.hpp"
 #include "LocalOperations.h"
-
 #include <igl/remove_duplicate_vertices.h>
-// #include <igl/writeOFF.h>
 #include <igl/Timer.h>
 #include <igl/unique_rows.h>
-
 #ifdef FLOAT_TETWILD_USE_TBB
 #include <tbb/task_scheduler_init.h>
 #include <tbb/parallel_for.h>
@@ -102,8 +98,8 @@ void floatTetWild::simplify( std::vector<Vector3>& input_vertices, std::vector<V
 
 	remove_duplicates( input_vertices, input_faces, input_tags, params );
 
-	logger().info( "#v = {}", input_vertices.size() );
-	logger().info( "#f = {}", input_faces.size() );
+	params.logger.logInfo( "#v = %zu", (size_t)input_vertices.size() );
+	params.logger.logInfo( "#f = %zu", (size_t)input_faces.size() );
 }
 
 bool floatTetWild::remove_duplicates(
@@ -149,9 +145,9 @@ bool floatTetWild::remove_duplicates(
 	if( V_in.rows() == 0 || F_in.rows() == 0 )
 		return false;
 
-	logger().info( "remove duplicates: " );
-	logger().info( "#v: {} -> {}", input_vertices.size(), V_in.rows() );
-	logger().info( "#f: {} -> {}", input_faces.size(), F_in.rows() );
+	params.logger.logInfo( "remove duplicates: " );
+	params.logger.logInfo( "#v: %zu -> %zu", (size_t)input_vertices.size(), (size_t)V_in.rows() );
+	params.logger.logInfo( "#f: %zu -> %zu", (size_t)input_faces.size(), (size_t)F_in.rows() );
 
 	input_vertices.resize( V_in.rows() );
 	input_faces.clear();
@@ -493,7 +489,7 @@ void floatTetWild::collapsing( std::vector<Vector3>& input_vertices, std::vector
 	//    cout<<fail_flip<<endl;
 	//    cout<<fail_env<<endl;
 	//    std::cout<<"#v: "<<build_time<<std::endl;
-	logger().debug( "{}  faces are collapsed!!", cnt_suc );
+	params.logger.logDebug( "%i faces are collapsed!!", cnt_suc );
 }
 
 void floatTetWild::swapping( std::vector<Vector3>& input_vertices, std::vector<Vector3i>& input_faces, const AABBWrapper& tree, const Parameters& params,
@@ -622,7 +618,7 @@ void floatTetWild::swapping( std::vector<Vector3>& input_vertices, std::vector<V
 		//        check_surface(input_vertices, input_faces, f_is_removed, tree, params);
 	}
 
-	logger().debug( "{}  faces are swapped!!", cnt );
+	params.logger.logDebug( "%i faces are swapped!!", cnt );
 	return;
 
 	///////////////////
@@ -738,7 +734,7 @@ void floatTetWild::swapping( std::vector<Vector3>& input_vertices, std::vector<V
 		if( is_swapped )
 			cnt++;
 	}
-	logger().debug( "{}  faces are swapped!!", cnt );
+	params.logger.logDebug( "%i faces are swapped!!", cnt );
 }
 
 void floatTetWild::flattening( std::vector<Vector3>& input_vertices, std::vector<Vector3i>& input_faces, const AABBWrapper& sf_tree, const Parameters& params )

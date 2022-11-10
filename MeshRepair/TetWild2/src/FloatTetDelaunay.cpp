@@ -8,10 +8,7 @@
 
 #include "stdafx.h"
 #include "FloatTetDelaunay.h"
-#include "Logger.hpp"
-
 #include <igl/Timer.h>
-
 #include <iterator>
 #include <algorithm>
 #include <bitset>
@@ -46,8 +43,8 @@ namespace floatTetWild
 				max[ j ] += dis;
 			}
 
-			logger().debug( "min = {} {} {}", min[ 0 ], min[ 1 ], min[ 2 ] );
-			logger().debug( "max = {} {} {}", max[ 0 ], max[ 1 ], max[ 2 ] );
+			params.logger.logDebug( "min = %g %g %g", min[ 0 ], min[ 1 ], min[ 2 ] );
+			params.logger.logDebug( "max = %g %g %g", max[ 0 ], max[ 1 ], max[ 2 ] );
 		}
 
 		bool comp( const std::array<int, 4>& a, const std::array<int, 4>& b )

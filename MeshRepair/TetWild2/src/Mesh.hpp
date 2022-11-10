@@ -172,6 +172,14 @@ namespace floatTetWild
 		std::vector<MeshVertex> tet_vertices;
 		std::vector<MeshTet> tets;
 		Parameters params;
+		Mesh( const MeshRepair::sLoggerSetup& sls )
+			: params( sls )
+		{
+		}
+		const Logger& logger() const
+		{
+			return params.logger;
+		}
 
 		int t_empty_start = 0;
 		int v_empty_start = 0;

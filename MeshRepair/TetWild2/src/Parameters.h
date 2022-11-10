@@ -11,12 +11,18 @@
 #include "Types.hpp"
 #include <array>
 #include <vector>
+#include "../Utils/Logger.h"
 
 namespace floatTetWild
 {
 	class Parameters
 	{
 	  public:
+		Parameters( const MeshRepair::sLoggerSetup& sls )
+			: logger( sls )
+		{
+		}
+
 		bool not_sort_input = false;
 		bool correct_surface_orientation = false;
 		bool is_quiet = false;
@@ -126,5 +132,7 @@ namespace floatTetWild
 			collapse_threshold_2 = collapse_threshold * collapse_threshold;
 			return true;
 		}
+
+		const Logger logger;
 	};
 }  // namespace floatTetWild

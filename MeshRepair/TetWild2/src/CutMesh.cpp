@@ -16,30 +16,7 @@
 #include "LocalOperations.h"
 #include "../external/Predicates.hpp"
 #include "intersections.h"
-#include "Logger.hpp"
 #include <igl/Timer.h>
-
-double time_cut_mesh11 = 0;
-double time_cut_mesh12 = 0;
-double time_cut_mesh13 = 0;
-double time_cut_mesh14 = 0;
-double time_get_intersecting_edges_and_points1 = 0;
-double time_get_intersecting_edges_and_points2 = 0;
-double time_get_intersecting_edges_and_points3 = 0;
-double time_get_intersecting_edges_and_points4 = 0;
-// igl::Timer timer;
-
-void floatTetWild::print_times1()
-{
-	//    logger().debug("\t\t\t- time_cut_mesh11 = {}s", time_cut_mesh11);
-	//    logger().debug("\t\t\t- time_cut_mesh12 = {}s", time_cut_mesh12);
-	//    logger().debug("\t\t\t- time_cut_mesh13 = {}s", time_cut_mesh13);
-	//    logger().debug("\t\t\t- time_cut_mesh14 = {}s", time_cut_mesh14);
-	logger().debug( "\t\t- time_get_intersecting_edges_and_points1 = {}s", time_get_intersecting_edges_and_points1 );
-	logger().debug( "\t\t- time_get_intersecting_edges_and_points2 = {}s", time_get_intersecting_edges_and_points2 );
-	logger().debug( "\t\t- time_get_intersecting_edges_and_points3 = {}s", time_get_intersecting_edges_and_points3 );
-	logger().debug( "\t\t- time_get_intersecting_edges_and_points4 = {}s", time_get_intersecting_edges_and_points4 );
-}
 
 void floatTetWild::CutMesh::construct( const std::vector<int>& cut_t_ids )
 {

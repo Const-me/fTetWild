@@ -14,7 +14,6 @@
 #include "LocalOperations.h"
 #include "../external/Predicates.hpp"
 #include "CutTable2.h"
-#include "Logger.hpp"
 #include "intersections.h"
 #include "MeshImprovement.h"  //fortest
 #include <igl/Timer.h>
@@ -256,7 +255,7 @@ void floatTetWild::insert_triangles_aux( const std::vector<Vector3>& input_verti
 {
 	std::vector<bool> old_is_face_inserted = is_face_inserted;	/// is_face_inserted has been intialized in main
 
-	logger().info( "triangle insertion start, #f = {}, #v = {}, #t = {}", input_faces.size(), mesh.tet_vertices.size(), mesh.tets.size() );
+	mesh.logger().logInfo( "triangle insertion start, #f = %zu, #v = %zu, #t = %zu", input_faces.size(), mesh.tet_vertices.size(), mesh.tets.size() );
 	/////
 	std::vector<std::array<std::vector<int>, 4>> track_surface_fs( mesh.tets.size() );
 	if( !is_again )
@@ -264,7 +263,7 @@ void floatTetWild::insert_triangles_aux( const std::vector<Vector3>& input_verti
 		match_surface_fs( mesh, input_vertices, input_faces, is_face_inserted, track_surface_fs );
 	}
 	int cnt_matched = std::count( is_face_inserted.begin(), is_face_inserted.end(), true );
-	logger().info( "matched #f = {}, uninserted #f = {}", cnt_matched, is_face_inserted.size() - cnt_matched );
+	mesh.logger().logInfo( "matched #f = %i, uninserted #f = %i", cnt_matched, (int)is_face_inserted.size() - cnt_matched );
 
 	std::vector<int> sorted_f_ids;
 	sort_input_faces( input_vertices, input_faces, mesh, sorted_f_ids );
@@ -314,26 +313,27 @@ void floatTetWild::insert_triangles_aux( const std::vector<Vector3>& input_verti
 		// fortest
 		if( !is_again && i > 0 && i % 1000 == 0 )
 		{
-			logger().debug( "inserting f{}... {} failed", i, cnt_fail );
-			logger().debug( "snapped {}/{}", cnt_snapped, cnt_total );
-			logger().debug( "\t- time_find_cutting_tets = {}s (total {}s)", time_find_cutting_tets - old_time_find_cutting_tets, time_find_cutting_tets );
+			mesh.logger().logDebug( "inserting f%i... %i failed", i, cnt_fail );
+			mesh.logger().logDebug( "snapped %i/%i", cnt_snapped, cnt_total );
+			mesh.logger().logDebug( "\t- time_find_cutting_tets = %gs (total %gs)", time_find_cutting_tets - old_time_find_cutting_tets, time_find_cutting_tets );
 			//            logger().info("\t\t- time_find_cutting_tets1 = {}s", time_find_cutting_tets1);
 			//            logger().info("\t\t- time_find_cutting_tets2 = {}s", time_find_cutting_tets2);
 			//            logger().info("\t\t- time_find_cutting_tets3 = {}s", time_find_cutting_tets3);
 			//            logger().info("\t\t- time_find_cutting_tets4 = {}s", time_find_cutting_tets4);
-			logger().debug( "\t- time_cut_mesh = {}s (total {}s)", time_cut_mesh - old_time_cut_mesh, time_cut_mesh );
+			mesh.logger().logDebug( "\t- time_cut_mesh = %gs (total %gs)", time_cut_mesh - old_time_cut_mesh, time_cut_mesh );
 			//            logger().info("\t\t- time_cut_mesh1 = {}s", time_cut_mesh1);
 			//            logger().info("\t\t- time_cut_mesh2 = {}s", time_cut_mesh2);
 			//            print_times1();
-			logger().debug( "\t- time_get_intersecting_edges_and_points = {}s (total {}s)",
+			mesh.logger().logDebug( "\t- time_get_intersecting_edges_and_points = %gs (total %gs)",
 			  time_get_intersecting_edges_and_points - old_time_get_intersecting_edges_and_points, time_get_intersecting_edges_and_points );
-			print_times1();
-			logger().debug( "\t- time_subdivide_tets = {}s (total {}s)", time_subdivide_tets - old_time_subdivide_tets, time_subdivide_tets );
-			logger().debug( "\t- time_push_new_tets = {}s (total {}s)", time_push_new_tets - old_time_push_new_tets, time_push_new_tets );
+			// print_times1();
+			mesh.logger().logDebug( "\t- time_subdivide_tets = %gs (total %gs)", time_subdivide_tets - old_time_subdivide_tets, time_subdivide_tets );
+			mesh.logger().logDebug( "\t- time_push_new_tets = %gs (total %gs)", time_push_new_tets - old_time_push_new_tets, time_push_new_tets );
 			//            logger().info("\t\t- time_push_new_tets1 = {}s", time_push_new_tets1);
 			//            logger().info("\t\t- time_push_new_tets2 = {}s", time_push_new_tets2);
 			//            logger().info("\t\t- time_push_new_tets3 = {}s", time_push_new_tets3);
-			logger().debug( "\t- time_simplify_subdivision_result = {}s (total {}s)", time_simplify_subdivision_result - old_time_simplify_subdivision_result,
+			mesh.logger().logDebug( "\t- time_simplify_subdivision_result = %gs (total %gs)",
+			  time_simplify_subdivision_result - old_time_simplify_subdivision_result,
 			  time_simplify_subdivision_result );
 
 			old_time_find_cutting_tets = time_find_cutting_tets;
@@ -342,8 +342,8 @@ void floatTetWild::insert_triangles_aux( const std::vector<Vector3>& input_verti
 			old_time_subdivide_tets = time_subdivide_tets;
 			old_time_push_new_tets = time_push_new_tets;
 			old_time_simplify_subdivision_result = time_simplify_subdivision_result;
-			logger().debug( "#v = {}/{}", mesh.get_v_num(), mesh.tet_vertices.size() );
-			logger().debug( "#t = {}/{}", mesh.get_t_num(), mesh.tets.size() );
+			mesh.logger().logDebug( "#v = %i/%zu", mesh.get_v_num(), mesh.tet_vertices.size() );
+			mesh.logger().logDebug( "#t = %i/%zu", mesh.get_t_num(), mesh.tets.size() );
 		}
 		// fortest
 
@@ -374,25 +374,25 @@ void floatTetWild::insert_triangles_aux( const std::vector<Vector3>& input_verti
 		if( f_id == III )
 			break;	// fortest
 	}
-	logger().info( "insert_one_triangle * n done, #v = {}, #t = {}", mesh.tet_vertices.size(), mesh.tets.size() );
-	logger().info( "uninserted #f = {}/{}", std::count( is_face_inserted.begin(), is_face_inserted.end(), false ), is_face_inserted.size() - cnt_matched );
-	logger().info(
-	  "total timing: {}s", time_find_cutting_tets + time_cut_mesh + time_get_intersecting_edges_and_points + time_subdivide_tets + time_push_new_tets );
+	mesh.logger().logInfo( "insert_one_triangle * n done, #v = %zu, #t = %zu", mesh.tet_vertices.size(), mesh.tets.size() );
+	mesh.logger().logInfo( "uninserted #f = %zu/%i", std::count( is_face_inserted.begin(), is_face_inserted.end(), false ), (int)is_face_inserted.size() - cnt_matched );
+	mesh.logger().logInfo(
+	  "total timing: %gs", time_find_cutting_tets + time_cut_mesh + time_get_intersecting_edges_and_points + time_subdivide_tets + time_push_new_tets );
 
 	pair_track_surface_fs( mesh, track_surface_fs );
-	logger().info( "pair_track_surface_fs done" );
+	mesh.logger().logInfo( "pair_track_surface_fs done" );
 
 	/////
 	std::vector<std::array<int, 2>> b_edges1;
 	std::vector<std::pair<std::array<int, 2>, std::vector<int>>> b_edge_infos;
 	std::vector<bool> is_on_cut_edges;
 	find_boundary_edges( input_vertices, input_faces, is_face_inserted, old_is_face_inserted, b_edge_infos, is_on_cut_edges, b_edges1 );
-	logger().info( "find_boundary_edges done" );
+	mesh.logger().logInfo( "find_boundary_edges done" );
 	std::vector<std::array<int, 3>> known_surface_fs;
 	std::vector<std::array<int, 3>> known_not_surface_fs;
 	insert_boundary_edges( input_vertices, input_faces, b_edge_infos, is_on_cut_edges, track_surface_fs, mesh, tree, is_face_inserted, is_again,
 	  known_surface_fs, known_not_surface_fs );
-	logger().info( "uninserted #f = {}/{}", std::count( is_face_inserted.begin(), is_face_inserted.end(), false ), is_face_inserted.size() - cnt_matched );
+	mesh.logger().logInfo( "uninserted #f = %zu/%i", std::count( is_face_inserted.begin(), is_face_inserted.end(), false ), (int)is_face_inserted.size() - cnt_matched );
 
 	// fortest
 	// check_track_surface_fs( mesh, track_surface_fs, input_vertices, input_faces, sorted_f_ids );
@@ -404,7 +404,7 @@ void floatTetWild::insert_triangles_aux( const std::vector<Vector3>& input_verti
 	  input_vertices, input_faces, input_tags, track_surface_fs, is_face_inserted, known_surface_fs, known_not_surface_fs, b_edges2, mesh, tree );
 	// fortest: output and check
 	//    output_surface(mesh, mesh.params.output_path+"_"+mesh.params.postfix+"_surface.stl");
-	logger().info( "mark_surface_fs done" );
+	mesh.logger().logInfo( "mark_surface_fs done" );
 
 	/////
 	// build b_tree using b_edges
@@ -441,7 +441,7 @@ void floatTetWild::insert_triangles_aux( const std::vector<Vector3>& input_verti
 
 	if( std::count( is_face_inserted.begin(), is_face_inserted.end(), false ) == 0 )
 		mesh.is_input_all_inserted = true;
-	logger().info( "#b_edge1 = {}, #b_edges2 = {}", b_edges1.size(), b_edges2.size() );
+	mesh.logger().logInfo( "#b_edge1 = %zu, #b_edges2 = %zu", b_edges1.size(), b_edges2.size() );
 
 	//    ///fortest
 	//    Eigen::MatrixXd V(input_vertices.size(), 3);
@@ -2033,7 +2033,7 @@ bool floatTetWild::insert_boundary_edges( const std::vector<Vector3>& input_vert
 				covered_fs_infos[ f_id ].push_back( std::make_pair( i, j ) );
 		}
 	}
-	logger().info( "time1 = {}", timer.getElapsedTime() );
+	mesh.logger().logInfo( "time1 = %g", timer.getElapsedTime() );
 
 	bool is_all_inserted = true;
 	int cnt = 0;
@@ -2185,12 +2185,12 @@ bool floatTetWild::insert_boundary_edges( const std::vector<Vector3>& input_vert
 		cnt++;
 	}
 
-	logger().info( "uninsert boundary #e = {}/{}", b_edge_infos.size() - cnt, b_edge_infos.size() );
-	logger().info( "time2 = {}", time2 );
-	logger().info( "time3 = {}", time3 );
-	logger().info( "time4 = {}", time4 );
-	logger().info( "time5 = {}", time5 );
-	logger().info( "time6 = {}", time6 );
+	mesh.logger().logInfo( "uninsert boundary #e = %i/%zu", (int)b_edge_infos.size() - cnt, b_edge_infos.size() );
+	mesh.logger().logInfo( "time2 = %g", time2 );
+	mesh.logger().logInfo( "time3 = %g", time3 );
+	mesh.logger().logInfo( "time4 = %g", time4 );
+	mesh.logger().logInfo( "time5 = %g", time5 );
+	mesh.logger().logInfo( "time6 = %g", time6 );
 
 	//    logger().info("time_e1 = {}", time_e1);
 	//    logger().info("time_e2 = {}", time_e2);

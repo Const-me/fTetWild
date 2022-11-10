@@ -56,9 +56,6 @@
     <ClInclude Include="src\LocalOperations.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\Logger.hpp">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="src\MeshImprovement.h">
       <Filter>src</Filter>
     </ClInclude>
@@ -165,9 +162,6 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\LocalOperations.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Logger.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\MeshImprovement.cpp">

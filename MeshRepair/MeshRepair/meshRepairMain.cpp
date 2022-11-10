@@ -20,11 +20,12 @@ namespace
 	constexpr bool skip_simplify = false;
 }
 
-HRESULT meshRepairMain( MeshRepair::SourceMesh& rsi, const MeshRepair::Parameters& parameters, MeshRepair::iResultMesh** rdi )
+HRESULT meshRepairMain(
+  MeshRepair::SourceMesh& rsi, const MeshRepair::Parameters& parameters, const MeshRepair::sLoggerSetup& logger, MeshRepair::iResultMesh** rdi )
 {
 	// writeStl( rsi.input_vertices, rsi.input_faces, LR"(C:\Temp\2remove\MeshRepair\Temp-01.stl)" );
 
-	Mesh mesh;
+	Mesh mesh { logger };
 	Parameters& params = mesh.params;
 	CHECK( convertParameters( params, parameters ) );
 

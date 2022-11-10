@@ -124,7 +124,6 @@
     <ClInclude Include="src\FloatTetDelaunay.h" />
     <ClInclude Include="src\intersections.h" />
     <ClInclude Include="src\LocalOperations.h" />
-    <ClInclude Include="src\Logger.hpp" />
     <ClInclude Include="src\Mesh.hpp" />
     <ClInclude Include="src\MeshImprovement.h" />
     <ClInclude Include="src\Parameters.h" />
@@ -173,7 +172,6 @@
     <ClCompile Include="src\FloatTetDelaunay.cpp" />
     <ClCompile Include="src\intersections.cpp" />
     <ClCompile Include="src\LocalOperations.cpp" />
-    <ClCompile Include="src\Logger.cpp" />
     <ClCompile Include="src\Mesh.cpp" />
     <ClCompile Include="src\MeshImprovement.cpp" />
     <ClCompile Include="src\Simplification.cpp" />

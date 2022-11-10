@@ -30,11 +30,13 @@ namespace floatTetWild
 		Mesh& mesh;
 		const Vector3& p_n;
 		const std::array<Vector3, 3>& p_vs;
+		const Logger& logger;
 
 		CutMesh( Mesh& _mesh, const Vector3& _p_n, const std::array<Vector3, 3>& _p_vs )
 			: mesh( _mesh )
 			, p_n( _p_n )
 			, p_vs( _p_vs )
+			, logger( mesh.params.logger )
 		{
 		}
 
@@ -61,12 +63,11 @@ namespace floatTetWild
 			return false;
 		}
 
-		inline Scalar get_to_plane_dist( const Vector3& p ) { return p_n.dot( p - p_vs[ 0 ] ); }
+		inline Scalar get_to_plane_dist( const Vector3& p )
+		{
+			return p_n.dot( p - p_vs[ 0 ] );
+		}
 
 		bool check();
 	};
-
-	// fortest
-	void print_times1();
-	// fortest
 }  // namespace floatTetWild

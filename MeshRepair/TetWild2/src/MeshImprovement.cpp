@@ -16,7 +16,6 @@
 #include "Parameters.h"
 #include "TriangleInsertion.h"
 #include "Statistics.h"
-#include "Logger.hpp"
 #include <igl/Timer.h>
 #include <igl/winding_number.h>
 #include "../Utils/Geogram2.h"
@@ -811,7 +810,7 @@ void floatTetWild::filter_outside( Mesh& mesh, bool invert_faces )
 	if( n_tets <= 0 )
 	{
 		if( invert_faces )
-			logger().error( "Empty mesh, problem with inverted faces" );
+			mesh.logger().logError( "Empty mesh, problem with inverted faces" );
 		else
 		{
 			for( int t_id = 0; t_id < mesh.tets.size(); ++t_id )
@@ -819,7 +818,7 @@ void floatTetWild::filter_outside( Mesh& mesh, bool invert_faces )
 				auto& t = mesh.tets[ t_id ];
 				t.is_removed = old_flags[ t_id ];
 			}
-			logger().debug( "Empty mesh trying to reverse the faces" );
+			mesh.logger().logDebug( "Empty mesh trying to reverse the faces" );
 			filter_outside( mesh, true );
 		}
 	}
@@ -1009,12 +1008,12 @@ void floatTetWild::mark_outside( Mesh& mesh, bool invert_faces )
 	if( n_tets <= 0 )
 	{
 		if( invert_faces )
-			logger().error( "Empty mesh, problem with inverted faces" );
+			mesh.logger().logError( "Empty mesh, problem with inverted faces" );
 		else
 		{
 			for( auto& t : mesh.tets )
 				t.is_outside = false;
-			logger().debug( "Empty mesh trying to reverse the faces" );
+			mesh.logger().logDebug( "Empty mesh trying to reverse the faces" );
 			mark_outside( mesh, true );
 		}
 	}
