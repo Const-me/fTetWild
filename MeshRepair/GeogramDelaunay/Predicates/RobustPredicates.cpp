@@ -1,4 +1,3 @@
-#include "stdafx.h"
 /*****************************************************************************/
 /*                                                                           */
 /*  Routines for Arbitrary Precision Floating-point Arithmetic               */
@@ -114,10 +113,16 @@
 /*                                                                           */
 /*****************************************************************************/
 
-#include <stdafx.h>
-#include "RobustPredicates.h"
+#include <emmintrin.h>
+#include <stdint.h>
 #include <math.h>
-// #include "designTimeUtils.h"
+#include "RobustPredicates.h"
+
+#ifdef _MSC_VER
+#pragma fp_contract( off )
+#endif
+
+void dbgPrintCppLiteral( const char* name, double val );
 
 namespace RobustPredicates
 {
@@ -394,7 +399,7 @@ namespace RobustPredicates
 	/*                                                                           */
 	/*****************************************************************************/
 
-	void exactinit()
+	void __declspec( noinline ) exactinit()
 	{
 		double half;
 		double check, lastcheck;
@@ -1578,7 +1583,7 @@ namespace RobustPredicates
 		return deter[ deterlen - 1 ];
 	}
 
-	static double orient3dadapt( const double* pa, const double* pb, const double* pc, const double* pd, double permanent )
+	static double __declspec( noinline ) orient3dadapt( const double* pa, const double* pb, const double* pc, const double* pd, double permanent )
 	{
 		double adx, bdx, cdx, ady, bdy, cdy, adz, bdz, cdz;
 		double det, errbound;
@@ -3814,4 +3819,4 @@ namespace RobustPredicates
 
 		return insphereadapt( pa, pb, pc, pd, pe, permanent );
 	}
-}  // namespace RodustPredicates
+}  // namespace RobustPredicates

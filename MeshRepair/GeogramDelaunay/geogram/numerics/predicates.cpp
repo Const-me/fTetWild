@@ -1,3 +1,7 @@
+// Modified by Konstantin http://const.me in late 2022, replacing a few predicates.
+// Geogram's version is rather slow. The original Shewchuk code from 1997 is equally precise, and way faster
+// It took a while to port to modern language, though.
+
 /*
  *  Copyright (c) 2012-2014, Bruno Levy
  *  All rights reserved.
@@ -1367,32 +1371,7 @@ namespace {
 
     // ============ orient3d ==============================================
 
-    Sign orient_3d_exact(
-        const double* p0, const double* p1,
-        const double* p2, const double* p3
-    ) {
-        PCK_STAT(cnt_orient3d_exact++);
-
-        const expansion& a11 = expansion_diff(p1[0], p0[0]);
-        const expansion& a12 = expansion_diff(p1[1], p0[1]);
-        const expansion& a13 = expansion_diff(p1[2], p0[2]);
-
-        const expansion& a21 = expansion_diff(p2[0], p0[0]);
-        const expansion& a22 = expansion_diff(p2[1], p0[1]);
-        const expansion& a23 = expansion_diff(p2[2], p0[2]);
-
-        const expansion& a31 = expansion_diff(p3[0], p0[0]);
-        const expansion& a32 = expansion_diff(p3[1], p0[1]);
-        const expansion& a33 = expansion_diff(p3[2], p0[2]);
-
-        const expansion& Delta = expansion_det3x3(
-            a11, a12, a13, a21, a22, a23, a31, a32, a33
-        );
-
-        PCK_STAT(len_orient3d = std::max(len_orient3d, Delta.length()));
-
-        return Delta.sign();
-    }
+   
 
     Sign side4h_3d_exact_SOS(
         const double* p0, const double* p1,
@@ -2098,17 +2077,7 @@ namespace GEO {
 	}
 
 	
-        Sign orient_3d(
-            const double* p0, const double* p1,
-            const double* p2, const double* p3
-            ) {
-            PCK_STAT(cnt_orient3d_total++);
-            Sign result = Sign(orient_3d_filter(p0, p1, p2, p3));
-            if(result == 0) {
-                result = orient_3d_exact(p0, p1, p2, p3);
-            }
-            return result;
-        }
+
 
 
         Sign orient_3dlifted(

@@ -86,7 +86,6 @@
     <ClInclude Include="Utils\GeometricPrimitives.h" />
     <ClInclude Include="Utils\NearestSearch.h" />
     <ClInclude Include="Utils\orient3D.h" />
-    <ClInclude Include="Utils\RobustPredicates.h" />
     <ClInclude Include="Utils\designTimeUtils.h" />
     <ClInclude Include="Utils\KdTree\kd_tree.h">
       <Filter>Utils\KdTree</Filter>
@@ -184,7 +183,6 @@
     </ClCompile>
     <ClCompile Include="Utils\miscUtils.cpp" />
     <ClCompile Include="Utils\NearestSearch.cpp" />
-    <ClCompile Include="Utils\RobustPredicates.cpp" />
     <ClCompile Include="Utils\designTimeUtils.cpp" />
     <ClCompile Include="Utils\KdTree\kd_tree.cpp">
       <Filter>Utils\KdTree</Filter>

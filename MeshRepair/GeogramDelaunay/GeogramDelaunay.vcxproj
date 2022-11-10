@@ -108,6 +108,8 @@
     <ClCompile Include="geogram\numerics\predicates.cpp" />
     <ClCompile Include="geogram\Shims\environment.cpp" />
     <ClCompile Include="geogram\Shims\LinkerShims.cpp" />
+    <ClCompile Include="Predicates\fasterPredicates.cpp" />
+    <ClCompile Include="Predicates\RobustPredicates.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeogramDelaunay.h" />
@@ -132,6 +134,7 @@
     <ClInclude Include="geogram\mesh\mesh_reorder.h" />
     <ClInclude Include="geogram\numerics\multi_precision.h" />
     <ClInclude Include="geogram\numerics\predicates.h" />
+    <ClInclude Include="Predicates\RobustPredicates.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
