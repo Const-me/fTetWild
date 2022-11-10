@@ -1,6 +1,7 @@
 #pragma once
 #include "../../ComLightLib/comLightClient.h"
 #include "Parameters.h"
+#include "../../TetWild2/loggerApi.h"
 
 namespace MeshRepair
 {

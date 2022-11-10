@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "Utils/IndexedMesh.h"
-#include "../MeshRepair/API/interfaces.h"
+#include "../MeshRepair/API/library.h"
 #include "Timer.h"
 
 static const LPCTSTR stlSource = LR"(C:\Temp\2remove\MeshRepair\model.stl)";
@@ -8,8 +8,6 @@ static const LPCTSTR stlResult = LR"(C:\Temp\2remove\MeshRepair\model-result.stl
 
 namespace MeshRepair
 {
-	extern "C" HRESULT COMLIGHTCALL createMeshRepair( iMeshRepair** rdi );
-
 	HRESULT createMesh( iMeshRepair* mr, const IndexedMesh& rsi, ComLight::CComPtr<iSourceMesh>& rdi )
 	{
 		if( rsi.triangles.empty() || rsi.vertices.empty() )
@@ -67,7 +65,7 @@ HRESULT testRepair()
 	using namespace ComLight;
 	using namespace MeshRepair;
 	CComPtr<iMeshRepair> repair;
-	CHECK( createMeshRepair( &repair ) );
+	CHECK( createMeshRepair( nullptr, &repair ) );
 
 	CComPtr<iSourceMesh> source;
 	CHECK( createMesh( repair, mesh, source ) );

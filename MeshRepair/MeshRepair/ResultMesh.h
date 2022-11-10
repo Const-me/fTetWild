@@ -1,6 +1,7 @@
 #pragma once
 #include "API/library.h"
 #include <Eigen/Dense>
+#include "../ComLightLib/comLightServer.h"
 
 namespace MeshRepair
 {

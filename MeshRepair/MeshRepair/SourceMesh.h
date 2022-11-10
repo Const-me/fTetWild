@@ -1,5 +1,6 @@
 #pragma once
 #include "API/library.h"
+#include "../ComLightLib/comLightServer.h"
 #include "../TetWild2/src/Mesh.hpp"
 #include "../TetWild2/Utils/Mesh/TriangleMesh.h"
 

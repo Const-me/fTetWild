@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "API/library.h"
+#include "../ComLightLib/comLightServer.h"
 #include "SourceMesh.h"
 #include <geogram/basic/common.h>
 #include "meshRepairMain.h"
@@ -16,14 +17,18 @@ namespace MeshRepair
 
 		HRESULT COMLIGHTCALL repair( iSourceMesh* mesh, const Parameters& parameters, iResultMesh** rdi ) noexcept override final;
 
+		sLoggerSetup logger;
+
 	  protected:
 		HRESULT FinalConstruct();
 		void FinalRelease();
+
+	  public:
+		void initLogger( const sLoggerSetup* src );
 	};
 
 	HRESULT MeshRepair::FinalConstruct()
 	{
-		// GEO::initialize();
 		GEO::PCK::initialize();
 		// printCutTableData();
 		// validateCutTableData();
@@ -32,14 +37,28 @@ namespace MeshRepair
 
 	void MeshRepair::FinalRelease()
 	{
-		// GEO::terminate();
 		GEO::PCK::terminate();
 	}
 
-	DLLEXPORT HRESULT COMLIGHTCALL createMeshRepair( iMeshRepair** rdi )
+	void MeshRepair::initLogger( const sLoggerSetup* src )
 	{
-		// RobustPredicates::exactinit();
-		return ComLight::Object<MeshRepair>::create( rdi );
+		if( nullptr != src )
+			logger = *src;
+		else
+		{
+			logger.sink = nullptr;
+			logger.context = nullptr;
+			logger.level = eLogLevel::Error;
+		}
+	}
+
+	DLLEXPORT HRESULT COMLIGHTCALL createMeshRepair( const sLoggerSetup* logSetup, iMeshRepair** rdi )
+	{
+		ComLight::CComPtr<ComLight::Object<MeshRepair>> result;
+		CHECK( ComLight::Object<MeshRepair>::create( result ) );
+		result->initLogger( logSetup );
+		result.detach( rdi );
+		return S_OK;
 	}
 
 	HRESULT COMLIGHTCALL MeshRepair::createIndexedMeshFP32(

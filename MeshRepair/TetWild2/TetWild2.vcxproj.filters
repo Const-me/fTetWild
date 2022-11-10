@@ -113,6 +113,7 @@
     <ClInclude Include="Utils\SimdVector.h" />
     <ClInclude Include="Utils\randomShuffle.h" />
     <ClInclude Include="src\LocalOperations2.h" />
+    <ClInclude Include="loggerApi.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp" />
