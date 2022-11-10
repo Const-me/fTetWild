@@ -46,6 +46,9 @@
 #include "stdafx.h"
 #include "mesh_AABB.h"
 #include "../Utils/BoundingBox.hpp"
+#ifdef __AVX__
+#include <Utils/AvxMath.h>
+#endif
 
 namespace
 {
@@ -133,7 +136,8 @@ namespace
 	 * \param[in] B the box
 	 * \return the signed squared distance between \p p and \p B
 	 */
-	double point_box_signed_squared_distance( const vec3& p, const Box& B )
+
+	static double point_box_signed_squared_distance_orig( const vec3& p, const Box& B )
 	{
 		bool inside = true;
 		double result = 0.0;
@@ -155,6 +159,59 @@ namespace
 			result = -inner_point_box_squared_distance( p, B );
 		}
 		return result;
+	}
+
+	static double point_box_signed_squared_distance_avx( const vec3& p, const Box& B )
+	{
+#ifdef __AVX__
+		using namespace AvxMath;
+		// Load into 3 vectors
+		const __m256d pos = loadDouble3( &p.x );
+		const __m256d boxMin = _mm256_loadu_pd( &B.xyz_min[ 0 ] );
+		const __m256d boxMax = loadDouble3( &B.xyz_max[ 0 ] );
+
+		// When inside, both numbers are positive
+		const __m256d dmin = _mm256_sub_pd( pos, boxMin );
+		const __m256d dmax = _mm256_sub_pd( boxMax, pos );
+		// When inside, distance to the box; when outside, one of the vectors negative another positive, min will return the negative one
+		__m256d dist = _mm256_min_pd( dmin, dmax );
+		if( 0 == ( _mm256_movemask_pd( dist ) & 0b111 ) )
+		{
+			// The XYZ lanes of the dist are all non-negative, which means the point is inside the box
+			// Compute horizontal minimum of the dist.xyz vector
+			__m128d xy = low2( dist );
+			__m128d z = high2( dist );
+			xy = _mm_min_sd( xy, _mm_unpackhi_pd( xy, xy ) );
+			xy = _mm_min_sd( xy, z );
+			// Compute square, then negate it
+			double d = _mm_cvtsd_f64( xy );
+			return 0.0 - ( d * d );
+		}
+		else
+		{
+			// Compute vector mask of negative lanes, these are the lanes which were outside the box
+			__m256d outsideMaskVector = _mm256_cmp_pd( dist, _mm256_setzero_pd(), _CMP_LT_OQ );
+			// Zero out the lanes for coordinates which were inside the box
+			dist = _mm256_and_pd( dist, outsideMaskVector );
+			// The square distance to the box is the length of that vector
+			return vector3DotScalar( dist, dist );
+		}
+#else
+#error not implemented
+#endif
+	}
+
+	double point_box_signed_squared_distance( const vec3& p, const Box& B )
+	{
+#if 1
+		return point_box_signed_squared_distance_avx( p, B );
+#else
+		double orig = point_box_signed_squared_distance_orig( p, B );
+		double my = point_box_signed_squared_distance_avx( p, B );
+		if( orig != my )
+			__debugbreak();
+		return my;
+#endif
 	}
 
 	/**

@@ -112,6 +112,9 @@
     <ClInclude Include="src\LocalOperations2.h" />
     <ClInclude Include="loggerApi.h" />
     <ClInclude Include="Utils\Logger.h" />
+    <ClInclude Include="Utils\AvxMath.h" />
+    <ClInclude Include="Utils\AvxMathMem.h" />
+    <ClInclude Include="Utils\AvxMathMisc.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp" />
