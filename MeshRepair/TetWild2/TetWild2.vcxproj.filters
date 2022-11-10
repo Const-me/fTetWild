@@ -114,6 +114,7 @@
     <ClInclude Include="Utils\randomShuffle.h" />
     <ClInclude Include="src\LocalOperations2.h" />
     <ClInclude Include="loggerApi.h" />
+    <ClInclude Include="Utils\Logger.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp" />
@@ -214,6 +215,7 @@
     <ClCompile Include="Utils\triangleIntersection.cpp" />
     <ClCompile Include="Utils\randomShuffle.cpp" />
     <ClCompile Include="src\LocalOperations2.cpp" />
+    <ClCompile Include="Utils\Logger.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="external">
