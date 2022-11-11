@@ -162,7 +162,8 @@ namespace floatTetWild
 		{
 			GEO2::index_t nearest_facet;
 			get_nearest_facet_hint( p, nearest_facet, nearest_point, sq_dist );
-			facet_in_envelope_recursive( p, sq_epsilon, nearest_facet, nearest_point, sq_dist, 1, 0, mesh_.countTriangles() );
+			__m128i vec = _mm_setr_epi32( 1, 0, (int)mesh_.countTriangles(), 0 );
+			facet_in_envelope_recursive( p, sq_epsilon, nearest_facet, nearest_point, sq_dist, vec );
 			return nearest_facet;
 		}
 
@@ -173,10 +174,9 @@ namespace floatTetWild
 		void facet_in_envelope_with_hint( const GEO2::vec3& p, double sq_epsilon, GEO2::index_t& nearest_facet, GEO2::vec3& nearest_point, double& sq_dist ) const
 		{
 			if( nearest_facet == GEO2::NO_FACET )
-			{
 				get_nearest_facet_hint( p, nearest_facet, nearest_point, sq_dist );
-			}
-			facet_in_envelope_recursive( p, sq_epsilon, nearest_facet, nearest_point, sq_dist, 1, 0, mesh_.countTriangles() );
+			__m128i vec = _mm_setr_epi32( 1, 0, (int)mesh_.countTriangles(), 0 );
+			facet_in_envelope_recursive( p, sq_epsilon, nearest_facet, nearest_point, sq_dist, vec );
 		}
 
 		/**
@@ -359,8 +359,8 @@ namespace floatTetWild
 		 * Same as before, but stops early if a point within a given distance
 		 * is found.
 		 */
-		void facet_in_envelope_recursive( const GEO2::vec3& p, double sq_epsilon, GEO2::index_t& nearest_facet, GEO2::vec3& nearest_point, double& sq_dist,
-		  GEO2::index_t n, GEO2::index_t b, GEO2::index_t e ) const;
+		void facet_in_envelope_recursive(
+		  const GEO2::vec3& p, double sq_epsilon, GEO2::index_t& nearest_facet, GEO2::vec3& nearest_point, double& sq_dist, __m128i nbe ) const;
 
 		/**
 		 * \brief The recursive function used by the implementation

@@ -23,11 +23,28 @@ namespace AvxMath
 		return _mm_cvtsd_f64( xy );
 	}
 
+	// Horizontal sum of the 3D vector, broadcasted to both lanes of SSE vector
+	inline __m128d vector3HorizontalSum2( __m256d v )
+	{
+		__m128d xy = low2( v );
+		__m128d z = high2( v );
+		xy = _mm_add_sd( xy, _mm_unpackhi_pd( xy, xy ) );
+		xy = _mm_add_sd( xy, z );
+		return _mm_movedup_pd( xy );
+	}
+
 	// Compute dot product of two 3D vectors, return a scalar
 	inline double vector3DotScalar( __m256d a, __m256d b )
 	{
 		const __m256d prod = _mm256_mul_pd( a, b );
 		return vector3HorizontalSum( prod );
+	}
+
+	// Dot product of 3D vectors, broadcast to both lanes of SSE vector
+	inline __m128d vector3Dot2( __m256d a, __m256d b )
+	{
+		const __m256d prod = _mm256_mul_pd( a, b );
+		return vector3HorizontalSum2( prod );
 	}
 
 	// Permute XYZW => ZWXY
@@ -36,7 +53,7 @@ namespace AvxMath
 		return _mm256_permute2f128_pd( vec, vec, 1 );
 	}
 
-	// Transpose 3x3 FP32 matrix in 3 registers. The 4-th W lane is garbage.
+	// Transpose 3x3 FP64 matrix in 3 registers. The 4-th W lane of the result is garbage.
 	__forceinline void transpose3x3( __m256d a, __m256d b, __m256d c, __m256d& x, __m256d& y, __m256d& z )
 	{
 		__m256d axbxazbz = _mm256_unpacklo_pd( a, b );			 // a.x, b.x, a.z, b.z

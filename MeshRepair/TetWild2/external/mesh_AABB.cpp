@@ -161,9 +161,52 @@ namespace
 		return result;
 	}
 
-	static double point_box_signed_squared_distance_avx( const vec3& p, const Box& B )
+#ifndef __AVX__
+	#error This code requires at least AVX1
+#endif
+	static __m128d pointBoxSignedSquaredDistance2( const vec3& p, const Box& B )
 	{
-#ifdef __AVX__
+		using namespace AvxMath;
+		// Load into 3 vectors
+		const __m256d pos = loadDouble3( &p.x );
+		const __m256d boxMin = _mm256_loadu_pd( &B.xyz_min[ 0 ] );
+		const __m256d boxMax = loadDouble3( &B.xyz_max[ 0 ] );
+
+		// When inside, both numbers are positive
+		const __m256d dmin = _mm256_sub_pd( pos, boxMin );
+		const __m256d dmax = _mm256_sub_pd( boxMax, pos );
+		// When inside, distance to the box
+		// When outside, one of the vectors was negative another one positive, min will return the negative one, which is the distance we're after
+		__m256d dist = _mm256_min_pd( dmin, dmax );
+
+		if( 0 == ( _mm256_movemask_pd( dist ) & 0b111 ) )
+		{
+			// The XYZ lanes of the dist are all non-negative, which means the point is inside the box
+			// Compute horizontal minimum of the dist.xyz vector
+			__m128d xy = low2( dist );
+			__m128d z = high2( dist );
+			xy = _mm_min_sd( xy, _mm_unpackhi_pd( xy, xy ) );
+			xy = _mm_min_sd( xy, z );
+			// Compute square
+			xy = _mm_mul_sd( xy, xy );
+			// Duplicate the low lane
+			xy = _mm_movedup_pd( xy );
+			// Negate the vector
+			return _mm_sub_pd( _mm_setzero_pd(), xy );
+		}
+		else
+		{
+			// Compute vector mask of negative lanes, these are the lanes which were outside the box
+			__m256d outsideMaskVector = _mm256_cmp_pd( dist, _mm256_setzero_pd(), _CMP_LT_OQ );
+			// Zero out the lanes for coordinates which were inside the box
+			dist = _mm256_and_pd( dist, outsideMaskVector );
+			// The squared distance to the box is the squared length of that vector
+			return vector3Dot2( dist, dist );
+		}
+	}
+
+	static double pointBoxSignedSquaredDistance( const vec3& p, const Box& B )
+	{
 		using namespace AvxMath;
 		// Load into 3 vectors
 		const __m256d pos = loadDouble3( &p.x );
@@ -183,9 +226,11 @@ namespace
 			__m128d z = high2( dist );
 			xy = _mm_min_sd( xy, _mm_unpackhi_pd( xy, xy ) );
 			xy = _mm_min_sd( xy, z );
-			// Compute square, then negate it
-			double d = _mm_cvtsd_f64( xy );
-			return 0.0 - ( d * d );
+			// Compute square
+			xy = _mm_mul_sd( xy, xy );
+			// Negate
+			xy = _mm_sub_pd( _mm_setzero_pd(), xy );
+			return _mm_cvtsd_f64( xy );
 		}
 		else
 		{
@@ -196,22 +241,6 @@ namespace
 			// The square distance to the box is the length of that vector
 			return vector3DotScalar( dist, dist );
 		}
-#else
-#error not implemented
-#endif
-	}
-
-	double point_box_signed_squared_distance( const vec3& p, const Box& B )
-	{
-#if 1
-		return point_box_signed_squared_distance_avx( p, B );
-#else
-		double orig = point_box_signed_squared_distance_orig( p, B );
-		double my = point_box_signed_squared_distance_avx( p, B );
-		if( orig != my )
-			__debugbreak();
-		return my;
-#endif
 	}
 
 	/**
@@ -435,8 +464,8 @@ namespace floatTetWild
 		index_t childl = 2 * n;
 		index_t childr = 2 * n + 1;
 
-		double dl = point_box_signed_squared_distance( p, bboxes_[ childl ] );
-		double dr = point_box_signed_squared_distance( p, bboxes_[ childr ] );
+		double dl = pointBoxSignedSquaredDistance( p, bboxes_[ childl ] );
+		double dr = pointBoxSignedSquaredDistance( p, bboxes_[ childr ] );
 
 		// Traverse the "nearest" child first, so that it has more chances
 		// to prune the traversal of the other child.
@@ -465,14 +494,15 @@ namespace floatTetWild
 	}
 
 	void MeshFacetsAABBWithEps::facet_in_envelope_recursive(
-	  const vec3& p, double sq_epsilon, index_t& nearest_f, vec3& nearest_point, double& sq_dist, index_t n, index_t b, index_t e ) const
+	  const vec3& p, double sq_epsilon, index_t& nearest_f, vec3& nearest_point, double& sq_dist, __m128i nbe ) const
 	{
+		const uint32_t n = (uint32_t)_mm_cvtsi128_si32( nbe );
+		const uint32_t b = (uint32_t)_mm_extract_epi32( nbe, 1 );
+		const uint32_t e = (uint32_t)_mm_extract_epi32( nbe, 2 );
 		assert( e > b );
 
 		if( sq_dist <= sq_epsilon )
-		{
 			return;
-		}
 
 		// If node is a leaf: compute point-facet distance
 		// and replace current if nearer
@@ -493,9 +523,34 @@ namespace floatTetWild
 		index_t childl = 2 * n;
 		index_t childr = 2 * n + 1;
 
-		double dl = point_box_signed_squared_distance( p, bboxes_[ childl ] );
-		double dr = point_box_signed_squared_distance( p, bboxes_[ childr ] );
+		// The original code suffers from the unpredictable "if( dl < dr )" branch
+		// To workaround, we using vector blends as conditional moves to figure out which way to go first.
+		const __m128d dl = pointBoxSignedSquaredDistance2( p, bboxes_[ childl ] );
+		const __m128d dr = pointBoxSignedSquaredDistance2( p, bboxes_[ childr ] );
 
+		// Compare for dl < dr
+		// Because pointBoxSignedSquaredDistance2 returns vectors with both lanes equal, the result is either zero or a vector of UINT_MAX
+		const __m128i lt = _mm_castpd_si128( _mm_cmplt_pd( dl, dr ) );
+
+		// Create left/right index vectors
+		const __m128i recLeft = _mm_setr_epi32( (int)childl, (int)b, (int)m, 0 );
+		const __m128i recRight = _mm_setr_epi32( (int)childr, (int)m, (int)e, 0 );
+
+		double d = _mm_cvtsd_f64( _mm_min_sd( dr, dl ) );
+		// The remaining 2 branches are very predictable, they are both almost always taken
+		if( d < sq_dist && d <= sq_epsilon )
+		{
+			const __m128i rec = _mm_blendv_epi8( recRight, recLeft, lt );  // ( dl < dr ) ? recLeft : recRight
+			facet_in_envelope_recursive( p, sq_epsilon, nearest_f, nearest_point, sq_dist, rec );
+		}
+
+		d = _mm_cvtsd_f64( _mm_max_sd( dr, dl ) );
+		if( d < sq_dist && d <= sq_epsilon )
+		{
+			const __m128i rec = _mm_blendv_epi8( recLeft, recRight, lt );	// ( dl < dr ) ? recRight : recLeft
+			facet_in_envelope_recursive( p, sq_epsilon, nearest_f, nearest_point, sq_dist, rec );
+		}
+		/*
 		// Traverse the "nearest" child first, so that it has more chances
 		// to prune the traversal of the other child.
 		if( dl < dr )
@@ -519,7 +574,7 @@ namespace floatTetWild
 			{
 				facet_in_envelope_recursive( p, sq_epsilon, nearest_f, nearest_point, sq_dist, childl, b, m );
 			}
-		}
+		} */
 	}
 
 	bool MeshFacetsAABBWithEps::segment_intersection( const vec3& q1, const vec3& q2 ) const
