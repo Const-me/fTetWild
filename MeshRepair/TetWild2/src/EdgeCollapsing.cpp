@@ -57,10 +57,18 @@ namespace floatTetWild
 
 			////collapse
 			int ts = 0;
-			std::vector<std::array<int, 2>> inf_es;
-			std::vector<int> inf_e_tss;
-			std::vector<int> tet_tss;
-			tet_tss.assign( tets.size(), 0 );
+
+			Mesh::EdgeCollapsingAuxBuffers& buffers = mesh.edgeCollapsingAuxBuffers;
+			std::vector<std::array<int, 2>>& inf_es = buffers.inf_es;
+			inf_es.clear();
+
+			std::vector<int>& inf_e_tss = buffers.inf_e_tss;
+			inf_e_tss.clear();
+
+			std::vector<int>& tet_tss = buffers.tet_tss;
+			tet_tss.resize( tets.size() );
+			if( !tet_tss.empty() )
+				memset( tet_tss.data(), 0, tet_tss.size() * 4 );
 
 			do
 			{
@@ -97,7 +105,9 @@ namespace floatTetWild
 					if( !is_collapsable_bbox( mesh, v_ids[ 0 ], v_ids[ 1 ] ) )
 						continue;
 
-					EdgesSet new_edges;
+					EdgesSet& new_edges = buffers.new_edges;
+					new_edges.clear();
+
 					int result = collapse_an_edge( mesh, v_ids[ 0 ], v_ids[ 1 ], tree, new_edges, ts, tet_tss );
 					if( result == EC_SUCCESS || result == EC_SUCCESS_ENVELOPE )
 					{
@@ -170,10 +180,11 @@ namespace floatTetWild
 
 #if EC_POSTPROCESS
 				////postprocess
-				std::vector<std::array<int, 2>> tmp_inf_es;
-				const unsigned int inf_es_size = inf_es.size();
+				std::vector<std::array<int, 2>>& tmp_inf_es = buffers.tmp_inf_es;
+				tmp_inf_es.clear();
+				const size_t inf_es_size = inf_es.size();
 				tmp_inf_es.reserve( inf_es_size / 4.0 + 1 );
-				for( unsigned int i = 0; i < inf_es_size; i++ )
+				for( size_t i = 0; i < inf_es_size; i++ )
 				{
 					if( is_edge_freezed( mesh, inf_es[ i ][ 0 ], inf_es[ i ][ 1 ] ) )
 						continue;
@@ -206,7 +217,8 @@ namespace floatTetWild
 				inf_es = tmp_inf_es;
 
 				ts++;
-				inf_e_tss = std::vector<int>( inf_es.size(), ts );
+				inf_e_tss.resize( inf_es.size() );
+				std::fill( inf_e_tss.begin(), inf_e_tss.end(), ts );
 #endif
 			} while( suc_counter > 0 );
 		}

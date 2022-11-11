@@ -158,5 +158,14 @@ namespace floatTetWild
 			EdgesSet edgesTemp;
 		};
 		FindNewPosBuffers findNewPosBuffers;
+		struct EdgeCollapsingAuxBuffers
+		{
+			std::vector<std::array<int, 2>> inf_es;
+			std::vector<int> inf_e_tss;
+			std::vector<int> tet_tss;
+			EdgesSet new_edges;
+			std::vector<std::array<int, 2>> tmp_inf_es;
+		};
+		EdgeCollapsingAuxBuffers edgeCollapsingAuxBuffers;
 	};
 }  // namespace floatTetWild
