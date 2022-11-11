@@ -1,11 +1,6 @@
 #include "stdafx.h"
 #include "Geogram2.h"
 #include <geogram/basic/geometry_nd.h>
-#ifdef __AVX__
-#include "AvxMath.h"
-#else
-#error This code requires at least AVX1
-#endif
 
 namespace GEO2
 {
@@ -83,10 +78,9 @@ namespace GEO2
 		return result;
 	}
 
-	double pointTriangleSquaredDistanceAvx( const vec3& Point, const vec3& V0, const vec3& V1, const vec3& V2, vec3* closest_point )
+	double pointTriangleSquaredDistanceAvx( __m256d point, const vec3& V0, const vec3& V1, const vec3& V2, vec3* closest_point )
 	{
 		using namespace AvxMath;
-		const __m256d point = loadDouble3( &Point.x );
 		const __m256d v0 = loadDouble3( &V0.x );
 		const __m256d v1 = loadDouble3( &V1.x );
 		const __m256d v2 = loadDouble3( &V2.x );
@@ -326,7 +320,7 @@ namespace GEO2
 		return sqrDistance;
 	}
 
-	double point_triangle_squared_distance( const vec3& point, const vec3& V0, const vec3& V1, const vec3& V2, vec3* closest_point )
+	double point_triangle_squared_distance( __m256d point, const vec3& V0, const vec3& V1, const vec3& V2, vec3* closest_point )
 	{
 #if 1
 		return pointTriangleSquaredDistanceAvx( point, V0, V1, V2, closest_point );

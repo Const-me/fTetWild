@@ -163,7 +163,8 @@ namespace floatTetWild
 			GEO2::index_t nearest_facet;
 			get_nearest_facet_hint( p, nearest_facet, nearest_point, sq_dist );
 			__m128i vec = _mm_setr_epi32( 1, 0, (int)mesh_.countTriangles(), 0 );
-			facet_in_envelope_recursive( p, sq_epsilon, nearest_facet, nearest_point, sq_dist, vec );
+			__m256d pt = AvxMath::loadDouble3( &p.x );
+			facet_in_envelope_recursive( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist, vec );
 			return nearest_facet;
 		}
 
@@ -176,7 +177,8 @@ namespace floatTetWild
 			if( nearest_facet == GEO2::NO_FACET )
 				get_nearest_facet_hint( p, nearest_facet, nearest_point, sq_dist );
 			__m128i vec = _mm_setr_epi32( 1, 0, (int)mesh_.countTriangles(), 0 );
-			facet_in_envelope_recursive( p, sq_epsilon, nearest_facet, nearest_point, sq_dist, vec );
+			__m256d pt = AvxMath::loadDouble3( &p.x );
+			facet_in_envelope_recursive( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist, vec );
 		}
 
 		/**
@@ -360,7 +362,7 @@ namespace floatTetWild
 		 * is found.
 		 */
 		void facet_in_envelope_recursive(
-		  const GEO2::vec3& p, double sq_epsilon, GEO2::index_t& nearest_facet, GEO2::vec3& nearest_point, double& sq_dist, __m128i nbe ) const;
+		  __m256d p, double sq_epsilon, GEO2::index_t& nearest_facet, GEO2::vec3& nearest_point, double& sq_dist, __m128i nbe ) const;
 
 		/**
 		 * \brief The recursive function used by the implementation
@@ -378,7 +380,7 @@ namespace floatTetWild
 		const GEO2::Mesh& mesh_;
 	};
 
-	inline void get_point_facet_nearest_point( const GEO2::Mesh& M, const GEO2::vec3& p, GEO2::index_t f, GEO2::vec3& nearest_p, double& squared_dist )
+	inline void get_point_facet_nearest_point( const GEO2::Mesh& M, __m256d p, GEO2::index_t f, GEO2::vec3& nearest_p, double& squared_dist )
 	{
 		using namespace GEO2;
 		const vec3 *p1, *p2, *p3;

@@ -164,11 +164,10 @@ namespace
 #ifndef __AVX__
 	#error This code requires at least AVX1
 #endif
-	static __m128d pointBoxSignedSquaredDistance2( const vec3& p, const Box& B )
+	static __m128d pointBoxSignedSquaredDistance2( const __m256d pos, const Box& B )
 	{
 		using namespace AvxMath;
-		// Load into 3 vectors
-		const __m256d pos = loadDouble3( &p.x );
+		// Load the box into 2 vectors
 		const __m256d boxMin = _mm256_loadu_pd( &B.xyz_min[ 0 ] );
 		const __m256d boxMax = loadDouble3( &B.xyz_max[ 0 ] );
 
@@ -205,11 +204,10 @@ namespace
 		}
 	}
 
-	static double pointBoxSignedSquaredDistance( const vec3& p, const Box& B )
+	static double pointBoxSignedSquaredDistance( const __m256d pos, const Box& B )
 	{
 		using namespace AvxMath;
 		// Load into 3 vectors
-		const __m256d pos = loadDouble3( &p.x );
 		const __m256d boxMin = _mm256_loadu_pd( &B.xyz_min[ 0 ] );
 		const __m256d boxMax = loadDouble3( &B.xyz_max[ 0 ] );
 
@@ -243,6 +241,14 @@ namespace
 		}
 	}
 
+	static double pointBoxSignedSquaredDistance( const vec3& p, const Box& B )
+	{
+		__m256d pos = AvxMath::loadDouble3( &p.x );
+		return pointBoxSignedSquaredDistance( pos, B );
+	}
+
+	
+
 	/**
 	 * \brief Computes the squared distance between a point and the
 	 *  center of a box.
@@ -261,11 +267,10 @@ namespace
 		return result;
 	}
 
-	static double point_box_center_squared_distance_avx( const vec3& p, const Box& B )
+	static double point_box_center_squared_distance_avx( __m256d pos, const Box& B )
 	{
 		using namespace AvxMath;
 		const __m256d box2 = loadDouble3( &B.xyz_max[ 0 ] );
-		const __m256d pos = loadDouble3( &p.x );
 		const __m256d box1 = _mm256_loadu_pd( &B.xyz_min[ 0 ] );
 		__m256d boxCenter = _mm256_add_pd( box2, box1 );
 		boxCenter = _mm256_mul_pd( boxCenter, _mm256_set1_pd( 0.5 ) );
@@ -273,7 +278,7 @@ namespace
 		return vector3DotScalar( dist, dist );
 	}
 
-	double point_box_center_squared_distance( const vec3& p, const Box& B )
+	double point_box_center_squared_distance( __m256d p, const Box& B )
 	{
 #if 1
 		return point_box_center_squared_distance_avx( p, B );
@@ -418,12 +423,13 @@ namespace floatTetWild
 		index_t b = 0;
 		index_t e = mesh_.countTriangles();
 		index_t n = 1;
+		const __m256d pos = AvxMath::loadDouble3( &p.x );
 		while( e != b + 1 )
 		{
 			index_t m = b + ( e - b ) / 2;
 			index_t childl = 2 * n;
 			index_t childr = 2 * n + 1;
-			if( point_box_center_squared_distance( p, bboxes_[ childl ] ) < point_box_center_squared_distance( p, bboxes_[ childr ] ) )
+			if( point_box_center_squared_distance( pos, bboxes_[ childl ] ) < point_box_center_squared_distance( pos, bboxes_[ childr ] ) )
 			{
 				e = m;
 				n = childl;
@@ -437,7 +443,7 @@ namespace floatTetWild
 		nearest_f = b;
 
 		nearest_point = mesh_.getFirstTriangleVertex( nearest_f );
-		sq_dist = distance2( p, nearest_point );
+		sq_dist = distance2( pos, nearest_point );
 	}
 
 	void MeshFacetsAABBWithEps::nearest_facet_recursive(
@@ -445,13 +451,13 @@ namespace floatTetWild
 	{
 		assert( e > b );
 
-		// If node is a leaf: compute point-facet distance
-		// and replace current if nearer
+		// If node is a leaf: compute point-facet distance and replace current if nearer
+		const __m256d pos = AvxMath::loadDouble3( &p.x );
 		if( b + 1 == e )
 		{
 			vec3 cur_nearest_point;
 			double cur_sq_dist;
-			get_point_facet_nearest_point( mesh_, p, b, cur_nearest_point, cur_sq_dist );
+			get_point_facet_nearest_point( mesh_, pos, b, cur_nearest_point, cur_sq_dist );
 			if( cur_sq_dist < sq_dist )
 			{
 				nearest_f = b;
@@ -464,8 +470,8 @@ namespace floatTetWild
 		index_t childl = 2 * n;
 		index_t childr = 2 * n + 1;
 
-		double dl = pointBoxSignedSquaredDistance( p, bboxes_[ childl ] );
-		double dr = pointBoxSignedSquaredDistance( p, bboxes_[ childr ] );
+		double dl = pointBoxSignedSquaredDistance( pos, bboxes_[ childl ] );
+		double dr = pointBoxSignedSquaredDistance( pos, bboxes_[ childr ] );
 
 		// Traverse the "nearest" child first, so that it has more chances
 		// to prune the traversal of the other child.
@@ -494,7 +500,7 @@ namespace floatTetWild
 	}
 
 	void MeshFacetsAABBWithEps::facet_in_envelope_recursive(
-	  const vec3& p, double sq_epsilon, index_t& nearest_f, vec3& nearest_point, double& sq_dist, __m128i nbe ) const
+	  __m256d p, double sq_epsilon, index_t& nearest_f, vec3& nearest_point, double& sq_dist, __m128i nbe ) const
 	{
 		const uint32_t n = (uint32_t)_mm_cvtsi128_si32( nbe );
 		const uint32_t b = (uint32_t)_mm_extract_epi32( nbe, 1 );

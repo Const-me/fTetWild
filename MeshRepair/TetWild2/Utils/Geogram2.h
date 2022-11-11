@@ -8,6 +8,11 @@
 #include <geogram/basic/geometry.h>
 #include <geogram/numerics/predicates.h>
 #endif
+#ifdef __AVX__
+#include "AvxMath.h"
+#else
+#error This code requires at least AVX1
+#endif
 
 namespace GEO2
 {
@@ -16,20 +21,26 @@ namespace GEO2
 
 	constexpr uint32_t NO_FACET = ~( (uint32_t)0 );
 #if !CUSTOM_CODEZ
-	using GEO::vec3i;
-	using GEO::vec3;
 	using GEO::Box;
-	using GEO::geo_sqr;
-	using GEO::normalize;
+	using GEO::cross;
 	using GEO::distance;
 	using GEO::dot;
-	using GEO::length;
-	using GEO::cross;
 	using GEO::geo_sgn;
+	using GEO::geo_sqr;
+	using GEO::length;
+	using GEO::normalize;
+	using GEO::vec3;
+	using GEO::vec3i;
 	using GEO::Geom::tetra_signed_volume;
 	using GEO::PCK::orient_3d;
 
-	double point_triangle_squared_distance( const vec3& point, const vec3& V0, const vec3& V1, const vec3& V2, vec3* closest_point = nullptr );
+	double point_triangle_squared_distance( __m256d point, const vec3& V0, const vec3& V1, const vec3& V2, vec3* closest_point = nullptr );
+
+	inline double point_triangle_squared_distance( const vec3& point, const vec3& V0, const vec3& V1, const vec3& V2, vec3* closest_point = nullptr )
+	{
+		__m256d p = AvxMath::loadDouble3( &point.x );
+		return point_triangle_squared_distance( p, V0, V1, V2, closest_point );
+	}
 
 	inline double inner_point_box_squared_distance( const vec3& p, const Box& B )
 	{
@@ -45,5 +56,13 @@ namespace GEO2
 	}
 
 	void dbgRunSomeTests();
+
+	inline double distance2( __m256d a, const vec3& b )
+	{
+		using namespace AvxMath;
+		__m256d bv = loadDouble3( &b.x );
+		__m256d dist = _mm256_sub_pd( bv, a );
+		return vector3DotScalar( dist, dist );
+	}
 #endif
 }  // namespace GEO2

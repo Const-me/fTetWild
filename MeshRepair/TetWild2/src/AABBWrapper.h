@@ -131,7 +131,8 @@ namespace floatTetWild
 			{
 				if( prev_facet != GEO2::NO_FACET )
 				{
-					get_point_facet_nearest_point( sf_mesh, current_point, prev_facet, nearest_point, sq_dist );
+					const __m256d pos = AvxMath::loadDouble3( &current_point.x );
+					get_point_facet_nearest_point( sf_mesh, pos, prev_facet, nearest_point, sq_dist );
 				}
 				if( Scalar( sq_dist ) > eps_2 )
 				{
@@ -155,7 +156,8 @@ namespace floatTetWild
 			{
 				if( prev_facet != GEO2::NO_FACET )
 				{
-					get_point_facet_nearest_point( b_mesh, current_point, prev_facet, nearest_point, sq_dist );
+					const __m256d pos = AvxMath::loadDouble3( &current_point.x );
+					get_point_facet_nearest_point( b_mesh, pos, prev_facet, nearest_point, sq_dist );
 				}
 				if( Scalar( sq_dist ) > eps_2 )
 				{
@@ -179,7 +181,8 @@ namespace floatTetWild
 			{
 				if( prev_facet != GEO2::NO_FACET )
 				{
-					get_point_facet_nearest_point( tmp_b_mesh, current_point, prev_facet, nearest_point, sq_dist );
+					const __m256d pos = AvxMath::loadDouble3( &current_point.x );
+					get_point_facet_nearest_point( tmp_b_mesh, pos, prev_facet, nearest_point, sq_dist );
 				}
 				if( Scalar( sq_dist ) > eps_2 )
 				{
@@ -238,7 +241,8 @@ namespace floatTetWild
 		{
 			if( prev_facet != GEO2::NO_FACET )
 			{
-				get_point_facet_nearest_point( sf_mesh, geo_p, prev_facet, nearest_p, sq_dist );
+				const __m256d pos = AvxMath::loadDouble3( &geo_p.x );
+				get_point_facet_nearest_point( sf_mesh, pos, prev_facet, nearest_p, sq_dist );
 			}
 			if( Scalar( sq_dist ) > eps_2 )
 			{
@@ -301,7 +305,8 @@ namespace floatTetWild
 			{
 				if( prev_facet != GEO2::NO_FACET )
 				{
-					get_point_facet_nearest_point( sf_mesh, current_point, prev_facet, nearest_point, sq_dist );
+					const __m256d pos = AvxMath::loadDouble3( &current_point.x );
+					get_point_facet_nearest_point( sf_mesh, pos, prev_facet, nearest_point, sq_dist );
 				}
 				if( Scalar( sq_dist ) > eps_2 )
 				{
