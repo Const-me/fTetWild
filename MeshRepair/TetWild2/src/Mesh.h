@@ -181,5 +181,12 @@ namespace floatTetWild
 			std::vector<int> pair;
 		};
 		CollapseEdgeBuffers collapseEdgeBuffers;
+
+		// Temporary buffers used by edge_collapsing function
+		struct EdgeCollapsingBuffers
+		{
+			EdgesSet edges;
+		};
+		EdgeCollapsingBuffers edgeCollapsingBuffers;
 	};
 }  // namespace floatTetWild

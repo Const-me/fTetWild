@@ -235,7 +235,9 @@ void floatTetWild::edge_collapsing( Mesh& mesh, const AABBWrapper& tree )
 	auto& tet_vertices = mesh.tet_vertices;
 	auto& tets = mesh.tets;
 
-	EdgesSet edges;
+	EdgesSet& edges = mesh.edgeCollapsingBuffers.edges;
+	edges.clear();
+
 	get_all_edges( mesh, edges );
 	edge_collapsing_aux( mesh, tree, edges );
 }

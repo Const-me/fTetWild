@@ -134,15 +134,12 @@ namespace floatTetWild
 	void pausee( std::string msg = "" );
 
 	///////////////
-	class ElementInQueue
+	struct ElementInQueue
 	{
-	  public:
 		std::array<int, 2> v_ids;
 		Scalar weight;
 
-		ElementInQueue()
-		{
-		}
+		ElementInQueue() = default;
 		ElementInQueue( const std::array<int, 2>& ids, Scalar w )
 			: v_ids( ids )
 			, weight( w )
