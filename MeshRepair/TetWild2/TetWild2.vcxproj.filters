@@ -8,7 +8,7 @@
     <ClInclude Include="src\AABBWrapper.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\Mesh.hpp">
+    <ClInclude Include="src\Mesh.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="external\bfs_orient.h">

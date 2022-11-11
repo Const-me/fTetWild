@@ -8,7 +8,7 @@
 
 #pragma once
 #include "../external/get_mem.h"
-#include "Mesh.hpp"
+#include "Mesh.h"
 #include <mutex>
 
 namespace floatTetWild

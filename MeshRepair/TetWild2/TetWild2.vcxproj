@@ -128,7 +128,7 @@
     <ClInclude Include="src\FloatTetDelaunay.h" />
     <ClInclude Include="src\intersections.h" />
     <ClInclude Include="src\LocalOperations.h" />
-    <ClInclude Include="src\Mesh.hpp" />
+    <ClInclude Include="src\Mesh.h" />
     <ClInclude Include="src\MeshImprovement.h" />
     <ClInclude Include="src\Parameters.h" />
     <ClInclude Include="src\Simplification.h" />

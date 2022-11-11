@@ -10,7 +10,7 @@
 // Created by Yixin Hu on 2019-08-27.
 //
 #pragma once
-#include "Mesh.hpp"
+#include "Mesh.h"
 #include "AABBWrapper.h"
 #include "CutMesh.h"
 #include "../external/Rational.h"

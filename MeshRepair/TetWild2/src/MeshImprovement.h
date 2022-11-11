@@ -6,7 +6,7 @@
 // obtain one at http://mozilla.org/MPL/2.0/.
 //
 #pragma once
-#include "Mesh.hpp"
+#include "Mesh.h"
 #include "AABBWrapper.h"
 #include "Types.hpp"
 

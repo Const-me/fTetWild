@@ -7,7 +7,7 @@
 //
 
 #pragma once
-#include "Mesh.hpp"
+#include "Mesh.h"
 #include "AABBWrapper.h"
 #include "EdgesSet.h"
 

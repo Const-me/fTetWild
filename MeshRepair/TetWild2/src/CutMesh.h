@@ -10,7 +10,7 @@
 // Created by Yixin Hu on 9/12/19.
 //
 #pragma once
-#include "Mesh.hpp"
+#include "Mesh.h"
 #include "AABBWrapper.h"
 #include <map>
 

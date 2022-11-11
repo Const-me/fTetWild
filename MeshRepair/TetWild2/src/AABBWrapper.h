@@ -1,7 +1,7 @@
 #pragma once
 #include "../external/mesh_AABB.h"
 #include "../Utils/Geogram2.h"
-#include "Mesh.hpp"
+#include "Mesh.h"
 #include <memory>
 
 //#define NEW_ENVELOPE //fortest
