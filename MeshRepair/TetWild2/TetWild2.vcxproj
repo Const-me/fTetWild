@@ -182,10 +182,12 @@
     <ClCompile Include="src\MeshImprovement.cpp" />
     <ClCompile Include="src\Simplification.cpp" />
     <ClCompile Include="src\TriangleInsertion.cpp" />
-    <ClCompile Include="src\VertexSmoothing.cpp" />
+    <ClCompile Include="src\VertexSmoothing.cpp">
+      <OpenMPSupport>true</OpenMPSupport>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="stdafx.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="TetWild2.cpp" />
     <ClCompile Include="Utils\Mesh\TriangleMesh.reorder.cpp" />

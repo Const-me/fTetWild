@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "convertParameters.h"
+#include <omp.h>
 
 namespace
 {
@@ -24,6 +25,14 @@ HRESULT convertParameters( floatTetWild::Parameters& rdi, const MeshRepair::Para
 	rdi.use_floodfill = flag( f, eRepairFlags::UseFloodFill );
 	rdi.use_general_wn = flag( f, eRepairFlags::UseGeneralWN );
 	rdi.use_input_for_wn = flag( f, eRepairFlags::UseInputForWN );
+
+	rdi.num_threads = 0;
+	if( flag( f, eRepairFlags::UseOpenMP ) ) 
+	{
+		int threads = omp_get_max_threads();
+		if( threads > 1 )
+			rdi.num_threads = (uint32_t)threads;
+	}
 
 	return S_OK;
 }

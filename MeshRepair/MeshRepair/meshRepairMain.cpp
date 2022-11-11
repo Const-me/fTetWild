@@ -30,20 +30,7 @@ HRESULT meshRepairMain(
 	{
 		Parameters& params = mesh.params;
 		CHECK( convertParameters( params, parameters ) );
-
-#ifdef FLOAT_TETWILD_USE_TBB
-		uint32_t max_threads = parameters.maxThreads;
-		if( 0 == max_threads )
-			max_threads = std::thread::hardware_concurrency();
-
-		const size_t MB = 1024 * 1024;
-		const size_t stack_size = 64 * MB;
-		uint32_t num_threads = std::max( 1u, std::thread::hardware_concurrency() );
-		num_threads = std::min( max_threads, num_threads );
-		params.num_threads = num_threads;
-		std::cout << "TBB threads " << num_threads << std::endl;
-		tbb::task_scheduler_init scheduler( num_threads, stack_size );
-#endif
+		mesh.createThreadLocalBuffers();
 
 		AABBWrapper tree( rsi.mesh );
 		if( !params.init( tree.get_sf_diag() ) )

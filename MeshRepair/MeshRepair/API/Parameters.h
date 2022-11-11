@@ -19,6 +19,9 @@ namespace MeshRepair
 		UseGeneralWN = 0x20,
 		// Use input surface for winding number
 		UseInputForWN = 0x40,
+
+		// Use OpenMP, if enabled
+		UseOpenMP = 0x80,
 	};
 
 	struct Parameters
@@ -34,8 +37,5 @@ namespace MeshRepair
 
 		// See eRepairFlags for the values
 		uint32_t flags = 0;
-
-		// Maximum number of threads used
-		uint32_t maxThreads = 0;
 	};
 }  // namespace MeshRepair

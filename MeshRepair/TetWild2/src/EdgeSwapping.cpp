@@ -41,7 +41,7 @@ void floatTetWild::edge_swapping( Mesh& mesh )
 		return true;
 	};
 
-	EdgesSet& edges = mesh.findNewPosBuffers.edgesTemp;
+	EdgesSet& edges = mesh.findNewPosBuffers[ 0 ].edgesTemp;
 	get_all_edges( mesh, edges );
 
 	std::priority_queue<ElementInQueue, std::vector<ElementInQueue>, cmp_l> es_queue;

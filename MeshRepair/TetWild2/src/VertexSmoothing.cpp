@@ -6,108 +6,110 @@
 // obtain one at http://mozilla.org/MPL/2.0/.
 //
 
-#include "stdafx.h"
 #include "VertexSmoothing.h"
 #include "LocalOperations.h"
 #include "MeshImprovement.h"
-#ifdef FLOAT_TETWILD_USE_TBB
-#include <tbb/task_scheduler_init.h>
-#include <tbb/parallel_for.h>
-#include <tbb/atomic.h>
-#endif
+#include <atomic>
 
-void floatTetWild::vertex_smoothing( Mesh& mesh, const AABBWrapper& tree )
+namespace
 {
-	auto& tets = mesh.tets;
-	auto& tet_vertices = mesh.tet_vertices;
+	using namespace floatTetWild;
 
-#ifdef FLOAT_TETWILD_USE_TBB
-	// TODO atomic<int> conunter
-	int counter = 0;
-	int suc_counter = 0;
-	int suc_counter_sf = 0;
-#else
-	int counter = 0;
-	int suc_counter = 0;
-	int suc_counter_sf = 0;
-#endif
-
-	const auto smooth_one = [ & ]( const int v_id )
+	struct SmoothingCounters
 	{
-		if( tet_vertices[ v_id ].is_removed )
+		std::atomic_int32_t counter = 0;
+		std::atomic_int32_t suc_counter = 0;
+		std::atomic_int32_t suc_counter_sf = 0;
+	};
+
+	static void vertexSmoothingImpl( Mesh& mesh, const AABBWrapper& tree, SmoothingCounters& counters, int idx )
+	{
+		auto& tets = mesh.tets;
+		auto& tet_vertices = mesh.tet_vertices;
+
+		if( tet_vertices[ idx ].is_removed )
 			return;
-		if( tet_vertices[ v_id ].is_freezed )
+		if( tet_vertices[ idx ].is_freezed )
 			return;
-		if( tet_vertices[ v_id ].is_on_bbox )
+		if( tet_vertices[ idx ].is_on_bbox )
 			return;
-		counter++;
+		counters.counter++;
 
 		////newton
 		Vector3 p;
-		if( !find_new_pos( mesh, v_id, p ) )
+		if( !find_new_pos( mesh, idx, p ) )
 			return;
 
 		////check
 		// envelope
 		std::vector<Scalar> new_qs;
-		if( tet_vertices[ v_id ].is_on_boundary )
+		if( tet_vertices[ idx ].is_on_boundary )
 		{
-			if( !project_and_check( mesh, v_id, p, tree, false, new_qs ) )
+			if( !project_and_check( mesh, idx, p, tree, false, new_qs ) )
 				return;
-			if( is_out_boundary_envelope( mesh, v_id, p, tree ) )
+			if( is_out_boundary_envelope( mesh, idx, p, tree ) )
 				return;
-			else if( is_out_envelope( mesh, v_id, p, tree ) )
+			else if( is_out_envelope( mesh, idx, p, tree ) )
 				return;
-			suc_counter_sf++;
+			counters.suc_counter_sf++;
 		}
-		else if( tet_vertices[ v_id ].is_on_surface )
+		else if( tet_vertices[ idx ].is_on_surface )
 		{
-			if( !project_and_check( mesh, v_id, p, tree, true, new_qs ) )
+			if( !project_and_check( mesh, idx, p, tree, true, new_qs ) )
 				return;
-			if( is_out_envelope( mesh, v_id, p, tree ) )
+			if( is_out_envelope( mesh, idx, p, tree ) )
 				return;
-			suc_counter_sf++;
+			counters.suc_counter_sf++;
 		}
-		suc_counter++;
+		counters.suc_counter++;
 
 		////real update
-		tet_vertices[ v_id ].pos = p;
+		tet_vertices[ idx ].pos = p;
 
 		// quality
 		int cnt = 0;
-		for( int t_id : tet_vertices[ v_id ].conn_tets )
+		for( int t_id : tet_vertices[ idx ].conn_tets )
 		{
 			if( !new_qs.empty() )
 				tets[ t_id ].quality = new_qs[ cnt++ ];
 			else
 				tets[ t_id ].quality = get_quality( mesh, t_id );
 		}
-	};
-
-#ifdef FLOAT_TETWILD_USE_TBB
-	std::vector<std::vector<int>> concurrent_sets;
-	std::vector<int> serial_set;
-	// mesh.one_ring_vertex_sets(tbb::task_scheduler_init::default_num_threads()*2, concurrent_sets, serial_set);
-	mesh.one_ring_vertex_sets( mesh.params.num_threads * 2, concurrent_sets, serial_set );
-
-	for( const auto& s : concurrent_sets )
-	{
-		tbb::parallel_for( size_t( 0 ), size_t( s.size() ),
-		  [ & ]( size_t i )
-		  {
-			  // for(int i = 0; i < s.size(); ++i)
-			  smooth_one( s[ i ] );
-		  } );
 	}
 
-	for( size_t v_id : serial_set )
-		smooth_one( v_id );
-#else
-	for( size_t v_id = 0; v_id < tet_vertices.size(); v_id++ )
-		smooth_one( v_id );
-#endif
+	static void vertexSmoothingOmp( Mesh& mesh, const AABBWrapper& tree, SmoothingCounters& counters, const std::vector<int>& vertices )
+	{
+		const int64_t len = (int64_t)vertices.size();
+#pragma omp parallel for
+		for( int64_t i = 0; i < len; i++ )
+			vertexSmoothingImpl( mesh, tree, counters, vertices[ i ] );
+	}
+}
 
-	mesh.logger().logDebug( "success = %i ( %i )", suc_counter, counter );
+void floatTetWild::vertex_smoothing( Mesh& mesh, const AABBWrapper& tree )
+{
+	SmoothingCounters counters;
+	const size_t vertexCount = mesh.tet_vertices.size();
+
+	if( mesh.params.num_threads > 1 )
+	{
+		std::vector<std::vector<int>> concurrent_sets;
+		std::vector<int> serial_set;
+		mesh.one_ring_vertex_sets( mesh.params.num_threads * 2, concurrent_sets, serial_set );
+
+		for( const auto& s : concurrent_sets )
+			vertexSmoothingOmp( mesh, tree, counters, s );
+
+		for( int v_id : serial_set )
+			vertexSmoothingImpl( mesh, tree, counters, v_id );
+	}
+	else
+	{
+		for( size_t v_id = 0; v_id < vertexCount; v_id++ )
+			vertexSmoothingImpl( mesh, tree, counters, (int)v_id );
+	}
+
+	mesh.logger().logDebug( "success = %i ( %i )", counters.suc_counter.load(), counters.counter.load() );
 }
 
 bool floatTetWild::project_and_check( Mesh& mesh, int v_id, Vector3& p, const AABBWrapper& tree, bool is_sf, std::vector<Scalar>& new_qs )
@@ -158,7 +160,7 @@ bool floatTetWild::find_new_pos( Mesh& mesh, const int v_id, Vector3& x )
 	auto& tets = mesh.tets;
 	auto& tet_vertices = mesh.tet_vertices;
 
-	Mesh::FindNewPosBuffers& fnpb = mesh.findNewPosBuffers;
+	Mesh::FindNewPosBuffers& fnpb = mesh.findNewPosBuffers[ omp_get_thread_num() ];
 	std::vector<int>& js = fnpb.js;
 	js.clear();
 	js.reserve( tet_vertices[ v_id ].conn_tets.size() );

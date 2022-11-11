@@ -166,4 +166,10 @@ namespace floatTetWild
 			}
 		}
 	}
+
+	void Mesh::createThreadLocalBuffers()
+	{
+		const size_t count = std::max( params.num_threads, 1u );
+		findNewPosBuffers.resize( count );
+	}
 }  // namespace floatTetWild

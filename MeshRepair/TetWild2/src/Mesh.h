@@ -1,7 +1,8 @@
 // This file is part of fTetWild, a software for generating tetrahedral meshes.
 //
 // Copyright (C) 2019 Yixin Hu <yixin.hu@nyu.edu>
-// This Source Code Form is subject to the terms of the Mozilla Public License v. 2.0. If a copy of the MPL was not distributed with this file, you can obtain one at http://mozilla.org/MPL/2.0/
+// This Source Code Form is subject to the terms of the Mozilla Public License v. 2.0. If a copy of the MPL was not distributed with this file, you can obtain
+// one at http://mozilla.org/MPL/2.0/
 #pragma once
 #include "Parameters.h"
 #include "Types.hpp"
@@ -150,14 +151,13 @@ namespace floatTetWild
 		}
 
 		// Temporary data used in find_new_pos
-		// Gonna need to rework that to a collection of the thread-load buffers
-		struct FindNewPosBuffers
+		struct alignas( 64 ) FindNewPosBuffers
 		{
 			std::vector<int> js;
 			std::vector<std::array<double, 12>> Ts;
 			EdgesSet edgesTemp;
 		};
-		FindNewPosBuffers findNewPosBuffers;
+		std::vector<FindNewPosBuffers> findNewPosBuffers;
 
 		// Temporary buffers used by edge_collapsing_aux function
 		struct EdgeCollapsingAuxBuffers
@@ -188,5 +188,7 @@ namespace floatTetWild
 			EdgesSet edges;
 		};
 		EdgeCollapsingBuffers edgeCollapsingBuffers;
+
+		void createThreadLocalBuffers();
 	};
 }  // namespace floatTetWild
