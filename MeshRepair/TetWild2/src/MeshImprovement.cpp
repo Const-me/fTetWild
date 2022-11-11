@@ -1149,7 +1149,7 @@ void floatTetWild::untangle( Mesh& mesh )
 			}
 		}
 	}
-	mesh.logger().logInfo( "fixed %i  tangled elements", cnt );
+	mesh.logger().logInfo( "Fixed %i tangled elements", cnt );
 }
 
 void floatTetWild::smooth_open_boundary( Mesh& mesh, const AABBWrapper& tree )
