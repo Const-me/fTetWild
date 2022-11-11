@@ -8,7 +8,7 @@
 
 #include "stdafx.h"
 #include "LocalOperations.h"
-#include "../external/Predicates.hpp"
+#include "../external/Predicates.h"
 #include "../external/Rational.h"
 
 #include <igl/Timer.h>
@@ -450,14 +450,14 @@ Scalar floatTetWild::get_mid_energy( const Mesh& mesh )
 bool floatTetWild::is_inverted( const Mesh& mesh, int t_id )
 {
 	if( Predicates::orient_3d( mesh.tet_vertices[ mesh.tets[ t_id ][ 0 ] ].pos, mesh.tet_vertices[ mesh.tets[ t_id ][ 1 ] ].pos,
-		  mesh.tet_vertices[ mesh.tets[ t_id ][ 2 ] ].pos, mesh.tet_vertices[ mesh.tets[ t_id ][ 3 ] ].pos ) == Predicates::ORI_POSITIVE )
+		  mesh.tet_vertices[ mesh.tets[ t_id ][ 2 ] ].pos, mesh.tet_vertices[ mesh.tets[ t_id ][ 3 ] ].pos ) == eOrientation::Positive )
 		return false;
 	return true;
 }
 
 bool floatTetWild::is_inverted( const Mesh& mesh, int t_id, int j, const Vector3& new_p )
 {
-	int ori;
+	eOrientation ori;
 	if( j == 0 )
 	{
 		ori = Predicates::orient_3d( new_p, mesh.tet_vertices[ mesh.tets[ t_id ][ 1 ] ].pos, mesh.tet_vertices[ mesh.tets[ t_id ][ 2 ] ].pos,
@@ -478,28 +478,28 @@ bool floatTetWild::is_inverted( const Mesh& mesh, int t_id, int j, const Vector3
 		ori = Predicates::orient_3d( mesh.tet_vertices[ mesh.tets[ t_id ][ 0 ] ].pos, mesh.tet_vertices[ mesh.tets[ t_id ][ 1 ] ].pos,
 		  mesh.tet_vertices[ mesh.tets[ t_id ][ 2 ] ].pos, new_p );
 	}
-	if( ori == Predicates::ORI_POSITIVE )
+	if( ori == eOrientation::Positive )
 		return false;
 	return true;
 }
 
 bool floatTetWild::is_inverted( const MeshVertex& v0, const MeshVertex& v1, const MeshVertex& v2, const MeshVertex& v3 )
 {
-	if( Predicates::orient_3d( v0.pos, v1.pos, v2.pos, v3.pos ) == Predicates::ORI_POSITIVE )
+	if( Predicates::orient_3d( v0.pos, v1.pos, v2.pos, v3.pos ) == eOrientation::Positive )
 		return false;
 	return true;
 }
 
 bool floatTetWild::is_inverted( const Vector3& v0, const Vector3& v1, const Vector3& v2, const Vector3& v3 )
 {
-	if( Predicates::orient_3d( v0, v1, v2, v3 ) == Predicates::ORI_POSITIVE )
+	if( Predicates::orient_3d( v0, v1, v2, v3 ) == eOrientation::Positive )
 		return false;
 	return true;
 }
 
 bool floatTetWild::is_degenerate( const Vector3& v0, const Vector3& v1, const Vector3& v2, const Vector3& v3 )
 {
-	if( Predicates::orient_3d( v0, v1, v2, v3 ) == Predicates::ORI_ZERO )
+	if( Predicates::orient_3d( v0, v1, v2, v3 ) == eOrientation::Zero )
 		return true;
 	return false;
 }

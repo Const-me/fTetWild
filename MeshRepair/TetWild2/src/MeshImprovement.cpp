@@ -600,7 +600,7 @@ int floatTetWild::get_max_p( const Mesh& mesh )
 	return max_p;
 }
 
-#include "../external/Predicates.hpp"
+#include "../external/Predicates.h"
 
 void floatTetWild::apply_coarsening( Mesh& mesh, AABBWrapper& tree )
 {
@@ -664,7 +664,7 @@ void floatTetWild::get_tracked_surface( Mesh& mesh, Eigen::Matrix<Scalar, Eigen:
 				for( int k = 0; k < 3; k++ )
 					V_sf.row( cnt * 3 + k ) = tet_vertices[ t[ mod4( j + k + 1 ) ] ].pos;
 				if( Predicates::orient_3d( tet_vertices[ t[ mod4( j + 1 ) ] ].pos, tet_vertices[ t[ mod4( j + 2 ) ] ].pos,
-					  tet_vertices[ t[ mod4( j + 3 ) ] ].pos, tet_vertices[ t[ j ] ].pos ) == Predicates::ORI_POSITIVE )
+					  tet_vertices[ t[ mod4( j + 3 ) ] ].pos, tet_vertices[ t[ j ] ].pos ) == eOrientation::Positive )
 					F_sf.row( cnt ) << cnt * 3, cnt * 3 + 2, cnt * 3 + 1;
 				else
 					F_sf.row( cnt ) << cnt * 3, cnt * 3 + 1, cnt * 3 + 2;
@@ -722,7 +722,7 @@ void floatTetWild::correct_tracked_surface_orientation( Mesh& mesh, AABBWrapper&
 			auto& tv1 = mesh.tet_vertices[ mesh.tets[ t_id ][ ( j + 1 ) % 4 ] ].pos;
 			auto& tv2 = mesh.tet_vertices[ mesh.tets[ t_id ][ ( j + 2 ) % 4 ] ].pos;
 			auto& tv3 = mesh.tet_vertices[ mesh.tets[ t_id ][ ( j + 3 ) % 4 ] ].pos;
-			if( Predicates::orient_3d( tv1, tv2, tv3, mesh.tet_vertices[ mesh.tets[ t_id ][ j ] ].pos ) == Predicates::ORI_POSITIVE )
+			if( Predicates::orient_3d( tv1, tv2, tv3, mesh.tet_vertices[ mesh.tets[ t_id ][ j ] ].pos ) == eOrientation::Positive )
 				nt = ( tv2 - tv1 ).cross( tv3 - tv1 );
 			else
 				nt = ( tv3 - tv1 ).cross( tv2 - tv1 );

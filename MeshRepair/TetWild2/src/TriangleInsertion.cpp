@@ -12,7 +12,7 @@
 #include "stdafx.h"
 #include "TriangleInsertion.h"
 #include "LocalOperations.h"
-#include "../external/Predicates.hpp"
+#include "../external/Predicates.h"
 #include "CutTable2.h"
 #include "intersections.h"
 #include "MeshImprovement.h"  //fortest
@@ -1050,7 +1050,7 @@ void floatTetWild::find_cutting_tets( int f_id, const std::vector<Vector3>& inpu
 			}
 		}
 
-		std::array<int, 4> oris;
+		std::array<eOrientation, 4> oris;
 		//        int cnt_pos = 0;
 		//        int cnt_neg = 0;
 		//        int cnt_on = 0;
@@ -1076,9 +1076,9 @@ void floatTetWild::find_cutting_tets( int f_id, const std::vector<Vector3>& inpu
 			int cnt_on = 0;
 			for( int k = 0; k < 3; k++ )
 			{
-				if( oris[ ( j + k + 1 ) % 4 ] == Predicates::ORI_ZERO )
+				if( oris[ ( j + k + 1 ) % 4 ] == eOrientation::Zero )
 					cnt_on++;
-				else if( oris[ ( j + k + 1 ) % 4 ] == Predicates::ORI_POSITIVE )
+				else if( oris[ ( j + k + 1 ) % 4 ] == eOrientation::Positive )
 					cnt_pos++;
 				else
 					cnt_neg++;
@@ -1156,7 +1156,7 @@ void floatTetWild::find_cutting_tets( int f_id, const std::vector<Vector3>& inpu
 					is_cut_vs[ ( j + 3 ) % 4 ] = true;
 				}
 			}
-			else if( cnt_on == 2 && oris[ ( j + 1 ) % 4 ] == Predicates::ORI_ZERO && oris[ ( j + 2 ) % 4 ] == Predicates::ORI_ZERO )
+			else if( cnt_on == 2 && oris[ ( j + 1 ) % 4 ] == eOrientation::Zero && oris[ ( j + 2 ) % 4 ] == eOrientation::Zero )
 			{
 				if( is_tri_tri_cutted_hint( vs[ 0 ], vs[ 1 ], vs[ 2 ], tp1, tp2, tp3, CUT_EDGE_0 ) == CUT_EDGE_0 )
 				{
@@ -1165,7 +1165,7 @@ void floatTetWild::find_cutting_tets( int f_id, const std::vector<Vector3>& inpu
 					is_cut_vs[ ( j + 2 ) % 4 ] = true;
 				}
 			}
-			else if( cnt_on == 2 && oris[ ( j + 2 ) % 4 ] == Predicates::ORI_ZERO && oris[ ( j + 3 ) % 4 ] == Predicates::ORI_ZERO )
+			else if( cnt_on == 2 && oris[ ( j + 2 ) % 4 ] == eOrientation::Zero && oris[ ( j + 3 ) % 4 ] == eOrientation::Zero )
 			{
 				if( is_tri_tri_cutted_hint( vs[ 0 ], vs[ 1 ], vs[ 2 ], tp1, tp2, tp3, CUT_EDGE_1 ) == CUT_EDGE_1 )
 				{
@@ -1174,7 +1174,7 @@ void floatTetWild::find_cutting_tets( int f_id, const std::vector<Vector3>& inpu
 					is_cut_vs[ ( j + 3 ) % 4 ] = true;
 				}
 			}
-			else if( cnt_on == 2 && oris[ ( j + 3 ) % 4 ] == Predicates::ORI_ZERO && oris[ ( j + 1 ) % 4 ] == Predicates::ORI_ZERO )
+			else if( cnt_on == 2 && oris[ ( j + 3 ) % 4 ] == eOrientation::Zero && oris[ ( j + 1 ) % 4 ] == eOrientation::Zero )
 			{
 				if( is_tri_tri_cutted_hint( vs[ 0 ], vs[ 1 ], vs[ 2 ], tp1, tp2, tp3, CUT_EDGE_2 ) == CUT_EDGE_2 )
 				{
@@ -1878,7 +1878,7 @@ void floatTetWild::find_boundary_edges( const std::vector<Vector3>& input_vertic
 				continue;
 
 			is_fine = false;
-			int ori;
+			eOrientation ori;
 			for( int k = 0; k < n12_f_ids.size(); k++ )
 			{
 				for( int r = 0; r < 3; r++ )
@@ -1893,7 +1893,7 @@ void floatTetWild::find_boundary_edges( const std::vector<Vector3>& input_vertic
 							  to_2d( input_vertices[ input_faces[ n12_f_ids[ k ] ][ r ] ], t ) );
 							break;
 						}
-						int new_ori = Predicates::orient_2d( to_2d( input_vertices[ input_faces[ f_id ][ j ] ], t ),
+						eOrientation new_ori = Predicates::orient_2d( to_2d( input_vertices[ input_faces[ f_id ][ j ] ], t ),
 						  to_2d( input_vertices[ input_faces[ f_id ][ mod3( j + 1 ) ] ], t ),
 						  to_2d( input_vertices[ input_faces[ n12_f_ids[ k ] ][ r ] ], t ) );
 						if( new_ori != ori )
@@ -2224,9 +2224,9 @@ bool floatTetWild::insert_boundary_edges_get_intersecting_edges_and_points( cons
 {
 	//    igl::Timer timer;
 
-	auto is_cross = []( int a, int b )
+	auto is_cross = []( eOrientation a, eOrientation b )
 	{
-		if( ( a == Predicates::ORI_POSITIVE && b == Predicates::ORI_NEGATIVE ) || ( a == Predicates::ORI_NEGATIVE && b == Predicates::ORI_POSITIVE ) )
+		if( ( a == eOrientation::Positive && b == eOrientation::Negative ) || ( a == eOrientation::Negative && b == eOrientation::Positive ) )
 			return true;
 		return false;
 	};
@@ -2319,7 +2319,7 @@ bool floatTetWild::insert_boundary_edges_get_intersecting_edges_and_points( cons
 	//    time_e1+=timer.getElapsedTimeInSec();
 
 	//    timer.start();
-	std::vector<int> v_oris( mesh.tet_vertices.size(), Predicates::ORI_UNKNOWN );
+	std::vector<eOrientation> v_oris( mesh.tet_vertices.size(), eOrientation::Unknown );
 	while( !t_ids_queue.empty() )
 	{
 		int t_id = t_ids_queue.front();
@@ -2351,10 +2351,10 @@ bool floatTetWild::insert_boundary_edges_get_intersecting_edges_and_points( cons
 			int cnt_on = 0;
 			for( int k = 0; k < 3; k++ )
 			{
-				int& ori = v_oris[ f_v_ids[ k ] ];
-				if( ori == Predicates::ORI_UNKNOWN )
+				eOrientation& ori = v_oris[ f_v_ids[ k ] ];
+				if( ori == eOrientation::Unknown )
 					ori = Predicates::orient_2d( evs_2d[ 0 ], evs_2d[ 1 ], fvs_2d[ k ] );
-				if( ori == Predicates::ORI_ZERO )
+				if( ori == eOrientation::Zero )
 				{
 					cnt_on++;
 				}
@@ -2363,11 +2363,11 @@ bool floatTetWild::insert_boundary_edges_get_intersecting_edges_and_points( cons
 					Scalar dis_2 = p_seg_squared_dist_3d( mesh.tet_vertices[ f_v_ids[ k ] ].pos, input_vertices[ e[ 0 ] ], input_vertices[ e[ 1 ] ] );
 					if( dis_2 < mesh.params.eps_2_coplanar )
 					{
-						ori = Predicates::ORI_ZERO;
+						ori = eOrientation::Zero;
 						cnt_on++;
 						continue;
 					}
-					if( ori == Predicates::ORI_POSITIVE )
+					if( ori == eOrientation::Positive )
 						cnt_pos++;
 					else
 						cnt_neg++;
@@ -2418,14 +2418,14 @@ bool floatTetWild::insert_boundary_edges_get_intersecting_edges_and_points( cons
 						//                        if (dis1 < SCALAR_ZERO_2) {
 						if( dis1 < mesh.params.eps_2_coplanar )
 						{
-							v_oris[ f_v_ids[ k ] ] = Predicates::ORI_ZERO;
+							v_oris[ f_v_ids[ k ] ] = eOrientation::Zero;
 							is_intersected = true;
 							break;
 						}
 						//                        if (dis2 < SCALAR_ZERO_2) {
 						if( dis2 < mesh.params.eps_2_coplanar )
 						{
-							v_oris[ f_v_ids[ k ] ] = Predicates::ORI_ZERO;
+							v_oris[ f_v_ids[ k ] ] = eOrientation::Zero;
 							is_intersected = true;
 							break;
 						}
@@ -2481,7 +2481,7 @@ bool floatTetWild::insert_boundary_edges_get_intersecting_edges_and_points( cons
 		bool is_snapped = false;
 		for( int j = 0; j < 2; j++ )
 		{
-			if( v_oris[ tet_e[ j ] ] == Predicates::ORI_ZERO )
+			if( v_oris[ tet_e[ j ] ] == eOrientation::Zero )
 			{
 				snapped_v_ids.push_back( tet_e[ j ] );
 				is_snapped = true;
@@ -2546,10 +2546,10 @@ void floatTetWild::mark_surface_fs( const std::vector<Vector3>& input_vertices, 
 		int cnt_neg = 0;
 		for( int j = 0; j < 3; j++ )
 		{
-			int ori = Predicates::orient_2d( ps_2d[ j ], ps_2d[ ( j + 1 ) % 3 ], c );
-			if( ori == Predicates::ORI_POSITIVE )
+			eOrientation ori = Predicates::orient_2d( ps_2d[ j ], ps_2d[ ( j + 1 ) % 3 ], c );
+			if( ori == eOrientation::Positive )
 				cnt_pos++;
-			else if( ori == Predicates::ORI_NEGATIVE )
+			else if( ori == eOrientation::Negative )
 				cnt_neg++;
 		}
 
@@ -2834,27 +2834,27 @@ void floatTetWild::mark_surface_fs( const std::vector<Vector3>& input_vertices, 
 			auto& fv2 = input_vertices[ input_faces[ ff_id ][ 1 ] ];
 			auto& fv3 = input_vertices[ input_faces[ ff_id ][ 2 ] ];
 			//
-			int ori = Predicates::orient_3d( fv1, fv2, fv3, mesh.tet_vertices[ mesh.tets[ t_id ][ j ] ].pos );
-			int opp_ori = Predicates::orient_3d( fv1, fv2, fv3, mesh.tet_vertices[ mesh.tets[ opp_t_id ][ k ] ].pos );
+			eOrientation ori = Predicates::orient_3d( fv1, fv2, fv3, mesh.tet_vertices[ mesh.tets[ t_id ][ j ] ].pos );
+			eOrientation opp_ori = Predicates::orient_3d( fv1, fv2, fv3, mesh.tet_vertices[ mesh.tets[ opp_t_id ][ k ] ].pos );
 			//
-			if( ori == Predicates::ORI_POSITIVE && opp_ori == Predicates::ORI_NEGATIVE ||
-				ori == Predicates::ORI_NEGATIVE && opp_ori == Predicates::ORI_POSITIVE )
+			if( ori == eOrientation::Positive && opp_ori == eOrientation::Negative ||
+				ori == eOrientation::Negative && opp_ori == eOrientation::Positive )
 			{
-				mesh.tets[ t_id ].is_surface_fs[ j ] = ori;
-				mesh.tets[ opp_t_id ].is_surface_fs[ k ] = opp_ori;
+				mesh.tets[ t_id ].is_surface_fs[ j ] = (int8_t)ori;
+				mesh.tets[ opp_t_id ].is_surface_fs[ k ] = (int8_t)opp_ori;
 				continue;
 			}
 			//
-			if( ori == Predicates::ORI_ZERO && opp_ori != Predicates::ORI_ZERO )
+			if( ori == eOrientation::Zero && opp_ori != eOrientation::Zero )
 			{
-				mesh.tets[ t_id ].is_surface_fs[ j ] = -opp_ori;
-				mesh.tets[ opp_t_id ].is_surface_fs[ k ] = opp_ori;
+				mesh.tets[ t_id ].is_surface_fs[ j ] = -(int8_t)opp_ori;
+				mesh.tets[ opp_t_id ].is_surface_fs[ k ] = (int8_t)opp_ori;
 				continue;
 			}
-			if( opp_ori == Predicates::ORI_ZERO && ori != Predicates::ORI_ZERO )
+			if( opp_ori == eOrientation::Zero && ori != eOrientation::Zero )
 			{
-				mesh.tets[ t_id ].is_surface_fs[ j ] = ori;
-				mesh.tets[ opp_t_id ].is_surface_fs[ k ] = -ori;
+				mesh.tets[ t_id ].is_surface_fs[ j ] = (int8_t)ori;
+				mesh.tets[ opp_t_id ].is_surface_fs[ k ] = -(int8_t)ori;
 				continue;
 			}
 			//
@@ -2864,7 +2864,7 @@ void floatTetWild::mark_surface_fs( const std::vector<Vector3>& input_vertices, 
 				n.normalize();
 				Scalar dist = n.dot( mesh.tet_vertices[ mesh.tets[ t_id ][ j ] ].pos - fv1 );
 				Scalar opp_dist = n.dot( mesh.tet_vertices[ mesh.tets[ opp_t_id ][ k ] ].pos - fv1 );
-				if( ori == Predicates::ORI_ZERO )
+				if( ori == eOrientation::Zero )
 				{
 					//                    cout << "impossible!! " << dist << " " << opp_dist << endl;
 					//                    cout << (mesh.tet_vertices[mesh.tets[t_id][j]].pos == mesh.tet_vertices[mesh.tets[opp_t_id][k]].pos)
@@ -2877,7 +2877,7 @@ void floatTetWild::mark_surface_fs( const std::vector<Vector3>& input_vertices, 
 					auto& tv2 = mesh.tet_vertices[ mesh.tets[ t_id ][ ( j + 2 ) % 4 ] ].pos;
 					auto& tv3 = mesh.tet_vertices[ mesh.tets[ t_id ][ ( j + 3 ) % 4 ] ].pos;
 					Vector3 nt;
-					if( Predicates::orient_3d( tv1, tv2, tv3, mesh.tet_vertices[ mesh.tets[ t_id ][ j ] ].pos ) == Predicates::ORI_POSITIVE )
+					if( Predicates::orient_3d( tv1, tv2, tv3, mesh.tet_vertices[ mesh.tets[ t_id ][ j ] ].pos ) == eOrientation::Positive )
 						nt = ( tv2 - tv1 ).cross( tv3 - tv1 );
 					else
 						nt = ( tv3 - tv1 ).cross( tv2 - tv1 );
@@ -2897,13 +2897,13 @@ void floatTetWild::mark_surface_fs( const std::vector<Vector3>& input_vertices, 
 				{
 					if( dist < opp_dist )
 					{
-						mesh.tets[ opp_t_id ].is_surface_fs[ k ] = opp_ori;
-						mesh.tets[ t_id ].is_surface_fs[ j ] = -ori;
+						mesh.tets[ opp_t_id ].is_surface_fs[ k ] = (int8_t)opp_ori;
+						mesh.tets[ t_id ].is_surface_fs[ j ] = -(int8_t)ori;
 					}
 					else
 					{
-						mesh.tets[ opp_t_id ].is_surface_fs[ k ] = -opp_ori;
-						mesh.tets[ t_id ].is_surface_fs[ j ] = ori;
+						mesh.tets[ opp_t_id ].is_surface_fs[ k ] = -(int8_t)opp_ori;
+						mesh.tets[ t_id ].is_surface_fs[ j ] = (int8_t)ori;
 					}
 				}
 			}
@@ -3066,14 +3066,14 @@ void floatTetWild::myassert( bool b, const std::string& s )
 	}
 }
 
-int floatTetWild::orient_rational( const Vector3_r& p1, const Vector3_r& p2, const Vector3_r& p3, const Vector3_r& p )
+floatTetWild::eOrientation floatTetWild::orient_rational( const Vector3_r& p1, const Vector3_r& p2, const Vector3_r& p3, const Vector3_r& p )
 {
 	auto nv = ( p2 - p1 ).cross( p3 - p1 );
 	triwild::Rational res = nv.dot( p - p1 );
 	if( res == 0 )
-		return Predicates::ORI_ZERO;
+		return eOrientation::Zero;
 	if( res < 0 )
-		return Predicates::ORI_POSITIVE;
+		return eOrientation::Positive;
 	else
-		return Predicates::ORI_NEGATIVE;
+		return eOrientation::Negative;
 }

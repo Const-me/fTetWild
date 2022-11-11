@@ -12,7 +12,7 @@
 #include <iterator>
 #include <algorithm>
 #include <bitset>
-#include "../external/Predicates.hpp"
+#include "../external/Predicates.h"
 #include "LocalOperations.h"
 #include "MeshImprovement.h"
 #include "../../GeogramDelaunay/GeogramDelaunay.h"

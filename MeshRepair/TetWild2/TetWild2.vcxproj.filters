@@ -23,7 +23,7 @@
     <ClInclude Include="external\get_mem.h">
       <Filter>external</Filter>
     </ClInclude>
-    <ClInclude Include="external\Predicates.hpp">
+    <ClInclude Include="external\Predicates.h">
       <Filter>external</Filter>
     </ClInclude>
     <ClInclude Include="external\Rational.h">

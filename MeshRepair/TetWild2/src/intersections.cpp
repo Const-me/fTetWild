@@ -8,7 +8,6 @@
 
 #include "stdafx.h"
 #include "intersections.h"
-#include "../external/Predicates.hpp"
 #include "LocalOperations.h"
 #include "../Utils/triangleIntersection.h"
 
@@ -160,16 +159,16 @@ bool floatTetWild::seg_plane_intersection( const Vector3& p1, const Vector3& p2,
 	return true;
 }
 
-int floatTetWild::is_tri_tri_cutted( const std::array<Vector3, 3>& f_tri, const std::array<Vector3, 3>& f_tet, const std::array<int, 3>& oris_tri )
+int floatTetWild::is_tri_tri_cutted( const std::array<Vector3, 3>& f_tri, const std::array<Vector3, 3>& f_tet, const std::array<eOrientation, 3>& oris_tri )
 {
 	int cnt_pos = 0;
 	int cnt_neg = 0;
 	int cnt_zero = 0;
 	for( int j = 0; j < 3; j++ )
 	{
-		if( oris_tri[ j ] == Predicates::ORI_ZERO )
+		if( oris_tri[ j ] == eOrientation::Zero )
 			cnt_zero++;
-		else if( oris_tri[ j ] == Predicates::ORI_POSITIVE )
+		else if( oris_tri[ j ] == eOrientation::Positive )
 			cnt_pos++;
 		else
 			cnt_neg++;
@@ -208,16 +207,16 @@ int floatTetWild::is_tri_tri_cutted( const std::array<Vector3, 3>& f_tri, const 
 	if( cnt_pos == 0 || cnt_neg == 0 )
 		return CUT_EMPTY;
 
-	std::array<int, 3> oris_tet;
+	std::array<eOrientation, 3> oris_tet;
 	int cnt_pos1 = 0;
 	int cnt_neg1 = 0;
 	int cnt_zero1 = 0;
 	for( int j = 0; j < 3; j++ )
 	{
 		oris_tet[ j ] = Predicates::orient_3d( f_tet[ 0 ], f_tet[ 1 ], f_tet[ 2 ], f_tri[ j ] );
-		if( oris_tet[ j ] == Predicates::ORI_ZERO )
+		if( oris_tet[ j ] == eOrientation::Zero )
 			cnt_zero1++;
-		else if( oris_tet[ j ] == Predicates::ORI_POSITIVE )
+		else if( oris_tet[ j ] == eOrientation::Positive )
 			cnt_pos1++;
 		else
 			cnt_neg1++;
@@ -226,13 +225,13 @@ int floatTetWild::is_tri_tri_cutted( const std::array<Vector3, 3>& f_tri, const 
 	if( cnt_pos1 == 0 || cnt_neg1 == 0 )
 		return CUT_EMPTY;
 
-	auto is_f1_cut_f2 = []( const std::array<Vector3, 3>& f1, const std::array<Vector3, 3>& f2, const std::array<int, 3>& oris ) {	// check f2 plane
+	auto is_f1_cut_f2 = []( const std::array<Vector3, 3>& f1, const std::array<Vector3, 3>& f2, const std::array<eOrientation, 3>& oris ) {	 // check f2 plane
 		Vector3 n = ( ( f2[ 1 ] - f2[ 2 ] ).cross( f2[ 0 ] - f2[ 2 ] ) ).normalized();
 		int t = get_t( f2[ 0 ], f2[ 1 ], f2[ 2 ] );
 		for( int j = 0; j < 3; j++ )
 		{
-			if( oris[ j ] == Predicates::ORI_NEGATIVE && oris[ ( j + 1 ) % 3 ] == Predicates::ORI_POSITIVE ||
-				oris[ ( j + 1 ) % 3 ] == Predicates::ORI_NEGATIVE && oris[ j ] == Predicates::ORI_POSITIVE )
+			if( oris[ j ] == eOrientation::Negative && oris[ ( j + 1 ) % 3 ] == eOrientation::Positive ||
+				oris[ ( j + 1 ) % 3 ] == eOrientation::Negative && oris[ j ] == eOrientation::Positive )
 			{
 				Vector3 p;
 				Scalar _;
@@ -255,7 +254,7 @@ int floatTetWild::is_tri_tri_cutted( const std::array<Vector3, 3>& f_tri, const 
 
 bool floatTetWild::is_tri_tri_cutted_2d( const std::array<Vector2, 3>& vs_tet, const std::array<Vector2, 3>& vs_tri )
 {
-	std::array<int, 9> tri_tet;
+	std::array<eOrientation, 9> tri_tet;
 	int cnt_pos0 = 0;
 	int cnt_neg0 = 0;
 	int cnt_pos1 = 0;
@@ -265,55 +264,55 @@ bool floatTetWild::is_tri_tri_cutted_2d( const std::array<Vector2, 3>& vs_tet, c
 	for( int i = 0; i < 3; i++ )
 	{
 		tri_tet[ i * 3 ] = Predicates::orient_2d( vs_tri[ i ], vs_tri[ ( i + 1 ) % 3 ], vs_tet[ 0 ] );
-		if( tri_tet[ i * 3 ] == Predicates::ORI_POSITIVE )
+		if( tri_tet[ i * 3 ] == eOrientation::Positive )
 			cnt_pos0++;
-		else if( tri_tet[ i * 3 ] == Predicates::ORI_NEGATIVE )
+		else if( tri_tet[ i * 3 ] == eOrientation::Negative )
 			cnt_neg0++;
 
 		tri_tet[ i * 3 + 1 ] = Predicates::orient_2d( vs_tri[ i ], vs_tri[ ( i + 1 ) % 3 ], vs_tet[ 1 ] );
-		if( tri_tet[ i * 3 + 1 ] == Predicates::ORI_POSITIVE )
+		if( tri_tet[ i * 3 + 1 ] == eOrientation::Positive )
 			cnt_pos1++;
-		else if( tri_tet[ i * 3 + 1 ] == Predicates::ORI_NEGATIVE )
+		else if( tri_tet[ i * 3 + 1 ] == eOrientation::Negative )
 			cnt_neg1++;
 
 		tri_tet[ i * 3 + 2 ] = Predicates::orient_2d( vs_tri[ i ], vs_tri[ ( i + 1 ) % 3 ], vs_tet[ 2 ] );
-		if( tri_tet[ i * 3 + 2 ] == Predicates::ORI_POSITIVE )
+		if( tri_tet[ i * 3 + 2 ] == eOrientation::Positive )
 			cnt_pos2++;
-		else if( tri_tet[ i * 3 + 2 ] == Predicates::ORI_NEGATIVE )
+		else if( tri_tet[ i * 3 + 2 ] == eOrientation::Negative )
 			cnt_neg2++;
 	}
 	if( cnt_neg0 == 3 || cnt_pos0 == 3 || cnt_neg1 == 3 || cnt_pos1 == 3 || cnt_neg2 == 3 || cnt_pos2 == 3 )
 		return true;  // one of the vertices is strictly contained inside the other tri
-	if( std::find( tri_tet.begin(), tri_tet.end(), Predicates::ORI_NEGATIVE ) == tri_tet.end() ||
-		std::find( tri_tet.begin(), tri_tet.end(), Predicates::ORI_POSITIVE ) == tri_tet.end() )
+	if( std::find( tri_tet.begin(), tri_tet.end(), eOrientation::Negative ) == tri_tet.end() ||
+		std::find( tri_tet.begin(), tri_tet.end(), eOrientation::Positive ) == tri_tet.end() )
 		return true;  // tet face is strictly contained by tri face
 
-	std::array<int, 9> tet_tri;
+	std::array<eOrientation, 9> tet_tri;
 	cnt_neg0 = cnt_pos0 = cnt_neg1 = cnt_pos1 = cnt_neg2 = cnt_pos2 = 0;
 	for( int i = 0; i < 3; i++ )
 	{
 		tet_tri[ i * 3 ] = Predicates::orient_2d( vs_tet[ i ], vs_tet[ ( i + 1 ) % 3 ], vs_tri[ 0 ] );
-		if( tet_tri[ i * 3 ] == Predicates::ORI_POSITIVE )
+		if( tet_tri[ i * 3 ] == eOrientation::Positive )
 			cnt_pos0++;
-		else if( tet_tri[ i * 3 ] == Predicates::ORI_NEGATIVE )
+		else if( tet_tri[ i * 3 ] == eOrientation::Negative )
 			cnt_neg0++;
 
 		tet_tri[ i * 3 + 1 ] = Predicates::orient_2d( vs_tet[ i ], vs_tet[ ( i + 1 ) % 3 ], vs_tri[ 1 ] );
-		if( tet_tri[ i * 3 + 1 ] == Predicates::ORI_POSITIVE )
+		if( tet_tri[ i * 3 + 1 ] == eOrientation::Positive )
 			cnt_pos1++;
-		else if( tet_tri[ i * 3 + 1 ] == Predicates::ORI_NEGATIVE )
+		else if( tet_tri[ i * 3 + 1 ] == eOrientation::Negative )
 			cnt_neg1++;
 
 		tet_tri[ i * 3 + 2 ] = Predicates::orient_2d( vs_tet[ i ], vs_tet[ ( i + 1 ) % 3 ], vs_tri[ 2 ] );
-		if( tet_tri[ i * 3 + 2 ] == Predicates::ORI_POSITIVE )
+		if( tet_tri[ i * 3 + 2 ] == eOrientation::Positive )
 			cnt_pos2++;
-		else if( tet_tri[ i * 3 + 2 ] == Predicates::ORI_NEGATIVE )
+		else if( tet_tri[ i * 3 + 2 ] == eOrientation::Negative )
 			cnt_neg2++;
 	}
 	if( cnt_neg0 == 3 || cnt_pos0 == 3 || cnt_neg1 == 3 || cnt_pos1 == 3 || cnt_neg2 == 3 || cnt_pos2 == 3 )
 		return true;
-	if( std::find( tet_tri.begin(), tet_tri.end(), Predicates::ORI_NEGATIVE ) == tet_tri.end() ||
-		std::find( tet_tri.begin(), tet_tri.end(), Predicates::ORI_POSITIVE ) == tet_tri.end() )
+	if( std::find( tet_tri.begin(), tet_tri.end(), eOrientation::Negative ) == tet_tri.end() ||
+		std::find( tet_tri.begin(), tet_tri.end(), eOrientation::Positive ) == tet_tri.end() )
 		return true;  // tri face is contained by tet face
 
 	for( int tri_e_id = 0; tri_e_id < 3; tri_e_id++ )
@@ -359,16 +358,16 @@ bool floatTetWild::is_seg_tri_cutted_2d( const std::array<Vector2, 2>& seg, cons
 
 	//////////
 
-	std::array<int, 3> tri_seg;
+	std::array<eOrientation, 3> tri_seg;
 	for( int i = 0; i < 3; i++ )
 	{
 		tri_seg[ i ] = Predicates::orient_2d( seg[ 0 ], seg[ 1 ], tri[ i ] );
 	}
-	if( std::find( tri_seg.begin(), tri_seg.end(), Predicates::ORI_NEGATIVE ) == tri_seg.end() ||
-		std::find( tri_seg.begin(), tri_seg.end(), Predicates::ORI_POSITIVE ) == tri_seg.end() )
+	if( std::find( tri_seg.begin(), tri_seg.end(), eOrientation::Negative ) == tri_seg.end() ||
+		std::find( tri_seg.begin(), tri_seg.end(), eOrientation::Positive ) == tri_seg.end() )
 		return false;  // tri on the same side of seg
 
-	std::array<int, 6> seg_tri;
+	std::array<eOrientation, 6> seg_tri;
 	int cnt_pos0 = 0;
 	int cnt_neg0 = 0;
 	int cnt_pos1 = 0;
@@ -376,14 +375,14 @@ bool floatTetWild::is_seg_tri_cutted_2d( const std::array<Vector2, 2>& seg, cons
 	for( int i = 0; i < 3; i++ )
 	{
 		seg_tri[ i * 2 ] = Predicates::orient_2d( tri[ i ], tri[ ( i + 1 ) % 3 ], seg[ 0 ] );
-		if( seg_tri[ i * 2 ] == Predicates::ORI_POSITIVE )
+		if( seg_tri[ i * 2 ] == eOrientation::Positive )
 			cnt_pos0++;
-		else if( seg_tri[ i * 2 ] == Predicates::ORI_NEGATIVE )
+		else if( seg_tri[ i * 2 ] == eOrientation::Negative )
 			cnt_neg0++;
 		seg_tri[ i * 2 + 1 ] = Predicates::orient_2d( tri[ i ], tri[ ( i + 1 ) % 3 ], seg[ 1 ] );
-		if( seg_tri[ i * 2 + 1 ] == Predicates::ORI_POSITIVE )
+		if( seg_tri[ i * 2 + 1 ] == eOrientation::Positive )
 			cnt_pos1++;
-		else if( seg_tri[ i * 2 + 1 ] == Predicates::ORI_NEGATIVE )
+		else if( seg_tri[ i * 2 + 1 ] == eOrientation::Negative )
 			cnt_neg1++;
 	}
 	if( cnt_neg0 == 3 || cnt_pos0 == 3 || cnt_neg1 == 3 || cnt_pos1 == 3 )	// one of the endpoints is contained inside tri
@@ -405,10 +404,10 @@ bool floatTetWild::is_p_inside_tri_2d( const Vector2& p, const std::array<Vector
 
 	for( int i = 0; i < 3; i++ )
 	{
-		int ori = Predicates::orient_2d( tri[ i ], tri[ ( i + 1 ) % 3 ], p );
-		if( ori == Predicates::ORI_POSITIVE )
+		eOrientation ori = Predicates::orient_2d( tri[ i ], tri[ ( i + 1 ) % 3 ], p );
+		if( ori == eOrientation::Positive )
 			cnt_pos++;
-		else if( ori == Predicates::ORI_NEGATIVE )
+		else if( ori == eOrientation::Negative )
 			cnt_neg++;
 	}
 	//    if(cnt_neg==0 || cnt_pos==0)
@@ -458,9 +457,9 @@ floatTetWild::Vector2 floatTetWild::to_2d( const Vector3& p, const Vector3& n, c
 	return Vector2( proj_p[ ( t + 1 ) % 3 ], proj_p[ ( t + 2 ) % 3 ] );
 }
 
-bool floatTetWild::is_crossing( int s1, int s2 )
+bool floatTetWild::is_crossing( eOrientation s1, eOrientation s2 )
 {
-	if( s1 == Predicates::ORI_POSITIVE && s2 == Predicates::ORI_NEGATIVE || s2 == Predicates::ORI_POSITIVE && s1 == Predicates::ORI_NEGATIVE )
+	if( s1 == eOrientation::Positive && s2 == eOrientation::Negative || s2 == eOrientation::Positive && s1 == eOrientation::Negative )
 		return true;
 	return false;
 }
@@ -703,28 +702,28 @@ bool floatTetWild::is_tri_inside_tet( const std::array<Vector3, 3>& ps, const Ve
 
 	for( int i = 0; i < 3; i++ )
 	{
-		int ori = Predicates::orient_3d( ps[ i ], p1t, p2t, p3t );
-		if( ori == Predicates::ORI_POSITIVE )
+		eOrientation ori = Predicates::orient_3d( ps[ i ], p1t, p2t, p3t );
+		if( ori == eOrientation::Positive )
 			cnt_pos++;
-		else if( ori == Predicates::ORI_NEGATIVE )
+		else if( ori == eOrientation::Negative )
 			cnt_neg++;
 
 		ori = Predicates::orient_3d( p0t, ps[ i ], p2t, p3t );
-		if( ori == Predicates::ORI_POSITIVE )
+		if( ori == eOrientation::Positive )
 			cnt_pos++;
-		else if( ori == Predicates::ORI_NEGATIVE )
+		else if( ori == eOrientation::Negative )
 			cnt_neg++;
 
 		ori = Predicates::orient_3d( p0t, p1t, ps[ i ], p3t );
-		if( ori == Predicates::ORI_POSITIVE )
+		if( ori == eOrientation::Positive )
 			cnt_pos++;
-		else if( ori == Predicates::ORI_NEGATIVE )
+		else if( ori == eOrientation::Negative )
 			cnt_neg++;
 
 		ori = Predicates::orient_3d( p0t, p1t, p2t, ps[ i ] );
-		if( ori == Predicates::ORI_POSITIVE )
+		if( ori == eOrientation::Positive )
 			cnt_pos++;
-		else if( ori == Predicates::ORI_NEGATIVE )
+		else if( ori == eOrientation::Negative )
 			cnt_neg++;
 	}
 
@@ -739,28 +738,28 @@ bool floatTetWild::is_point_inside_tet( const Vector3& p, const Vector3& p0t, co
 	int cnt_pos = 0;
 	int cnt_neg = 0;
 
-	int ori = Predicates::orient_3d( p, p1t, p2t, p3t );
-	if( ori == Predicates::ORI_POSITIVE )
+	eOrientation ori = Predicates::orient_3d( p, p1t, p2t, p3t );
+	if( ori == eOrientation::Positive )
 		cnt_pos++;
-	else if( ori == Predicates::ORI_NEGATIVE )
+	else if( ori == eOrientation::Negative )
 		cnt_neg++;
 
 	ori = Predicates::orient_3d( p0t, p, p2t, p3t );
-	if( ori == Predicates::ORI_POSITIVE )
+	if( ori == eOrientation::Positive )
 		cnt_pos++;
-	else if( ori == Predicates::ORI_NEGATIVE )
+	else if( ori == eOrientation::Negative )
 		cnt_neg++;
 
 	ori = Predicates::orient_3d( p0t, p1t, p, p3t );
-	if( ori == Predicates::ORI_POSITIVE )
+	if( ori == eOrientation::Positive )
 		cnt_pos++;
-	else if( ori == Predicates::ORI_NEGATIVE )
+	else if( ori == eOrientation::Negative )
 		cnt_neg++;
 
 	ori = Predicates::orient_3d( p0t, p1t, p2t, p );
-	if( ori == Predicates::ORI_POSITIVE )
+	if( ori == eOrientation::Positive )
 		cnt_pos++;
-	else if( ori == Predicates::ORI_NEGATIVE )
+	else if( ori == eOrientation::Negative )
 		cnt_neg++;
 
 	if( cnt_pos == 0 || cnt_neg == 0 )

@@ -39,16 +39,16 @@ namespace floatTetWild
 		}
 	};
 
-#define NOT_SURFACE SCHAR_MAX  // SHRT_MAX//INT_MAX
-#define KNOWN_NOT_SURFACE -SCHAR_MAX / 2
-#define KNOWN_SURFACE SCHAR_MAX / 2
+	constexpr int8_t NOT_SURFACE = 127;
+	constexpr int8_t KNOWN_NOT_SURFACE = -63;
+	constexpr int8_t KNOWN_SURFACE = 63;
 
 #define NO_SURFACE_TAG 0
 #define NOT_BBOX -1
 #define OPP_T_ID_UNKNOWN -2
 #define OPP_T_ID_BOUNDARY -1
 
-#define MAX_ENERGY 1e50
+	constexpr double MAX_ENERGY = 1e50;
 
 	class MeshVertex
 	{
@@ -152,7 +152,7 @@ namespace floatTetWild
 			log.logDebug( "%i: [ %i, %i, %i, %i ]", id, indices[ 0 ], indices[ 1 ], indices[ 2 ], indices[ 3 ] );
 		}
 
-		std::array<char, 4> is_surface_fs = { { NOT_SURFACE, NOT_SURFACE, NOT_SURFACE, NOT_SURFACE } };
+		std::array<int8_t, 4> is_surface_fs = { { NOT_SURFACE, NOT_SURFACE, NOT_SURFACE, NOT_SURFACE } };
 		std::array<char, 4> is_bbox_fs = { { NOT_BBOX, NOT_BBOX, NOT_BBOX, NOT_BBOX } };
 		std::array<int, 4> opp_t_ids = { { OPP_T_ID_UNKNOWN, OPP_T_ID_UNKNOWN, OPP_T_ID_UNKNOWN, OPP_T_ID_UNKNOWN } };
 		std::array<char, 4> surface_tags = { { 0, 0, 0, 0 } };

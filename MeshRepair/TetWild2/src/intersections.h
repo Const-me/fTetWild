@@ -7,6 +7,7 @@
 //
 #pragma once
 #include "Mesh.hpp"
+#include "../external/Predicates.h"
 
 namespace floatTetWild
 {
@@ -17,7 +18,7 @@ namespace floatTetWild
 #define CUT_COPLANAR 4
 #define CUT_EMPTY -1
 
-	int is_tri_tri_cutted( const std::array<Vector3, 3>& f_tri, const std::array<Vector3, 3>& f_tet, const std::array<int, 3>& oris_tri );
+	int is_tri_tri_cutted( const std::array<Vector3, 3>& f_tri, const std::array<Vector3, 3>& f_tet, const std::array<eOrientation, 3>& oris_tri );
 
 	Scalar seg_seg_squared_dist_3d( const std::array<Vector3, 2>& s1, const std::array<Vector3, 2>& s2 );
 
@@ -36,7 +37,7 @@ namespace floatTetWild
 	Vector2 to_2d( const Vector3& p, int t );
 	Vector2 to_2d( const Vector3& p, const Vector3& n, const Vector3& pp, int t );
 
-	bool is_crossing( int s1, int s2 );
+	bool is_crossing( eOrientation s1, eOrientation s2 );
 
 	int is_tri_tri_cutted( const Vector3& p1, const Vector3& p2, const Vector3& p3,		  // cutting tri
 	  const Vector3& q1, const Vector3& q2, const Vector3& q3 );						  // face of tet

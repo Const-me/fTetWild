@@ -14,6 +14,7 @@
 #include "AABBWrapper.h"
 #include "CutMesh.h"
 #include "../external/Rational.h"
+#include "../external/Predicates.h"
 #include <map>
 
 namespace floatTetWild
@@ -93,5 +94,5 @@ namespace floatTetWild
 	// fortest
 	typedef Eigen::Matrix<triwild::Rational, 3, 1> Vector3_r;
 
-	int orient_rational( const Vector3_r& p1, const Vector3_r& p2, const Vector3_r& p3, const Vector3_r& p );
+	eOrientation orient_rational( const Vector3_r& p1, const Vector3_r& p2, const Vector3_r& p3, const Vector3_r& p );
 }  // namespace floatTetWild

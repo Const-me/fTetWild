@@ -103,7 +103,7 @@
     <ClInclude Include="external\FastWindingNumber.hpp" />
     <ClInclude Include="external\get_mem.h" />
     <ClInclude Include="external\mesh_AABB.h" />
-    <ClInclude Include="external\Predicates.hpp" />
+    <ClInclude Include="external\Predicates.h" />
     <ClInclude Include="external\Rational.h" />
     <ClInclude Include="external\WindingNumber.h" />
     <ClInclude Include="Utils\cutTableData.h" />

@@ -14,7 +14,7 @@
 #include "CutMesh.h"
 #include "TriangleInsertion.h"
 #include "LocalOperations.h"
-#include "../external/Predicates.hpp"
+#include "../external/Predicates.h"
 #include "intersections.h"
 #include <igl/Timer.h>
 
@@ -88,14 +88,14 @@ bool floatTetWild::CutMesh::snap_to_plane()
 		int v_id = v.first;
 		int lv_id = v.second;
 
-		int ori = Predicates::orient_3d( p_vs[ 0 ], p_vs[ 1 ], p_vs[ 2 ], mesh.tet_vertices[ v_id ].pos );
-		if( ori == Predicates::ORI_ZERO )
+		const eOrientation ori = Predicates::orient_3d( p_vs[ 0 ], p_vs[ 1 ], p_vs[ 2 ], mesh.tet_vertices[ v_id ].pos );
+		if( ori == eOrientation::Zero )
 		{
 			to_plane_dists[ lv_id ] = 0;
 			continue;
 		}
 		to_plane_dists[ lv_id ] = get_to_plane_dist( mesh.tet_vertices[ v_id ].pos );
-		if( ori == Predicates::ORI_POSITIVE && to_plane_dists[ lv_id ] > 0 || ori == Predicates::ORI_NEGATIVE && to_plane_dists[ lv_id ] < 0 )
+		if( ori == eOrientation::Positive && to_plane_dists[ lv_id ] > 0 || ori == eOrientation::Negative && to_plane_dists[ lv_id ] < 0 )
 		{
 			//            cout<<"reverted!!! "<<to_plane_dists[lv_id]<<endl;
 			to_plane_dists[ lv_id ] = -to_plane_dists[ lv_id ];
@@ -223,10 +223,11 @@ void floatTetWild::CutMesh::expand( std::vector<int>& cut_t_ids )
 				int cnt_neg = 0;
 				for( int j = 0; j < 4; j++ )
 				{
-					int ori = Predicates::orient_3d( p_vs[ 0 ], p_vs[ 1 ], p_vs[ 2 ], mesh.tet_vertices[ mesh.tets[ new_opp_t_ids[ i ].back() ][ j ] ].pos );
-					if( ori == Predicates::ORI_POSITIVE )
+					const eOrientation ori =
+					  Predicates::orient_3d( p_vs[ 0 ], p_vs[ 1 ], p_vs[ 2 ], mesh.tet_vertices[ mesh.tets[ new_opp_t_ids[ i ].back() ][ j ] ].pos );
+					if( ori == eOrientation::Positive )
 						cnt_pos++;
-					else if( ori == Predicates::ORI_NEGATIVE )
+					else if( ori == eOrientation::Negative )
 						cnt_neg++;
 				}
 				if( cnt_neg == 0 || cnt_pos == 0 )
@@ -251,15 +252,15 @@ void floatTetWild::CutMesh::expand( std::vector<int>& cut_t_ids )
 					map_v_ids[ v_id ] = lv_id;
 					//                    to_plane_dists.push_back(get_to_plane_dist(mesh.tet_vertices[v_id].pos));
 					double dist = get_to_plane_dist( mesh.tet_vertices[ v_id ].pos );
-					int ori = Predicates::orient_3d( p_vs[ 0 ], p_vs[ 1 ], p_vs[ 2 ], mesh.tet_vertices[ v_id ].pos );
-					if( ( ori == Predicates::ORI_NEGATIVE && dist < 0 )	 // todo: change get_to_plane_dist return value sign
-						|| ( ori == Predicates::ORI_POSITIVE && dist > 0 ) )
+					const eOrientation ori = Predicates::orient_3d( p_vs[ 0 ], p_vs[ 1 ], p_vs[ 2 ], mesh.tet_vertices[ v_id ].pos );
+					if( ( ori == eOrientation::Negative && dist < 0 )  // todo: change get_to_plane_dist return value sign
+						|| ( ori == eOrientation::Positive && dist > 0 ) )
 						dist = -dist;
-					else if( ori == Predicates::ORI_ZERO )
+					else if( ori == eOrientation::Zero )
 						dist = 0;
 					to_plane_dists.push_back( dist );
 
-					if( ori != Predicates::ORI_ZERO && std::fabs( to_plane_dists[ lv_id ] ) < mesh.params.eps_coplanar )
+					if( ori != eOrientation::Zero && std::fabs( to_plane_dists[ lv_id ] ) < mesh.params.eps_coplanar )
 						is_snapped.push_back( true );
 					else
 						is_snapped.push_back( false );
@@ -384,10 +385,10 @@ void floatTetWild::CutMesh::expand_new( std::vector<int>& cut_t_ids )
 				int cnt_neg = 0;
 				for( int j = 0; j < 4; j++ )
 				{
-					int ori = Predicates::orient_3d( p_vs[ 0 ], p_vs[ 1 ], p_vs[ 2 ], mesh.tet_vertices[ mesh.tets[ gt_id ][ j ] ].pos );
-					if( ori == Predicates::ORI_POSITIVE )
+					eOrientation ori = Predicates::orient_3d( p_vs[ 0 ], p_vs[ 1 ], p_vs[ 2 ], mesh.tet_vertices[ mesh.tets[ gt_id ][ j ] ].pos );
+					if( ori == eOrientation::Positive )
 						cnt_pos++;
-					else if( ori == Predicates::ORI_NEGATIVE )
+					else if( ori == eOrientation::Negative )
 						cnt_neg++;
 				}
 				if( cnt_neg == 0 || cnt_pos == 0 )
@@ -433,14 +434,14 @@ void floatTetWild::CutMesh::expand_new( std::vector<int>& cut_t_ids )
 						map_v_ids[ new_gv_id ] = new_lv_id;
 						//
 						double dist = get_to_plane_dist( mesh.tet_vertices[ new_gv_id ].pos );
-						int ori = Predicates::orient_3d( p_vs[ 0 ], p_vs[ 1 ], p_vs[ 2 ], mesh.tet_vertices[ new_gv_id ].pos );
-						if( ( ori == Predicates::ORI_NEGATIVE && dist < 0 ) || ( ori == Predicates::ORI_POSITIVE && dist > 0 ) )
+						const eOrientation ori = Predicates::orient_3d( p_vs[ 0 ], p_vs[ 1 ], p_vs[ 2 ], mesh.tet_vertices[ new_gv_id ].pos );
+						if( ( ori == eOrientation::Negative && dist < 0 ) || ( ori == eOrientation::Positive && dist > 0 ) )
 							dist = -dist;
-						else if( ori == Predicates::ORI_ZERO )
+						else if( ori == eOrientation::Zero )
 							dist = 0;
 						to_plane_dists.push_back( dist );
 						//
-						if( ori != Predicates::ORI_ZERO && std::fabs( to_plane_dists[ new_lv_id ] ) < mesh.params.eps_coplanar )
+						if( ori != eOrientation::Zero && std::fabs( to_plane_dists[ new_lv_id ] ) < mesh.params.eps_coplanar )
 							is_snapped.push_back( true );
 						else
 							is_snapped.push_back( false );
