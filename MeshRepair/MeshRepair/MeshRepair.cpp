@@ -7,6 +7,7 @@
 #include "../GeogramDelaunay/Predicates/RobustPredicates.h"
 // #include "../TetWild2/Utils/cutTableData.h"
 #include "../GeogramDelaunay/geogram/numerics/predicates.h"
+// #include "../TetWild2/Utils/Geogram2.h"
 
 namespace MeshRepair
 {
@@ -33,6 +34,7 @@ namespace MeshRepair
 		GEO::PCK::initialize();
 		// printCutTableData();
 		// validateCutTableData();
+		// GEO2::dbgRunSomeTests();
 		return S_OK;
 	}
 

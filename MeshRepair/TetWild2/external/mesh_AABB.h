@@ -383,6 +383,6 @@ namespace floatTetWild
 		using namespace GEO2;
 		const vec3 *p1, *p2, *p3;
 		M.getTriangleVertices( f, &p1, &p2, &p3 );
-		squared_dist = point_triangle_squared_distance( p, *p1, *p2, *p3, nearest_p );
+		squared_dist = point_triangle_squared_distance( p, *p1, *p2, *p3, &nearest_p );
 	}
 }  // namespace floatTetWild

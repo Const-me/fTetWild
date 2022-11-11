@@ -96,4 +96,13 @@ namespace AvxMath
 		__m256d neg = _mm256_sub_pd( zero, v );
 		return _mm256_max_pd( v, neg );
 	}
+
+	// Performs a linear interpolation using the incorrect but fast formula:  x * ( 1 - s ) + y * s
+	// The correct formula is written in that document: https://open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0811r3.html
+	inline __m256d lerpFast( __m256d x, __m256d y, double s )
+	{
+		x = _mm256_mul_pd( x, _mm256_set1_pd( 1.0 - s ) );
+		y = _mm256_mul_pd( y, _mm256_set1_pd( s ) );
+		return _mm256_add_pd( x, y );
+	}
 }  // namespace AvxMath
