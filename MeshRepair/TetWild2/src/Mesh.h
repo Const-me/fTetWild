@@ -158,6 +158,8 @@ namespace floatTetWild
 			EdgesSet edgesTemp;
 		};
 		FindNewPosBuffers findNewPosBuffers;
+
+		// Temporary buffers used by edge_collapsing_aux function
 		struct EdgeCollapsingAuxBuffers
 		{
 			std::vector<std::array<int, 2>> inf_es;
@@ -167,5 +169,17 @@ namespace floatTetWild
 			std::vector<std::array<int, 2>> tmp_inf_es;
 		};
 		EdgeCollapsingAuxBuffers edgeCollapsingAuxBuffers;
+
+		// Temporary buffers used by collapse_an_edge function
+		struct CollapseEdgeBuffers
+		{
+			std::vector<int> n12_t_ids;
+			std::vector<int> n1_t_ids;
+			std::vector<int> js_n1_t_ids;
+			std::vector<Scalar> new_qs;
+			std::vector<int> n1_v_ids;
+			std::vector<int> pair;
+		};
+		CollapseEdgeBuffers collapseEdgeBuffers;
 	};
 }  // namespace floatTetWild

@@ -260,22 +260,29 @@ int floatTetWild::collapse_an_edge(
 	if( tet_vertices[ v1_id ].is_on_surface && is_point_out_envelope( mesh, tet_vertices[ v2_id ].pos, tree ) )
 		return EC_FAIL_ENVELOPE1;
 
+	Mesh::CollapseEdgeBuffers& buffers = mesh.collapseEdgeBuffers;
 	////check tets
-	std::vector<int> n12_t_ids;
+	std::vector<int>& n12_t_ids = buffers.n12_t_ids;
+	n12_t_ids.clear();
+
 	set_intersection( tet_vertices[ v1_id ].conn_tets, tet_vertices[ v2_id ].conn_tets, n12_t_ids );
 	if( n12_t_ids.empty() )
 		return EC_FAIL_INVERSION;
 	//    std::unordered_set<int> n1_t_ids = tet_vertices[v1_id].conn_tets;//v1.conn_tets - n12_t_ids
 	//    for (int t_id:n12_t_ids)
 	//        n1_t_ids.erase(t_id);
-	std::vector<int> n1_t_ids;	// v1.conn_tets - n12_t_ids
+	std::vector<int>& n1_t_ids = buffers.n1_t_ids;	// v1.conn_tets - n12_t_ids
+	n1_t_ids.clear();
+
 	std::sort( tet_vertices[ v1_id ].conn_tets.begin(), tet_vertices[ v1_id ].conn_tets.end() );
 	std::sort( n12_t_ids.begin(), n12_t_ids.end() );
 	std::set_difference(
 	  tet_vertices[ v1_id ].conn_tets.begin(), tet_vertices[ v1_id ].conn_tets.end(), n12_t_ids.begin(), n12_t_ids.end(), std::back_inserter( n1_t_ids ) );
 
 	// inversion
-	std::vector<int> js_n1_t_ids;
+	std::vector<int>& js_n1_t_ids = buffers.js_n1_t_ids;
+	js_n1_t_ids.clear();
+
 	for( int t_id : n1_t_ids )
 	{
 		int j = tets[ t_id ].find( v1_id );
@@ -288,9 +295,7 @@ int floatTetWild::collapse_an_edge(
 	// quality
 	Scalar old_max_quality = 0;
 	if( mesh.is_coarsening )
-	{
 		old_max_quality = mesh.params.stop_energy;
-	}
 	else
 	{
 		if( is_check_quality )
@@ -302,7 +307,8 @@ int floatTetWild::collapse_an_edge(
 			}
 		}
 	}
-	std::vector<Scalar> new_qs;
+	std::vector<Scalar>& new_qs = buffers.new_qs;
+	new_qs.clear();
 	new_qs.reserve( tet_vertices[ v1_id ].conn_tets.size() );
 	int ii = 0;
 	for( int t_id : n1_t_ids )
@@ -344,9 +350,7 @@ int floatTetWild::collapse_an_edge(
 	// update quality
 	int i = 0;
 	for( int t_id : n1_t_ids )
-	{
 		tets[ t_id ].quality = new_qs[ i++ ];
-	}
 
 	// n_v_id for repush
 	//    std::vector<int> n12_v_ids;
@@ -366,7 +370,8 @@ int floatTetWild::collapse_an_edge(
 	//    std::vector<int> n_v_ids;
 	//    std::set_difference(n1_v_ids.begin(), n1_v_ids.end(), n12_v_ids.begin(), n12_v_ids.end(),
 	//                        std::inserter(n_v_ids, n_v_ids.begin()));
-	std::vector<int> n1_v_ids;
+	std::vector<int>& n1_v_ids = buffers.n1_v_ids;
+	n1_v_ids.clear();
 	n1_v_ids.reserve( n1_t_ids.size() * 4 );
 	for( int t_id : n1_t_ids )
 	{
@@ -449,7 +454,8 @@ int floatTetWild::collapse_an_edge(
 
 		for( int i = 0; i < 2; i++ )
 		{
-			std::vector<int> pair;
+			std::vector<int>& pair = buffers.pair;
+			pair.clear();
 			set_intersection( tet_vertices[ tets[ t_id ][ mod4( j12[ mod2( i + 1 ) ] + 1 ) ] ].conn_tets,
 			  tet_vertices[ tets[ t_id ][ mod4( j12[ mod2( i + 1 ) ] + 2 ) ] ].conn_tets,
 			  tet_vertices[ tets[ t_id ][ mod4( j12[ mod2( i + 1 ) ] + 3 ) ] ].conn_tets, pair );
