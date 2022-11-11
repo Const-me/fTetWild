@@ -58,19 +58,50 @@ namespace floatTetWild
 			return indices[ index ];
 		}
 
+		// If the argument is in the indices vector, integer in [ 0 .. 3 ] interval with the position. Otherwise, -1
 		inline int find( int ele ) const
 		{
-			for( int j = 0; j < 4; j++ )
-				if( indices[ j ] == ele )
-					return j;
+			static_assert( sizeof( indices ) == 16 );
+
+			// Compare vector elements for ( e == ele )
+			const __m128i vec = _mm_loadu_si128( (const __m128i*)indices.data() );
+			const __m128i needle = _mm_set1_epi32( ele );
+			const __m128i eq = _mm_cmpeq_epi32( vec, needle );
+
+			// Move into bitmap in a scalar register, 0 = not equal, 1 = equal
+			const uint32_t bmp = (uint32_t)_mm_movemask_ps( _mm_castsi128_ps( eq ) );
+
+			// Scan for the lowest set bit in the bitmap
+			unsigned long bitIndex;
+			if( _BitScanForward( &bitIndex, bmp ) )
+				return (int)bitIndex;
 			return -1;
 		}
 
+		// Find first index not equal to either of the arguments
 		inline int find_opp( int v0_id, int v1_id, int v2_id ) const
 		{
-			for( int j = 0; j < 4; j++ )
-				if( indices[ j ] != v0_id && indices[ j ] != v1_id && indices[ j ] != v2_id )
-					return j;
+			// Compare vector elements for ( e == v0 ) || ( e == v1 ) || ( e == v2 )
+			const __m128i vec = _mm_loadu_si128( (const __m128i*)indices.data() );
+
+			__m128i needle = _mm_set1_epi32( v0_id );
+			__m128i eq = _mm_cmpeq_epi32( vec, needle );
+
+			needle = _mm_set1_epi32( v1_id );
+			eq = _mm_or_si128( eq, _mm_cmpeq_epi32( vec, needle ) );
+
+			needle = _mm_set1_epi32( v2_id );
+			eq = _mm_or_si128( eq, _mm_cmpeq_epi32( vec, needle ) );
+
+			// Move into bitmap in a scalar register, 0 = not equal, 1 = equal
+			uint32_t bmp = (uint32_t)_mm_movemask_ps( _mm_castsi128_ps( eq ) );
+			// Invert lower 4 bits in the bitmap, results in 0 = equal to at least one of the inputs, 1 = not equal to either of the inputs
+			bmp ^= 0b1111;
+
+			// Scan for the lowest set bit in the bitmap
+			unsigned long bitIndex;
+			if( _BitScanForward( &bitIndex, bmp ) )
+				return (int)bitIndex;
 			return -1;
 		}
 
