@@ -183,35 +183,39 @@ namespace floatTetWild
 				std::vector<std::array<int, 2>>& tmp_inf_es = buffers.tmp_inf_es;
 				tmp_inf_es.clear();
 				const size_t inf_es_size = inf_es.size();
-				tmp_inf_es.reserve( inf_es_size / 4.0 + 1 );
+				tmp_inf_es.reserve( inf_es_size / 4 + 1 );
 				for( size_t i = 0; i < inf_es_size; i++ )
 				{
-					if( is_edge_freezed( mesh, inf_es[ i ][ 0 ], inf_es[ i ][ 1 ] ) )
+					const std::array<int, 2> inf_es_i = inf_es[ i ];
+					if( is_edge_freezed( mesh, inf_es_i[ 0 ], inf_es_i[ 1 ] ) )
 						continue;
-					if( !is_valid_edge( mesh, inf_es[ i ][ 0 ], inf_es[ i ][ 1 ] ) )
-						continue;
-
-					Scalar weight = get_edge_length_2( mesh, inf_es[ i ][ 0 ], inf_es[ i ][ 1 ] );
-					if( !is_collapsable_length( mesh, inf_es[ i ][ 0 ], inf_es[ i ][ 1 ], weight ) )
+					if( !is_valid_edge( mesh, inf_es_i[ 0 ], inf_es_i[ 1 ] ) )
 						continue;
 
-					if( !is_collapsable_bbox( mesh, inf_es[ i ][ 0 ], inf_es[ i ][ 1 ] ) )
+					Scalar weight = get_edge_length_2( mesh, inf_es_i[ 0 ], inf_es_i[ 1 ] );
+					if( !is_collapsable_length( mesh, inf_es_i[ 0 ], inf_es_i[ 1 ], weight ) )
+						continue;
+
+					if( !is_collapsable_bbox( mesh, inf_es_i[ 0 ], inf_es_i[ 1 ] ) )
 						continue;
 
 					bool is_recal = false;
-					for( int t_id : tet_vertices[ inf_es[ i ][ 0 ] ].conn_tets )
+					const std::vector<int>& conn_tets = tet_vertices[ inf_es_i[ 0 ] ].conn_tets;
+					const int recallLimit = inf_e_tss[ i ];
+					for( int t_id : conn_tets )
 					{
-						if( tet_tss[ t_id ] > inf_e_tss[ i ] )
+						if( tet_tss[ t_id ] > recallLimit )
 						{
 							is_recal = true;
 							break;
 						}
 					}
 					if( is_recal )
-						ec_queue.push( ElementInQueue( inf_es[ i ], weight ) );
+						ec_queue.push( ElementInQueue( inf_es_i, weight ) );
 					else
-						tmp_inf_es.push_back( inf_es[ i ] );
+						tmp_inf_es.push_back( inf_es_i );
 				}
+
 				std::sort( tmp_inf_es.begin(), tmp_inf_es.end() );
 				tmp_inf_es.erase( std::unique( tmp_inf_es.begin(), tmp_inf_es.end() ), tmp_inf_es.end() );	// it's better
 				inf_es = tmp_inf_es;
