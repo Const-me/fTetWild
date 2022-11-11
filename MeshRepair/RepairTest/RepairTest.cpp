@@ -3,10 +3,20 @@
 #include "../MeshRepair/API/library.h"
 #include "Utils/Timer.h"
 #include "Utils/ConsoleLogSink.h"
+#include <atlstr.h>
 
 // static const LPCTSTR stlSource = LR"(C:\Temp\2remove\MeshRepair\model.stl)";
 static const LPCTSTR stlSource = LR"(C:\Temp\2remove\MeshRepair\dragon.stl)";
-static const LPCTSTR stlResult = LR"(C:\Temp\2remove\MeshRepair\dragon-result.stl)";
+
+static CString resultPath( LPCTSTR source )
+{
+	LPCTSTR ext = PathFindExtensionW( source );
+	if( nullptr == ext || 0 == *ext )
+		__debugbreak();
+	CString res { source, (int)( ext - source ) };
+	res += L"-result.stl";
+	return res;
+}
 
 namespace MeshRepair
 {
@@ -55,7 +65,8 @@ HRESULT testStlIO()
 {
 	IndexedMesh mesh;
 	CHECK( mesh.loadBinaryStl( stlSource ) );
-	CHECK( mesh.saveBinaryStl( stlResult ) );
+	CString res = resultPath( stlSource );
+	CHECK( mesh.saveBinaryStl( res ) );
 	return S_OK;
 }
 
@@ -63,8 +74,9 @@ HRESULT testRepair()
 {
 	IndexedMesh mesh;
 	CHECK( mesh.loadBinaryStl( stlSource ) );
+	CString res = resultPath( stlSource );
 
-	using namespace ComLight;
+	using ComLight::CComPtr;
 	using namespace MeshRepair;
 	CComPtr<iMeshRepair> repair;
 	ConsoleLogSink consoleLogSink;
@@ -74,6 +86,8 @@ HRESULT testRepair()
 	CHECK( createMesh( repair, mesh, source ) );
 
 	Parameters params;
+	params.flags |= eRepairFlags::UseOpenMP;
+
 	CComPtr<iResultMesh> result;
 	{
 		Timer tt { "iMeshRepair.repair()" };
@@ -81,7 +95,7 @@ HRESULT testRepair()
 	}
 
 	CHECK( copyMesh( result, mesh ) );
-	CHECK( mesh.saveBinaryStl( stlResult ) );
+	CHECK( mesh.saveBinaryStl( res ) );
 	return S_OK;
 }
 
