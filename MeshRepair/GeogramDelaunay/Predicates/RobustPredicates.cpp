@@ -117,6 +117,7 @@
 #include <stdint.h>
 #include <math.h>
 #include "RobustPredicates.h"
+#include "../../TetWild2/Utils/AvxMath.h"
 
 #ifdef _MSC_VER
 #pragma fp_contract( off )
@@ -2043,7 +2044,7 @@ namespace RobustPredicates
 		return finnow[ finlength - 1 ];
 	}
 
-	double orient3d( const double* pa, const double* pb, const double* pc, const double* pd )
+	static double orient3d_orig( const double* pa, const double* pb, const double* pc, const double* pd )
 	{
 		double adx, bdx, cdx, ady, bdy, cdy, adz, bdz, cdz;
 		double bdxcdy, cdxbdy, cdxady, adxcdy, adxbdy, bdxady;
@@ -2080,6 +2081,77 @@ namespace RobustPredicates
 		}
 
 		return orient3dadapt( pa, pb, pc, pd, permanent );
+	}
+
+	__forceinline void crossProductPieces( __m256d a, __m256d b, __m256d& lhs, __m256d& rhs )
+	{
+#ifdef __AVX2__
+		const __m256d a1 = _mm256_permute4x64_pd( a, _MM_SHUFFLE( 3, 0, 2, 1 ) );  // a.yzxw
+		const __m256d b2 = _mm256_permute4x64_pd( b, _MM_SHUFFLE( 3, 1, 0, 2 ) );  // b.zxyw
+		const __m256d a2 = _mm256_permute4x64_pd( a, _MM_SHUFFLE( 3, 1, 0, 2 ) );  // a.zxyw
+		const __m256d b1 = _mm256_permute4x64_pd( b, _MM_SHUFFLE( 3, 0, 2, 1 ) );  // b.yzxw
+#else
+		const __m256d af = flipHighLow( a );  // a.zwxy
+		const __m256d bf = flipHighLow( b );  // b.zwxy
+
+		__m256d a1 = _mm256_shuffle_pd( a, af, 0b0101 );		// a.yzwx
+		__m256d b1 = _mm256_shuffle_pd( b, bf, 0b0101 );		// b.yzwx
+		const __m256d b2 = _mm256_shuffle_pd( bf, b, 0b1100 );	// b.zxyw
+		const __m256d a2 = _mm256_shuffle_pd( af, a, 0b1100 );	// a.zxyw
+		a1 = _mm256_permute_pd( a1, 0b0110 );					// a.yzxw
+		b1 = _mm256_permute_pd( b1, 0b0110 );					// b.yzxw
+#endif
+		lhs = _mm256_mul_pd( a1, b2 );
+		rhs = _mm256_mul_pd( a2, b1 );
+	}
+
+	static double orient3d_avx( const double* pa, const double* pb, const double* pc, const double* pd )
+	{
+		using namespace AvxMath;
+		__m256d a = loadDouble3( pa );
+		__m256d b = loadDouble3( pb );
+		__m256d c = loadDouble3( pc );
+		__m256d d = loadDouble3( pd );
+
+		__m256d ad = _mm256_sub_pd( a, d );
+		__m256d bd = _mm256_sub_pd( b, d );
+		__m256d cd = _mm256_sub_pd( c, d );
+		
+		__m256d xxx, yyy, zzz;
+		transpose3x3( ad, bd, cd, xxx, yyy, zzz );
+
+		__m256d lhs, rhs;
+		crossProductPieces( xxx, yyy, lhs, rhs );
+
+		const double det = vector3DotScalar( zzz, _mm256_sub_pd( lhs, rhs ) );
+
+		const __m256d absMask = _mm256_broadcast_sd( (const double*)&s_absMask );
+		lhs = _mm256_and_pd( absMask, lhs );
+		rhs = _mm256_and_pd( absMask, rhs );
+		zzz = _mm256_and_pd( absMask, zzz );
+
+		double permanent = vector3DotScalar( _mm256_add_pd( lhs, rhs ), zzz );
+		double errbound = o3derrboundA * permanent;
+		if( Absolute( det ) > errbound )
+			return det;
+
+		return orient3dadapt( pa, pb, pc, pd, permanent );
+	}
+
+	double orient3d( const double* pa, const double* pb, const double* pc, const double* pd )
+	{
+#if 1
+		return orient3d_avx( pa, pb, pc, pd );
+#else
+		double orig = orient3d_orig( pa, pb, pc, pd );
+		double fast = orient3d_avx( pa, pb, pc, pd );
+		if( fast == orig )
+			return fast;
+		__debugbreak();
+		orig = orient3d_orig( pa, pb, pc, pd );
+		fast = orient3d_avx( pa, pb, pc, pd );
+		return orig;
+#endif
 	}
 
 	/*****************************************************************************/

@@ -221,7 +221,7 @@ namespace
 	 * \param[in] B the box
 	 * \return the squared distance between \p p and the center of \p B
 	 */
-	double point_box_center_squared_distance( const vec3& p, const Box& B )
+	static double point_box_center_squared_distance_orig( const vec3& p, const Box& B )
 	{
 		double result = 0.0;
 		for( coord_index_t c = 0; c < 3; ++c )
@@ -230,6 +230,32 @@ namespace
 			result += geo_sqr( d );
 		}
 		return result;
+	}
+
+	static double point_box_center_squared_distance_avx( const vec3& p, const Box& B )
+	{
+		using namespace AvxMath;
+		const __m256d box2 = loadDouble3( &B.xyz_max[ 0 ] );
+		const __m256d pos = loadDouble3( &p.x );
+		const __m256d box1 = _mm256_loadu_pd( &B.xyz_min[ 0 ] );
+		__m256d boxCenter = _mm256_add_pd( box2, box1 );
+		boxCenter = _mm256_mul_pd( boxCenter, _mm256_set1_pd( 0.5 ) );
+		__m256d dist = _mm256_sub_pd( boxCenter, pos );
+		return vector3DotScalar( dist, dist );
+	}
+
+	double point_box_center_squared_distance( const vec3& p, const Box& B )
+	{
+#if 1
+		return point_box_center_squared_distance_avx( p, B );
+#else
+		double orig = point_box_center_squared_distance_orig( p, B );
+		double my = point_box_center_squared_distance_avx( p, B );
+		if( orig != my )
+			__debugbreak();
+		return my;
+#endif
+
 	}
 
 	/**
