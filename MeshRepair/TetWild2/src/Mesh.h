@@ -150,7 +150,9 @@ namespace floatTetWild
 			return avg_energy;
 		}
 
-		// Temporary data used in find_new_pos
+		// Temporary data used in find_new_pos function.
+		// By the way, 64 is cache line size in bytes.
+		// We want different instances of these structures in different cache lines. Otherwise, the performance gonna be ruined by cache coherency protocol.
 		struct alignas( 64 ) FindNewPosBuffers
 		{
 			std::vector<int> js;
