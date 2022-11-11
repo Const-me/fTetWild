@@ -88,6 +88,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\Random.hpp" />
     <ClInclude Include="Utils\AvxMath.h" />
     <ClInclude Include="Utils\AvxMathMem.h" />
     <ClInclude Include="Utils\AvxMathMisc.h" />
