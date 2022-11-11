@@ -8,7 +8,7 @@
 
 #pragma once
 // to generate delaunay mesh using the 3d model along with points of the box
-#include "Mesh.hpp"
+#include "Mesh.h"
 #include "Types.hpp"
 #include "AABBWrapper.h"
 
