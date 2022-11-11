@@ -88,6 +88,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\MeshTet.h" />
+    <ClInclude Include="src\MeshVertex.h" />
     <ClInclude Include="src\Random.hpp" />
     <ClInclude Include="Utils\AvxMath.h" />
     <ClInclude Include="Utils\AvxMathMem.h" />

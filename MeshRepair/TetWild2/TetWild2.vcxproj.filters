@@ -115,6 +115,8 @@
     <ClInclude Include="Utils\AvxMathMem.h" />
     <ClInclude Include="Utils\AvxMathMisc.h" />
     <ClInclude Include="src\Random.hpp" />
+    <ClInclude Include="src\MeshVertex.h" />
+    <ClInclude Include="src\MeshTet.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp" />
