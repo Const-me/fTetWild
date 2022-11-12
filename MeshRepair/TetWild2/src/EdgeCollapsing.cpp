@@ -250,16 +250,15 @@ int floatTetWild::collapse_an_edge(
 
 	////check vertices
 	// check isolate surface points
-	if( tet_vertices[ v1_id ].is_on_surface && is_isolate_surface_point( mesh, v1_id ) )
+	if( tet_vertices[ v1_id ].isSurface() && is_isolate_surface_point( mesh, v1_id ) )
 	{
-		tet_vertices[ v1_id ].is_on_surface = false;
-		tet_vertices[ v1_id ].is_on_boundary = false;
+		tet_vertices[ v1_id ].clearFlag( eVertexFlags::Surface | eVertexFlags::Boundary );
 	}
 	// check boundary/surface
-	if( tet_vertices[ v1_id ].is_on_boundary &&
+	if( tet_vertices[ v1_id ].isBoundary() &&
 		is_point_out_boundary_envelope( mesh, tet_vertices[ v2_id ].pos, tree ) )  // todo: you should check/unmark is_on_boundary around here
 		return EC_FAIL_ENVELOPE0;
-	if( tet_vertices[ v1_id ].is_on_surface && is_point_out_envelope( mesh, tet_vertices[ v2_id ].pos, tree ) )
+	if( tet_vertices[ v1_id ].isSurface() && is_point_out_envelope( mesh, tet_vertices[ v2_id ].pos, tree ) )
 		return EC_FAIL_ENVELOPE1;
 
 	Mesh::CollapseEdgeBuffers& buffers = mesh.collapseEdgeBuffers;
@@ -327,12 +326,12 @@ int floatTetWild::collapse_an_edge(
 	Scalar l = get_edge_length_2( mesh, v1_id, v2_id );
 	if( l > 0 )
 	{
-		if( tet_vertices[ v1_id ].is_on_boundary )
+		if( tet_vertices[ v1_id ].isBoundary() )
 		{
 			if( is_out_boundary_envelope( mesh, v1_id, tet_vertices[ v2_id ].pos, tree ) )
 				return EC_FAIL_ENVELOPE2;
 		}
-		if( tet_vertices[ v1_id ].is_on_surface )
+		if( tet_vertices[ v1_id ].isSurface() )
 		{
 			if( is_out_envelope( mesh, v1_id, tet_vertices[ v2_id ].pos, tree ) )
 				return EC_FAIL_ENVELOPE3;
@@ -341,10 +340,10 @@ int floatTetWild::collapse_an_edge(
 
 	////real update
 	// vertex
-	tet_vertices[ v1_id ].is_removed = true;
-	tet_vertices[ v2_id ].is_on_bbox = tet_vertices[ v1_id ].is_on_bbox || tet_vertices[ v2_id ].is_on_bbox;
-	tet_vertices[ v2_id ].is_on_surface = tet_vertices[ v1_id ].is_on_surface || tet_vertices[ v2_id ].is_on_surface;
-	tet_vertices[ v2_id ].is_on_boundary = tet_vertices[ v1_id ].is_on_boundary || tet_vertices[ v2_id ].is_on_boundary;
+	tet_vertices[ v1_id ].setFlag( eVertexFlags::Removed );
+	tet_vertices[ v2_id ].setFlag( eVertexFlags::BoundingBox, tet_vertices[ v1_id ].isBoundingBox() || tet_vertices[ v2_id ].isBoundingBox() );
+	tet_vertices[ v2_id ].setFlag( eVertexFlags::Surface, tet_vertices[ v1_id ].isSurface() || tet_vertices[ v2_id ].isSurface() );
+	tet_vertices[ v2_id ].setFlag( eVertexFlags::Boundary, tet_vertices[ v1_id ].isBoundary() || tet_vertices[ v2_id ].isBoundary() );
 	if( tet_vertices[ v1_id ].on_boundary_e_id >= 0 )
 		tet_vertices[ v2_id ].on_boundary_e_id = tet_vertices[ v1_id ].on_boundary_e_id;
 
@@ -529,23 +528,23 @@ int floatTetWild::collapse_an_edge(
 	//        new_edges.push_back({{v2_id, v_id}});
 	//    }
 
-	if( tet_vertices[ v1_id ].is_on_surface )
+	if( tet_vertices[ v1_id ].isSurface() )
 		return EC_SUCCESS_ENVELOPE;
 	return EC_SUCCESS;
 }
 
 bool floatTetWild::is_edge_freezed( Mesh& mesh, int v1_id, int v2_id )
 {
-	if( mesh.tet_vertices[ v1_id ].is_freezed || mesh.tet_vertices[ v2_id ].is_freezed )
+	if( mesh.tet_vertices[ v1_id ].isFreezed() || mesh.tet_vertices[ v2_id ].isFreezed() )
 		return true;
 	return false;
 }
 
 bool floatTetWild::is_collapsable_bbox( Mesh& mesh, int v1_id, int v2_id )
 {
-	if( !mesh.tet_vertices[ v1_id ].is_on_bbox )
+	if( !mesh.tet_vertices[ v1_id ].isBoundingBox() )
 		return true;
-	else if( !mesh.tet_vertices[ v2_id ].is_on_bbox )
+	else if( !mesh.tet_vertices[ v2_id ].isBoundingBox() )
 		return false;
 
 	//    std::unordered_set<int> bbox_fs2;
@@ -602,7 +601,7 @@ bool floatTetWild::is_collapsable_length( Mesh& mesh, int v1_id, int v2_id, Scal
 
 bool floatTetWild::is_collapsable_boundary( Mesh& mesh, int v1_id, int v2_id, const AABBWrapper& tree )
 {
-	if( mesh.tet_vertices[ v1_id ].is_on_boundary && !is_boundary_edge( mesh, v1_id, v2_id, tree ) )
+	if( mesh.tet_vertices[ v1_id ].isBoundary() && !is_boundary_edge( mesh, v1_id, v2_id, tree ) )
 		return false;
 	return true;
 

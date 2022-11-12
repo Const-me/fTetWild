@@ -24,7 +24,7 @@ namespace floatTetWild
 		for( int i = 1; i < tet_vertices.size(); ++i )
 		{
 			const auto& v = tet_vertices[ i ];
-			if( v.is_removed )
+			if( v.isRemoved() )
 				continue;
 
 			ring.clear();

@@ -27,11 +27,11 @@ namespace
 		auto& tets = mesh.tets;
 		auto& tet_vertices = mesh.tet_vertices;
 
-		if( tet_vertices[ idx ].is_removed )
+		if( tet_vertices[ idx ].isRemoved() )
 			return;
-		if( tet_vertices[ idx ].is_freezed )
+		if( tet_vertices[ idx ].isFreezed() )
 			return;
-		if( tet_vertices[ idx ].is_on_bbox )
+		if( tet_vertices[ idx ].isBoundingBox() )
 			return;
 		counters.counter++;
 
@@ -43,7 +43,7 @@ namespace
 		////check
 		// envelope
 		std::vector<Scalar> new_qs;
-		if( tet_vertices[ idx ].is_on_boundary )
+		if( tet_vertices[ idx ].isBoundary() )
 		{
 			if( !project_and_check( mesh, idx, p, tree, false, new_qs ) )
 				return;
@@ -53,7 +53,7 @@ namespace
 				return;
 			counters.suc_counter_sf++;
 		}
-		else if( tet_vertices[ idx ].is_on_surface )
+		else if( tet_vertices[ idx ].isSurface() )
 		{
 			if( !project_and_check( mesh, idx, p, tree, true, new_qs ) )
 				return;

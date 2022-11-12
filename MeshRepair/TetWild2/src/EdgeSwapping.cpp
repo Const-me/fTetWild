@@ -53,7 +53,7 @@ void floatTetWild::edge_swapping( Mesh& mesh )
 		std::array<int, 2> v_ids = es_queue.top().v_ids;
 		es_queue.pop();
 
-		if( tet_vertices[ v_ids[ 0 ] ].is_freezed && tet_vertices[ v_ids[ 1 ] ].is_freezed )
+		if( tet_vertices[ v_ids[ 0 ] ].isFreezed() && tet_vertices[ v_ids[ 1 ] ].isFreezed() )
 			continue;
 
 		std::vector<int> n12_t_ids;

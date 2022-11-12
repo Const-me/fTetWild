@@ -77,7 +77,7 @@ void floatTetWild::edge_splitting( Mesh& mesh, const AABBWrapper& tree )
 		std::array<int, 2> v_ids = es_queue.top().v_ids;
 		es_queue.pop();
 
-		if( tet_vertices[ v_ids[ 0 ] ].is_freezed && tet_vertices[ v_ids[ 1 ] ].is_freezed )
+		if( tet_vertices[ v_ids[ 0 ] ].isFreezed() && tet_vertices[ v_ids[ 1 ] ].isFreezed() )
 			continue;
 
 		std::vector<std::array<int, 2>> new_edges;
@@ -133,7 +133,7 @@ bool floatTetWild::split_an_edge(
 	for( int i = mesh.v_empty_start; i < tet_vertices.size(); i++ )
 	{
 		mesh.v_empty_start = i;
-		if( tet_vertices[ i ].is_removed )
+		if( tet_vertices[ i ].isRemoved() )
 		{
 			is_found = true;
 			break;
@@ -155,7 +155,7 @@ bool floatTetWild::split_an_edge(
 	{
 		if( !is_splittable[ t_id ] )
 		{
-			tet_vertices[ v_id ].is_removed = true;
+			tet_vertices[ v_id ].setFlag( eVertexFlags::Removed );
 			return false;
 		}
 		for( int j = 0; j < 4; j++ )
@@ -168,7 +168,7 @@ bool floatTetWild::split_an_edge(
 				{
 					for( int t_id1 : old_t_ids )
 						is_splittable[ t_id1 ] = false;
-					tet_vertices[ v_id ].is_removed = true;
+					tet_vertices[ v_id ].setFlag( eVertexFlags::Removed );
 
 					//                    //fortest
 					//                    cout<<"fail "<<v1_id<<" "<<v2_id<<endl;
@@ -201,13 +201,11 @@ bool floatTetWild::split_an_edge(
 	////real update
 	// update vertex
 	tet_vertices[ v_id ].sizing_scalar = ( tet_vertices[ v1_id ].sizing_scalar + tet_vertices[ v2_id ].sizing_scalar ) / 2;
-	tet_vertices[ v_id ].is_on_bbox = is_bbox_edge( mesh, v1_id, v2_id, old_t_ids );
-	tet_vertices[ v_id ].is_on_surface = is_surface_edge( mesh, v1_id, v2_id, old_t_ids );
-	tet_vertices[ v_id ].is_on_boundary = is_boundary_edge( mesh, v1_id, v2_id, tree );
-	if( !mesh.is_input_all_inserted && tet_vertices[ v_id ].is_on_boundary )
-	{
-		tet_vertices[ v_id ].is_on_cut = ( tet_vertices[ v1_id ].is_on_cut && tet_vertices[ v2_id ].is_on_cut );
-	}
+	tet_vertices[ v_id ].setFlag( eVertexFlags::BoundingBox, is_bbox_edge( mesh, v1_id, v2_id, old_t_ids ) );
+	tet_vertices[ v_id ].setFlag( eVertexFlags::Surface, is_surface_edge( mesh, v1_id, v2_id, old_t_ids ) );
+	tet_vertices[ v_id ].setFlag( eVertexFlags::Boundary, is_boundary_edge( mesh, v1_id, v2_id, tree ) );
+	if( !mesh.is_input_all_inserted && tet_vertices[ v_id ].isBoundary() )
+		tet_vertices[ v_id ].setFlag( eVertexFlags::Cut, tet_vertices[ v1_id ].isCut() && tet_vertices[ v2_id ].isCut() );
 
 	// update tets
 	std::vector<int> new_t_ids;

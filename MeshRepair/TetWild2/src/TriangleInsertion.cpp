@@ -154,10 +154,9 @@ void floatTetWild::insert_triangles( const std::vector<Vector3>& input_vertices,
 
 	for( auto& v : mesh.tet_vertices )
 	{
-		if( v.is_removed )
+		if( v.isRemoved() )
 			continue;
-		v.is_on_surface = false;
-		v.is_on_bbox = false;
+		v.clearFlag( eVertexFlags::Surface | eVertexFlags::BoundingBox );
 	}
 	//
 	for( auto& t : mesh.tets )
@@ -169,16 +168,13 @@ void floatTetWild::insert_triangles( const std::vector<Vector3>& input_vertices,
 			if( t.is_surface_fs[ j ] <= 0 )
 			{
 				for( int k = 0; k < 3; k++ )
-				{
-					mesh.tet_vertices[ t[ ( j + 1 + k ) % 4 ] ].is_on_surface = true;
-					mesh.tet_vertices[ t[ ( j + 1 + k ) % 4 ] ].is_freezed = true;
-				}
+					mesh.tet_vertices[ t[ ( j + 1 + k ) % 4 ] ].setFlag( eVertexFlags::Surface | eVertexFlags::Freezed );
 			}
 			if( t.is_bbox_fs[ j ] != NOT_BBOX )
 			{
-				mesh.tet_vertices[ t[ mod4( j + 1 ) ] ].is_on_bbox = true;
-				mesh.tet_vertices[ t[ mod4( j + 2 ) ] ].is_on_bbox = true;
-				mesh.tet_vertices[ t[ mod4( j + 3 ) ] ].is_on_bbox = true;
+				mesh.tet_vertices[ t[ mod4( j + 1 ) ] ].setFlag( eVertexFlags::BoundingBox );
+				mesh.tet_vertices[ t[ mod4( j + 2 ) ] ].setFlag( eVertexFlags::BoundingBox );
+				mesh.tet_vertices[ t[ mod4( j + 3 ) ] ].setFlag( eVertexFlags::BoundingBox );
 			}
 		}
 	}
@@ -186,9 +182,7 @@ void floatTetWild::insert_triangles( const std::vector<Vector3>& input_vertices,
 	operation( input_vertices, input_faces, input_tags, is_face_inserted, mesh, tree, std::array<int, 5>( { { 0, 1, 0, 1, 0 } } ) );
 	//
 	for( auto& v : mesh.tet_vertices )
-	{
-		v.is_freezed = false;
-	}
+		v.clearFlag( eVertexFlags::Freezed );
 
 	insert_triangles_aux( input_vertices, input_faces, input_tags, mesh, is_face_inserted, tree, is_again );
 }
@@ -201,15 +195,14 @@ void floatTetWild::optimize_non_surface( const std::vector<Vector3>& input_verti
 	{
 		for( int i = 0; i < mesh.tet_vertices.size(); i++ )
 			if( i < input_vertices.size() )
-				mesh.tet_vertices[ i ].is_freezed = true;
+				mesh.tet_vertices[ i ].setFlag( eVertexFlags::Freezed );
 	}
 	//
 	for( auto& v : mesh.tet_vertices )
 	{
-		if( v.is_removed )
+		if( v.isRemoved() )
 			continue;
-		v.is_on_surface = false;
-		v.is_on_bbox = false;
+		v.clearFlag( eVertexFlags::Surface | eVertexFlags::BoundingBox );
 	}
 	//
 	for( int i = 0; i < mesh.tets.size(); i++ )
@@ -222,20 +215,17 @@ void floatTetWild::optimize_non_surface( const std::vector<Vector3>& input_verti
 			if( t.is_surface_fs[ j ] <= 0 )
 			{
 				for( int k = 0; k < 3; k++ )
-				{
-					mesh.tet_vertices[ t[ ( j + 1 + k ) % 4 ] ].is_on_surface = true;
-					mesh.tet_vertices[ t[ ( j + 1 + k ) % 4 ] ].is_freezed = true;
-				}
+					mesh.tet_vertices[ t[ ( j + 1 + k ) % 4 ] ].setFlag( eVertexFlags::Surface | eVertexFlags::Freezed );
 			}
 			if( t.is_bbox_fs[ j ] != NOT_BBOX )
 			{
 				for( int k = 0; k < 3; k++ )
-					mesh.tet_vertices[ t[ mod4( j + 1 + k ) ] ].is_on_bbox = true;
+					mesh.tet_vertices[ t[ mod4( j + 1 + k ) ] ].setFlag( eVertexFlags::BoundingBox );
 			}
 			if( !track_surface_fs[ i ][ j ].empty() )
 			{
 				for( int k = 0; k < 3; k++ )
-					mesh.tet_vertices[ t[ ( j + 1 + k ) % 4 ] ].is_freezed = true;
+					mesh.tet_vertices[ t[ ( j + 1 + k ) % 4 ] ].setFlag( eVertexFlags::Freezed );
 			}
 		}
 		//        if (t.quality == 0)
@@ -245,7 +235,7 @@ void floatTetWild::optimize_non_surface( const std::vector<Vector3>& input_verti
 	operation( input_vertices, input_faces, input_tags, is_face_inserted, mesh, tree, std::array<int, 5>( { { 0, 1, 1, 1, 0 } } ) );
 	//
 	for( auto& v : mesh.tet_vertices )
-		v.is_freezed = false;
+		v.clearFlag( eVertexFlags::Freezed );
 }
 
 void floatTetWild::insert_triangles_aux( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces,
@@ -1580,8 +1570,8 @@ bool floatTetWild::insert_boundary_edges( const std::vector<Vector3>& input_vert
 		const int tet_vertices_size = mesh.tet_vertices.size();
 		for( int i = points.size(); i > 0; i-- )
 		{
-			mesh.tet_vertices[ tet_vertices_size - i ].is_on_boundary = true;
-			mesh.tet_vertices[ tet_vertices_size - i ].is_on_cut = is_on_cut;
+			mesh.tet_vertices[ tet_vertices_size - i ].setFlag( eVertexFlags::Boundary );
+			mesh.tet_vertices[ tet_vertices_size - i ].setFlag( eVertexFlags::Cut, is_on_cut );
 		}
 
 		for( int v_id : snapped_v_ids )
@@ -1589,8 +1579,8 @@ bool floatTetWild::insert_boundary_edges( const std::vector<Vector3>& input_vert
 			Scalar dis_2 = p_seg_squared_dist_3d( mesh.tet_vertices[ v_id ].pos, input_vertices[ e[ 0 ] ], input_vertices[ e[ 1 ] ] );
 			if( dis_2 <= mesh.params.eps_2 )
 			{
-				mesh.tet_vertices[ v_id ].is_on_boundary = true;
-				mesh.tet_vertices[ v_id ].is_on_cut = is_on_cut;
+				mesh.tet_vertices[ v_id ].setFlag( eVertexFlags::Boundary );
+				mesh.tet_vertices[ v_id ].setFlag( eVertexFlags::Cut, is_on_cut );
 			}
 		}
 
@@ -1636,10 +1626,10 @@ bool floatTetWild::insert_boundary_edges( const std::vector<Vector3>& input_vert
 		bool is_on_cut = is_on_cut_edges[ I ];
 		if( !is_again )
 		{
-			mesh.tet_vertices[ e[ 0 ] ].is_on_boundary = true;
-			mesh.tet_vertices[ e[ 1 ] ].is_on_boundary = true;
-			mesh.tet_vertices[ e[ 0 ] ].is_on_cut = is_on_cut;
-			mesh.tet_vertices[ e[ 1 ] ].is_on_cut = is_on_cut;
+			mesh.tet_vertices[ e[ 0 ] ].setFlag( eVertexFlags::Boundary );
+			mesh.tet_vertices[ e[ 1 ] ].setFlag( eVertexFlags::Boundary );
+			mesh.tet_vertices[ e[ 0 ] ].setFlag( eVertexFlags::Cut, is_on_cut );
+			mesh.tet_vertices[ e[ 1 ] ].setFlag( eVertexFlags::Cut, is_on_cut );
 		}
 		//        b_edges.push_back(e);
 
@@ -2562,7 +2552,7 @@ void floatTetWild::mark_surface_fs( const std::vector<Vector3>& input_vertices, 
 		if( cnt == 2 )
 		{
 			b_edges.push_back( e );
-			mesh.tet_vertices[ e[ 0 ] ].is_on_boundary = true;
+			mesh.tet_vertices[ e[ 0 ] ].setFlag( eVertexFlags::Boundary );
 			//            cout<<"b_edges.push_back(e);"<<endl;
 		}
 	}

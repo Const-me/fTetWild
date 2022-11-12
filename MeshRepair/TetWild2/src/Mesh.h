@@ -67,7 +67,7 @@ namespace floatTetWild
 			int cnt = 0;
 			for( const auto& v : tet_vertices )
 			{
-				if( v.is_removed )
+				if( v.isRemoved() )
 					cnt++;
 			}
 			return cnt;
@@ -91,7 +91,7 @@ namespace floatTetWild
 			v_empty_start = tet_vertices.size();
 			for( int i = 0; i < tet_vertices.size(); i++ )
 			{
-				if( tet_vertices[ i ].is_removed )
+				if( tet_vertices[ i ].isRemoved() )
 				{
 					v_empty_start = i;
 					break;
@@ -104,7 +104,7 @@ namespace floatTetWild
 			int cnt = 0;
 			for( int i = 0; i < tet_vertices.size(); i++ )
 			{
-				if( !tet_vertices[ i ].is_removed )
+				if( !tet_vertices[ i ].isRemoved() )
 					cnt++;
 			}
 			return cnt;

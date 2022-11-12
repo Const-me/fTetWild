@@ -34,10 +34,9 @@ void floatTetWild::init( Mesh& mesh, AABBWrapper& tree )
 
 	for( auto& v : mesh.tet_vertices )
 	{
-		if( v.is_removed )
+		if( v.isRemoved() )
 			continue;
-		v.is_on_surface = false;
-		v.is_on_bbox = false;
+		v.clearFlag( eVertexFlags::Surface | eVertexFlags::BoundingBox );
 		//        v.is_on_boundary = false;
 	}
 	int cnt = 0;
@@ -50,16 +49,16 @@ void floatTetWild::init( Mesh& mesh, AABBWrapper& tree )
 			//            if (t.is_surface_fs[j] != NOT_SURFACE) {
 			if( t.is_surface_fs[ j ] <= 0 )
 			{
-				mesh.tet_vertices[ t[ mod4( j + 1 ) ] ].is_on_surface = true;
-				mesh.tet_vertices[ t[ mod4( j + 2 ) ] ].is_on_surface = true;
-				mesh.tet_vertices[ t[ mod4( j + 3 ) ] ].is_on_surface = true;
+				mesh.tet_vertices[ t[ mod4( j + 1 ) ] ].setFlag( eVertexFlags::Surface );
+				mesh.tet_vertices[ t[ mod4( j + 2 ) ] ].setFlag( eVertexFlags::Surface );
+				mesh.tet_vertices[ t[ mod4( j + 3 ) ] ].setFlag( eVertexFlags::Surface );
 				cnt++;
 			}
 			if( t.is_bbox_fs[ j ] != NOT_BBOX )
 			{
-				mesh.tet_vertices[ t[ mod4( j + 1 ) ] ].is_on_bbox = true;
-				mesh.tet_vertices[ t[ mod4( j + 2 ) ] ].is_on_bbox = true;
-				mesh.tet_vertices[ t[ mod4( j + 3 ) ] ].is_on_bbox = true;
+				mesh.tet_vertices[ t[ mod4( j + 1 ) ] ].setFlag( eVertexFlags::BoundingBox );
+				mesh.tet_vertices[ t[ mod4( j + 2 ) ] ].setFlag( eVertexFlags::BoundingBox );
+				mesh.tet_vertices[ t[ mod4( j + 3 ) ] ].setFlag( eVertexFlags::BoundingBox );
 			}
 		}
 	}
@@ -198,7 +197,7 @@ void floatTetWild::optimization( const std::vector<Vector3>& input_vertices, con
 	mesh.logger().logInfo( "//////////////// postprocessing ////////////////" );
 	for( auto& v : mesh.tet_vertices )
 	{
-		if( v.is_removed )
+		if( v.isRemoved() )
 			continue;
 		v.sizing_scalar = 1;
 	}
@@ -222,7 +221,7 @@ void floatTetWild::cleanup_empty_slots( Mesh& mesh, double percentage )
 	int cnt = 0;
 	for( int i = 0; i < v_end_id; i++ )
 	{
-		if( mesh.tet_vertices[ i ].is_removed )
+		if( mesh.tet_vertices[ i ].isRemoved())
 			continue;
 		map_v_ids[ i ] = cnt++;
 	}
@@ -246,7 +245,7 @@ void floatTetWild::cleanup_empty_slots( Mesh& mesh, double percentage )
 
 	///
 	mesh.tet_vertices.erase(
-	  std::remove_if( mesh.tet_vertices.begin(), mesh.tet_vertices.begin() + v_end_id, []( const MeshVertex& v ) { return v.is_removed; } ),
+	  std::remove_if( mesh.tet_vertices.begin(), mesh.tet_vertices.begin() + v_end_id, []( const MeshVertex& v ) { return v.isRemoved(); } ),
 	  mesh.tet_vertices.begin() + v_end_id );
 	mesh.tets.erase(
 	  std::remove_if( mesh.tets.begin(), mesh.tets.begin() + t_end_id, []( const MeshTet& t ) { return t.is_removed; } ), mesh.tets.begin() + t_end_id );
@@ -254,7 +253,7 @@ void floatTetWild::cleanup_empty_slots( Mesh& mesh, double percentage )
 	///
 	for( auto& v : mesh.tet_vertices )
 	{
-		if( v.is_removed )
+		if( v.isRemoved() )
 			continue;
 		for( auto& t_id : v.conn_tets )
 			t_id = map_t_ids[ t_id ];
@@ -358,19 +357,18 @@ void floatTetWild::operation( const std::vector<Vector3>& input_vertices, const 
 			{
 				for( int v_id = 0; v_id < mesh.tet_vertices.size(); v_id++ )
 				{
-					if( mesh.tet_vertices[ v_id ].is_removed )
+					if( mesh.tet_vertices[ v_id ].isRemoved())
 						continue;
-					mesh.tet_vertices[ v_id ].is_on_boundary = false;
-					mesh.tet_vertices[ v_id ].is_on_cut = false;
+					mesh.tet_vertices[ v_id ].clearFlag( eVertexFlags::Boundary | eVertexFlags::Cut );
 				}
 			}
 			else
 			{
 				for( int v_id = 0; v_id < mesh.tet_vertices.size(); v_id++ )
 				{
-					if( mesh.tet_vertices[ v_id ].is_removed )
+					if( mesh.tet_vertices[ v_id ].isRemoved())
 						continue;
-					if( !mesh.tet_vertices[ v_id ].is_on_boundary )
+					if( !mesh.tet_vertices[ v_id ].isBoundary())
 						continue;
 #ifdef NEW_ENVELOPE
 					if( tree.is_out_tmp_b_envelope_exact( mesh.tet_vertices[ v_id ].pos ) )
@@ -381,10 +379,7 @@ void floatTetWild::operation( const std::vector<Vector3>& input_vertices, const 
 #else
 					GEO2::index_t prev_facet;
 					if( tree.is_out_tmp_b_envelope( mesh.tet_vertices[ v_id ].pos, mesh.params.eps_2, prev_facet ) )
-					{
-						mesh.tet_vertices[ v_id ].is_on_boundary = false;
-						mesh.tet_vertices[ v_id ].is_on_cut = false;
-					}
+						mesh.tet_vertices[ v_id ].clearFlag( eVertexFlags::Boundary | eVertexFlags::Cut );
 #endif
 				}
 			}
@@ -442,7 +437,7 @@ bool floatTetWild::update_scaling_field( Mesh& mesh, Scalar max_energy )
 	for( int i = 0; i < mesh.tet_vertices.size(); i++ )
 	{
 		auto& v = mesh.tet_vertices[ i ];
-		if( v.is_removed )
+		if( v.isRemoved())
 			continue;
 
 		bool is_refine = false;
@@ -519,7 +514,7 @@ bool floatTetWild::update_scaling_field( Mesh& mesh, Scalar max_energy )
 	for( int i = 0; i < mesh.tet_vertices.size(); i++ )
 	{
 		auto& v = mesh.tet_vertices[ i ];
-		if( v.is_removed )
+		if( v.isRemoved())
 			continue;
 		Scalar new_scale = v.sizing_scalar * scale_multipliers[ i ];
 		if( new_scale > 1 )
@@ -608,7 +603,7 @@ void floatTetWild::apply_coarsening( Mesh& mesh, AABBWrapper& tree )
 
 	for( auto& v : mesh.tet_vertices )
 	{
-		if( v.is_removed )
+		if( v.isRemoved() )
 			continue;
 		v.sizing_scalar = 1;
 	}
@@ -807,7 +802,7 @@ void floatTetWild::filter_outside( Mesh& mesh, bool invert_faces )
 
 	for( auto& v : mesh.tet_vertices )
 	{
-		if( v.is_removed )
+		if( v.isRemoved() )
 			continue;
 		bool is_remove = true;
 		for( int t_id : v.conn_tets )
@@ -818,7 +813,7 @@ void floatTetWild::filter_outside( Mesh& mesh, bool invert_faces )
 				break;
 			}
 		}
-		v.is_removed = is_remove;
+		v.setFlag( eVertexFlags::Removed, is_remove );
 	}
 }
 
@@ -878,7 +873,7 @@ void floatTetWild::filter_outside( Mesh& mesh, const std::vector<Vector3>& input
 
 	for( auto& v : mesh.tet_vertices )
 	{
-		if( v.is_removed )
+		if( v.isRemoved())
 			continue;
 		bool is_remove = true;
 		for( int t_id : v.conn_tets )
@@ -889,7 +884,7 @@ void floatTetWild::filter_outside( Mesh& mesh, const std::vector<Vector3>& input
 				break;
 			}
 		}
-		v.is_removed = is_remove;
+		v.setFlag( eVertexFlags ::Removed, is_remove );
 	}
 }
 
@@ -937,10 +932,10 @@ void floatTetWild::filter_outside_floodfill( Mesh& mesh, bool invert_faces )
 
 	for( int i = 0; i < tet_vertices.size(); i++ )
 	{
-		if( tet_vertices[ i ].is_removed )
+		if( tet_vertices[ i ].isRemoved() )
 			continue;
 		if( tet_vertices[ i ].conn_tets.empty() )
-			tet_vertices[ i ].is_removed = true;
+			tet_vertices[ i ].setFlag( eVertexFlags::Removed );
 	}
 }
 
@@ -1002,9 +997,9 @@ void floatTetWild::mark_outside( Mesh& mesh, bool invert_faces )
 
 	for( auto& v : mesh.tet_vertices )
 	{
-		if( v.is_removed )
+		if( v.isRemoved() )
 		{
-			v.is_outside = true;
+			v.setFlag( eVertexFlags::Outside );
 			continue;
 		}
 		bool is_outside = true;
@@ -1016,7 +1011,7 @@ void floatTetWild::mark_outside( Mesh& mesh, bool invert_faces )
 				break;
 			}
 		}
-		v.is_outside = is_outside;
+		v.setFlag( eVertexFlags::Outside, is_outside );
 	}
 }
 
@@ -1206,7 +1201,7 @@ void floatTetWild::smooth_open_boundary_aux( Mesh& mesh, const AABBWrapper& tree
 				has_open_boundary = true;
 				for( int j = 0; j < 3; j++ )
 				{
-					if( !tet_vertices[ faces[ i ][ j ] ].is_on_surface )
+					if( !tet_vertices[ faces[ i ][ j ] ].isSurface() )
 					{
 						conn_b_fs[ faces[ i ][ j ] ].push_back( i );
 						is_b_vs[ faces[ i ][ j ] ] = true;
@@ -1221,7 +1216,7 @@ void floatTetWild::smooth_open_boundary_aux( Mesh& mesh, const AABBWrapper& tree
 		has_open_boundary = true;
 		for( int j = 0; j < 3; j++ )
 		{
-			if( !tet_vertices[ faces.back()[ j ] ].is_on_surface )
+			if( !tet_vertices[ faces.back()[ j ] ].isSurface())
 			{
 				conn_b_fs[ faces.back()[ j ] ].push_back( faces.size() - 1 );
 				is_b_vs[ faces.back()[ j ] ] = true;
@@ -1244,7 +1239,7 @@ void floatTetWild::smooth_open_boundary_aux( Mesh& mesh, const AABBWrapper& tree
 			if( conn_b_fs[ v_id ].empty() )
 				continue;
 
-			tet_vertices[ v_id ].is_freezed = true;
+			tet_vertices[ v_id ].setFlag( eVertexFlags::Freezed );
 
 			cnt++;
 			std::vector<int> n_v_ids;
@@ -1304,8 +1299,8 @@ void floatTetWild::smooth_open_boundary_aux( Mesh& mesh, const AABBWrapper& tree
 		/// regular optimization
 		for( auto& v : tet_vertices )
 		{
-			if( v.is_on_surface )
-				v.is_freezed = true;
+			if( v.isSurface() )
+				v.setFlag( eVertexFlags::Freezed );
 		}
 		edge_collapsing( mesh, tree );
 		//        edge_swapping(mesh);
@@ -1314,7 +1309,7 @@ void floatTetWild::smooth_open_boundary_aux( Mesh& mesh, const AABBWrapper& tree
 
 		/// unfreeze
 		for( auto& tv : tet_vertices )
-			tv.is_freezed = false;
+			tv.setFlag( eVertexFlags::Freezed, false );
 	}
 }
 
@@ -1332,7 +1327,7 @@ void floatTetWild::manifold_edges( Mesh& mesh )
 		for( int i = mesh.v_empty_start; i < tet_vertices.size(); i++ )
 		{
 			mesh.v_empty_start = i;
-			if( tet_vertices[ i ].is_removed )
+			if( tet_vertices[ i ].isRemoved() )
 			{
 				is_found = true;
 				break;
@@ -1358,7 +1353,7 @@ void floatTetWild::manifold_edges( Mesh& mesh )
 				{
 					if( is_inverted( mesh, t_id, j, new_v.pos ) )
 					{
-						tet_vertices[ v_id ].is_removed = true;
+						tet_vertices[ v_id ].setFlag( eVertexFlags::Removed );
 						return -1;
 					}
 				}
@@ -1779,7 +1774,7 @@ void floatTetWild::manifold_surface( Mesh& mesh, Eigen::MatrixXd& V, Eigen::Matr
 
 	for( auto& v : tet_vertices )
 	{
-		if( v.is_removed )
+		if( v.isRemoved() )
 			continue;
 
 		for( int i = 0; i < v.conn_tets.size(); i++ )
@@ -1791,7 +1786,7 @@ void floatTetWild::manifold_surface( Mesh& mesh, Eigen::MatrixXd& V, Eigen::Matr
 			}
 		}
 		if( v.conn_tets.empty() )
-			v.is_removed = true;
+			v.setFlag( eVertexFlags::Removed );
 	}
 
 	manifold_edges( mesh );
