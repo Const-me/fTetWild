@@ -771,7 +771,7 @@ namespace
 {
 	using namespace floatTetWild;
 
-	static void findCuttingTetsOmp( Mesh& mesh, const Vector3& min_f, const Vector3& max_f, std::queue<int>& queue_t_ids, std::vector<bool>& is_visited )
+	static void findCuttingTetsOmp( Mesh& mesh, __m256d min_f, __m256d max_f, std::queue<int>& queue_t_ids, std::vector<bool>& is_visited )
 	{
 		const int length = (int)mesh.tets.size();
 #pragma omp parallel for
@@ -781,7 +781,7 @@ namespace
 			if( mt.is_removed )
 				continue;
 
-			Vector3 min_t, max_t;
+			__m256d min_t, max_t;
 			get_bbox_tet( mesh.tet_vertices[ mt[ 0 ] ].pos, mesh.tet_vertices[ mt[ 1 ] ].pos, mesh.tet_vertices[ mt[ 2 ] ].pos,
 			  mesh.tet_vertices[ mt[ 3 ] ].pos, min_t, max_t );
 
@@ -796,7 +796,7 @@ namespace
 		}
 	}
 
-	static void findCuttingTets( Mesh& mesh, const Vector3& min_f, const Vector3& max_f, std::queue<int>& queue_t_ids, std::vector<bool>& is_visited )
+	static void findCuttingTets( Mesh& mesh, __m256d min_f, __m256d max_f, std::queue<int>& queue_t_ids, std::vector<bool>& is_visited )
 	{
 		for( size_t t_id = 0; t_id < mesh.tets.size(); t_id++ )
 		{
@@ -804,7 +804,7 @@ namespace
 			if( mt.is_removed )
 				continue;
 
-			Vector3 min_t, max_t;
+			__m256d min_t, max_t;
 			get_bbox_tet( mesh.tet_vertices[ mt[ 0 ] ].pos, mesh.tet_vertices[ mt[ 1 ] ].pos, mesh.tet_vertices[ mt[ 2 ] ].pos,
 			  mesh.tet_vertices[ mt[ 3 ] ].pos, min_t, max_t );
 
@@ -846,7 +846,7 @@ void floatTetWild::find_cutting_tets( int f_id, const std::vector<Vector3>& inpu
 	}
 	else
 	{
-		Vector3 min_f, max_f;
+		__m256d min_f, max_f;
 		get_bbox_face(
 		  input_vertices[ input_faces[ f_id ][ 0 ] ], input_vertices[ input_faces[ f_id ][ 1 ] ], input_vertices[ input_faces[ f_id ][ 2 ] ], min_f, max_f );
 		if( mesh.params.num_threads > 1 )
@@ -1850,7 +1850,7 @@ bool floatTetWild::insert_boundary_edges_get_intersecting_edges_and_points( cons
 	}
 	else
 	{
-		Vector3 min_e, max_e;
+		__m256d min_e, max_e;
 		get_bbox_face( input_vertices[ e[ 0 ] ], input_vertices[ e[ 0 ] ], input_vertices[ e[ 1 ] ], min_e, max_e );
 
 		std::vector<int> t_ids;
@@ -1887,7 +1887,7 @@ bool floatTetWild::insert_boundary_edges_get_intersecting_edges_and_points( cons
 				track_surface_fs[ t_id ][ 3 ].empty() )
 				continue;
 
-			Vector3 min_t, max_t;
+			__m256d min_t, max_t;
 			get_bbox_tet( mesh.tet_vertices[ mesh.tets[ t_id ][ 0 ] ].pos, mesh.tet_vertices[ mesh.tets[ t_id ][ 1 ] ].pos,
 			  mesh.tet_vertices[ mesh.tets[ t_id ][ 2 ] ].pos, mesh.tet_vertices[ mesh.tets[ t_id ][ 3 ] ].pos, min_t, max_t );
 			if( !is_bbox_intersected( min_e, max_e, min_t, max_t ) )

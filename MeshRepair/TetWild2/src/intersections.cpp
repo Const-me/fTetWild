@@ -628,59 +628,46 @@ int floatTetWild::is_tri_tri_cutted_hint(
 	return CUT_FACE;
 }
 
-void floatTetWild::get_bbox_face( const Vector3& p0, const Vector3& p1, const Vector3& p2, Vector3& min, Vector3& max, Scalar eps )
+void floatTetWild::get_bbox_face( const Vector3& p0, const Vector3& p1, const Vector3& p2, __m256d& min, __m256d& max )
 {
-	min = p0;
-	max = p0;
-	for( int j = 0; j < 3; j++ )
-	{
-		Scalar tmp_min = std::min( p1[ j ], p2[ j ] );
-		if( tmp_min < min[ j ] )
-			min[ j ] = tmp_min;
-		Scalar tmp_max = std::max( p1[ j ], p2[ j ] );
-		if( tmp_max > max[ j ] )
-			max[ j ] = tmp_max;
-	}
+	__m256d i, ax;
+	using AvxMath::loadDouble3;
+	i = ax = loadDouble3( p0.data() );
 
-	if( eps != 0 )
-	{
-		for( int j = 0; j < 3; j++ )
-		{
-			min[ j ] -= eps;
-			max[ j ] += eps;
-		}
-	}
+	__m256d v = loadDouble3( p1.data() );
+	i = _mm256_min_pd( i, v );
+	ax = _mm256_max_pd( ax, v );
+
+	v = loadDouble3( p2.data() );
+	i = _mm256_min_pd( i, v );
+	ax = _mm256_max_pd( ax, v );
+
+	min = i;
+	max = ax;
 }
 
-void floatTetWild::get_bbox_tet( const Vector3& p0, const Vector3& p1, const Vector3& p2, const Vector3& p3, Vector3& min, Vector3& max, Scalar eps )
+void floatTetWild::get_bbox_tet( const Vector3& p0, const Vector3& p1, const Vector3& p2, const Vector3& p3, __m256d& min, __m256d& max )
 {
-	min = p0;
-	max = p0;
-	for( int j = 0; j < 3; j++ )
-	{
-		if( p1[ j ] < min[ j ] )
-			min[ j ] = p1[ j ];
-		if( p2[ j ] < min[ j ] )
-			min[ j ] = p2[ j ];
-		if( p3[ j ] < min[ j ] )
-			min[ j ] = p3[ j ];
+	__m256d i, ax;
+	static_assert( sizeof( Vector3 ) == 3 * sizeof( double ) );
+	using AvxMath::loadDouble3;
 
-		if( p1[ j ] > max[ j ] )
-			max[ j ] = p1[ j ];
-		if( p2[ j ] > max[ j ] )
-			max[ j ] = p2[ j ];
-		if( p3[ j ] > max[ j ] )
-			max[ j ] = p3[ j ];
-	}
+	i = ax = loadDouble3( p0.data() );
 
-	if( eps != 0 )
-	{
-		for( int j = 0; j < 3; j++ )
-		{
-			min[ j ] -= eps;
-			max[ j ] += eps;
-		}
-	}
+	__m256d v = loadDouble3( p1.data() );
+	i = _mm256_min_pd( i, v );
+	ax = _mm256_max_pd( ax, v );
+
+	v = loadDouble3( p2.data() );
+	i = _mm256_min_pd( i, v );
+	ax = _mm256_max_pd( ax, v );
+
+	v = loadDouble3( p3.data() );
+	i = _mm256_min_pd( i, v );
+	ax = _mm256_max_pd( ax, v );
+
+	min = i;
+	max = ax;
 }
 
 bool floatTetWild::is_bbox_intersected( const Vector3& min1, const Vector3& max1, const Vector3& min2, const Vector3& max2 )
@@ -693,6 +680,20 @@ bool floatTetWild::is_bbox_intersected( const Vector3& min1, const Vector3& max1
 			return false;
 	}
 	return true;
+}
+
+bool floatTetWild::is_bbox_intersected( __m256d min1, __m256d max1, __m256d min2, __m256d max2 )
+{
+	// Compare for min1 > max2
+	__m256d cmp1 = _mm256_cmp_pd( min1, max2, _CMP_GT_OQ );
+	// Compare for max1 < min2
+	__m256d cmp2 = _mm256_cmp_pd( max1, min2, _CMP_LT_OQ );
+	// Combine with bitwise OR
+	__m256d cmp = _mm256_or_pd( cmp1, cmp2 );
+	// Move bitmap to a scalar register
+	uint32_t mask = (uint32_t)_mm256_movemask_pd( cmp );
+	// Produce the result
+	return 0 == ( mask & 0b111 );
 }
 
 bool floatTetWild::is_tri_inside_tet( const std::array<Vector3, 3>& ps, const Vector3& p0t, const Vector3& p1t, const Vector3& p2t, const Vector3& p3t )
