@@ -632,7 +632,7 @@ namespace GEO {
     /**
      * \brief Axis-aligned bounding box.
      */
-    class Box {
+    class alignas(16) Box {
     public:
         double xyz_min[3];
         double xyz_max[3];
