@@ -15,6 +15,7 @@
 #include "Random.hpp"
 #include "MeshVertex.h"
 #include "MeshTet.h"
+#include "../Utils/TimeMeasure.h"
 
 namespace floatTetWild
 {
@@ -200,5 +201,7 @@ namespace floatTetWild
 		FindCuttingTetsBuffers findCuttingTetsBuffers;
 
 		void createThreadLocalBuffers();
+
+		TimeMeasures times;
 	};
 }  // namespace floatTetWild

@@ -84,6 +84,8 @@ HRESULT meshRepairMain(
 		else
 			get_surface( mesh, result->V_sf, result->F_sf );
 
+		mesh.times.logInfo( mesh.logger() );
+
 		result.detach( rdi );
 		return S_OK;
 	}

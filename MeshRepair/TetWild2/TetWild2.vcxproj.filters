@@ -117,6 +117,7 @@
     <ClInclude Include="src\Random.hpp" />
     <ClInclude Include="src\MeshVertex.h" />
     <ClInclude Include="src\MeshTet.h" />
+    <ClInclude Include="Utils\TimeMeasure.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp" />
@@ -214,6 +215,7 @@
     <ClCompile Include="Utils\randomShuffle.cpp" />
     <ClCompile Include="src\LocalOperations2.cpp" />
     <ClCompile Include="Utils\Logger.cpp" />
+    <ClCompile Include="Utils\TimeMeasure.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="external">

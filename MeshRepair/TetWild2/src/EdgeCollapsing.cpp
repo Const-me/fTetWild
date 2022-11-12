@@ -245,6 +245,7 @@ void floatTetWild::edge_collapsing( Mesh& mesh, const AABBWrapper& tree )
 int floatTetWild::collapse_an_edge(
   Mesh& mesh, int v1_id, int v2_id, const AABBWrapper& tree, EdgesSet& new_edges, int ts, std::vector<int>& tet_tss, bool is_check_quality, bool is_update_tss )
 {
+	auto tm = mesh.times.collapseAnEdge.measure();
 	auto& tet_vertices = mesh.tet_vertices;
 	auto& tets = mesh.tets;
 
