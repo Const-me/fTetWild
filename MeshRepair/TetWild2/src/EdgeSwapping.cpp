@@ -57,7 +57,7 @@ void floatTetWild::edge_swapping( Mesh& mesh )
 			continue;
 
 		std::vector<int> n12_t_ids;
-		set_intersection( tet_vertices[ v_ids[ 0 ] ].connTets, tet_vertices[ v_ids[ 1 ] ].connTets, n12_t_ids );
+		setIntersection( tet_vertices[ v_ids[ 0 ] ].connTets, tet_vertices[ v_ids[ 1 ] ].connTets, n12_t_ids );
 		if( !is_swappable( v_ids[ 0 ], v_ids[ 1 ], n12_t_ids ) )
 			continue;
 
@@ -237,17 +237,17 @@ bool floatTetWild::remove_an_edge_32( Mesh& mesh, int v1_id, int v2_id, const st
 	//    tet_vertices[v1_id].conn_tets.erase(t_ids[0]);
 	//    tet_vertices[v2_id].conn_tets.erase(t_ids[1]);
 
-	vector_erase( tet_vertices[ v_ids[ 0 ] ].connTets, old_t_ids[ 0 ] );
-	vector_erase( tet_vertices[ v_ids[ 1 ] ].connTets, old_t_ids[ 0 ] );
+	tet_vertices[ v_ids[ 0 ] ].connTets.remove( old_t_ids[ 0 ] );
+	tet_vertices[ v_ids[ 1 ] ].connTets.remove( old_t_ids[ 0 ] );
 
-	tet_vertices[ v_ids[ 0 ] ].connTets.push_back( t_ids[ 1 ] );
-	tet_vertices[ v_ids[ 1 ] ].connTets.push_back( t_ids[ 0 ] );
+	tet_vertices[ v_ids[ 0 ] ].connTets.add( t_ids[ 1 ] );
+	tet_vertices[ v_ids[ 1 ] ].connTets.add( t_ids[ 0 ] );
 
-	vector_erase( tet_vertices[ v1_id ].connTets, old_t_ids[ 0 ] );
-	vector_erase( tet_vertices[ v2_id ].connTets, old_t_ids[ 0 ] );
+	tet_vertices[ v1_id ].connTets.remove( old_t_ids[ 0 ] );
+	tet_vertices[ v2_id ].connTets.remove( old_t_ids[ 0 ] );
 
-	vector_erase( tet_vertices[ v1_id ].connTets, t_ids[ 0 ] );
-	vector_erase( tet_vertices[ v2_id ].connTets, t_ids[ 1 ] );
+	tet_vertices[ v1_id ].connTets.remove( t_ids[ 0 ] );
+	tet_vertices[ v2_id ].connTets.remove( t_ids[ 1 ] );
 
 	////re-push
 	//    std::unordered_set<int> n12_v_ids;
@@ -447,15 +447,15 @@ bool floatTetWild::remove_an_edge_44( Mesh& mesh, int v1_id, int v2_id, const st
 		{
 			//            tet_vertices[v1_id].conn_tets.erase(old_t_ids[j]);
 			//            tet_vertices[v_ids[0]].conn_tets.insert(old_t_ids[j]);
-			vector_erase( tet_vertices[ v1_id ].connTets, old_t_ids[ j ] );
-			tet_vertices[ v_ids[ 0 ] ].connTets.push_back( old_t_ids[ j ] );
+			tet_vertices[ v1_id ].connTets.remove( old_t_ids[ j ] );
+			tet_vertices[ v_ids[ 0 ] ].connTets.add( old_t_ids[ j ] );
 		}
 		else
 		{
 			//            tet_vertices[v2_id].conn_tets.erase(old_t_ids[j]);
 			//            tet_vertices[v_ids[1]].conn_tets.insert(old_t_ids[j]);
-			vector_erase( tet_vertices[ v2_id ].connTets, old_t_ids[ j ] );
-			tet_vertices[ v_ids[ 1 ] ].connTets.push_back( old_t_ids[ j ] );
+			tet_vertices[ v2_id ].connTets.remove( old_t_ids[ j ] );
+			tet_vertices[ v_ids[ 1 ] ].connTets.add( old_t_ids[ j ] );
 		}
 		//        tets[old_t_ids[j]] = new_tets[j];
 		tets[ old_t_ids[ j ] ].indices = new_tets[ j ];
@@ -747,13 +747,13 @@ bool floatTetWild::remove_an_edge_56( Mesh& mesh, int v1_id, int v2_id, const st
 	{
 		//        tet_vertices[n12_v_ids[i]].conn_tets.erase(n12_t_ids[i]);
 		//        tet_vertices[n12_v_ids[i]].conn_tets.erase(n12_t_ids[(i - 1 + 5) % 5]);
-		vector_erase( tet_vertices[ n12_v_ids[ i ] ].connTets, n12_t_ids[ i ] );
-		vector_erase( tet_vertices[ n12_v_ids[ i ] ].connTets, n12_t_ids[ ( i - 1 + 5 ) % 5 ] );
+		tet_vertices[ n12_v_ids[ i ] ].connTets.remove( n12_t_ids[ i ] );
+		tet_vertices[ n12_v_ids[ i ] ].connTets.remove( n12_t_ids[ ( i - 1 + 5 ) % 5 ] );
 	}
 	for( int i = 0; i < n12_t_ids.size(); i++ )
 	{
-		vector_erase( tet_vertices[ v1_id ].connTets, n12_t_ids[ i ] );
-		vector_erase( tet_vertices[ v2_id ].connTets, n12_t_ids[ i ] );
+		tet_vertices[ v1_id ].connTets.remove( n12_t_ids[ i ] );
+		tet_vertices[ v2_id ].connTets.remove( n12_t_ids[ i ] );
 	}
 
 	// add
@@ -761,7 +761,7 @@ bool floatTetWild::remove_an_edge_56( Mesh& mesh, int v1_id, int v2_id, const st
 	{
 		for( int j = 0; j < 4; j++ )
 			//            tet_vertices[tets[new_t_ids[i]][j]].conn_tets.insert(new_t_ids[i]);
-			tet_vertices[ tets[ new_t_ids[ i ] ][ j ] ].connTets.push_back( new_t_ids[ i ] );
+			tet_vertices[ tets[ new_t_ids[ i ] ][ j ] ].connTets.add( new_t_ids[ i ] );
 	}
 
 	////re-push

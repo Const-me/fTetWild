@@ -143,6 +143,7 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Utils\SimdVector.h" />
     <ClInclude Include="Utils\triangleIntersection.h" />
+    <ClInclude Include="src\VertexConnectedTets.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Utils\TimeMeasure.cpp" />
@@ -198,6 +199,7 @@
     <ClCompile Include="Utils\Mesh\TriangleMesh.reorder.cpp" />
     <ClCompile Include="Utils\miscUtils.cpp" />
     <ClCompile Include="Utils\triangleIntersection.cpp" />
+    <ClCompile Include="src\VertexConnectedTets.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\CutTable2.inl" />

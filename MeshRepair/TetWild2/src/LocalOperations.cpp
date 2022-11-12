@@ -100,7 +100,7 @@ using floatTetWild::Scalar;
 int floatTetWild::get_opp_t_id( const Mesh& mesh, int t_id, int j )
 {
 	std::vector<int> pair;
-	set_intersection( mesh.tet_vertices[ mesh.tets[ t_id ][ ( j + 1 ) % 4 ] ].connTets, mesh.tet_vertices[ mesh.tets[ t_id ][ ( j + 2 ) % 4 ] ].connTets,
+	setIntersection( mesh.tet_vertices[ mesh.tets[ t_id ][ ( j + 1 ) % 4 ] ].connTets, mesh.tet_vertices[ mesh.tets[ t_id ][ ( j + 2 ) % 4 ] ].connTets,
 	  mesh.tet_vertices[ mesh.tets[ t_id ][ ( j + 3 ) % 4 ] ].connTets, pair );
 	if( pair.size() == 2 )
 		return pair[ 0 ] == t_id ? pair[ 1 ] : pair[ 0 ];
@@ -125,7 +125,7 @@ void floatTetWild::set_opp_t_id( Mesh& mesh, int t_id, int j )
 	static std::vector<int> pair;
 	pair.clear();
 	//    set_intersection(mesh.tet_vertices[t[(j + 3) % 4]].conn_tets, tmp, pair);
-	set_intersection( mesh.tet_vertices[ t[ jp1 ] ].connTets, mesh.tet_vertices[ t[ jp2 ] ].connTets, mesh.tet_vertices[ t[ jp3 ] ].connTets, pair );
+	setIntersection( mesh.tet_vertices[ t[ jp1 ] ].connTets, mesh.tet_vertices[ t[ jp2 ] ].connTets, mesh.tet_vertices[ t[ jp3 ] ].connTets, pair );
 	//    timer.stop();
 	//    time+=timer.getElapsedTimeInSec();
 	//    std::cout<<"set_opp_t_id "<<time<<std::endl;

@@ -1,5 +1,6 @@
 #pragma once
 #include "Types.hpp"
+#include "VertexConnectedTets.h"
 
 namespace floatTetWild
 {
@@ -43,7 +44,7 @@ namespace floatTetWild
 			return pos[ index ];
 		}
 
-		std::vector<int> connTets;
+		VertexConnectedTets connTets;
 		uint16_t flags = 0;
 		inline bool hasFlag( eVertexFlags f ) const
 		{

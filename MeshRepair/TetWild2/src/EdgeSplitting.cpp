@@ -150,7 +150,7 @@ bool floatTetWild::split_an_edge(
 
 	////check inversion
 	std::vector<int> old_t_ids;
-	set_intersection( tet_vertices[ v1_id ].connTets, tet_vertices[ v2_id ].connTets, old_t_ids );
+	setIntersection( tet_vertices[ v1_id ].connTets, tet_vertices[ v2_id ].connTets, old_t_ids );
 	for( int t_id : old_t_ids )
 	{
 		if( !is_splittable[ t_id ] )
@@ -258,17 +258,17 @@ bool floatTetWild::split_an_edge(
 	//        tet_vertices[v1_id].conn_tets.insert(new_t_ids[i]);
 	//    }
 
-	tet_vertices[ v_id ].connTets.insert( tet_vertices[ v_id ].connTets.end(), old_t_ids.begin(), old_t_ids.end() );
-	tet_vertices[ v_id ].connTets.insert( tet_vertices[ v_id ].connTets.end(), new_t_ids.begin(), new_t_ids.end() );
+	tet_vertices[ v_id ].connTets.addRange( old_t_ids );
+	tet_vertices[ v_id ].connTets.addRange( new_t_ids );
 	for( int i = 0; i < old_t_ids.size(); i++ )
 	{
 		for( int j = 0; j < 4; j++ )
 		{
 			if( tets[ old_t_ids[ i ] ][ j ] != v_id && tets[ old_t_ids[ i ] ][ j ] != v2_id )
-				tet_vertices[ tets[ old_t_ids[ i ] ][ j ] ].connTets.push_back( new_t_ids[ i ] );
+				tet_vertices[ tets[ old_t_ids[ i ] ][ j ] ].connTets.add( new_t_ids[ i ] );
 		}
-		tet_vertices[ v1_id ].connTets.erase( std::find( tet_vertices[ v1_id ].connTets.begin(), tet_vertices[ v1_id ].connTets.end(), old_t_ids[ i ] ) );
-		tet_vertices[ v1_id ].connTets.push_back( new_t_ids[ i ] );
+		tet_vertices[ v1_id ].connTets.remove( old_t_ids[ i ] );
+		tet_vertices[ v1_id ].connTets.add( new_t_ids[ i ] );
 	}
 
 	if( mesh.tets.size() != is_splittable.size() )

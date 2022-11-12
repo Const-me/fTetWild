@@ -200,7 +200,7 @@ namespace floatTetWild
 						continue;
 
 					bool is_recal = false;
-					const std::vector<int>& conn_tets = tet_vertices[ inf_es_i[ 0 ] ].connTets;
+					const auto& conn_tets = tet_vertices[ inf_es_i[ 0 ] ].connTets;
 					const int recallLimit = inf_e_tss[ i ];
 					for( int t_id : conn_tets )
 					{
@@ -267,7 +267,7 @@ int floatTetWild::collapse_an_edge(
 	std::vector<int>& n12_t_ids = buffers.n12_t_ids;
 	n12_t_ids.clear();
 
-	set_intersection( tet_vertices[ v1_id ].connTets, tet_vertices[ v2_id ].connTets, n12_t_ids );
+	setIntersection( tet_vertices[ v1_id ].connTets, tet_vertices[ v2_id ].connTets, n12_t_ids );
 	if( n12_t_ids.empty() )
 		return EC_FAIL_INVERSION;
 	//    std::unordered_set<int> n1_t_ids = tet_vertices[v1_id].conn_tets;//v1.conn_tets - n12_t_ids
@@ -276,7 +276,7 @@ int floatTetWild::collapse_an_edge(
 	std::vector<int>& n1_t_ids = buffers.n1_t_ids;	// v1.conn_tets - n12_t_ids
 	n1_t_ids.clear();
 
-	std::sort( tet_vertices[ v1_id ].connTets.begin(), tet_vertices[ v1_id ].connTets.end() );
+	tet_vertices[ v1_id ].connTets.sort();
 	std::sort( n12_t_ids.begin(), n12_t_ids.end() );
 	std::set_difference(
 	  tet_vertices[ v1_id ].connTets.begin(), tet_vertices[ v1_id ].connTets.end(), n12_t_ids.begin(), n12_t_ids.end(), std::back_inserter( n1_t_ids ) );
@@ -458,7 +458,7 @@ int floatTetWild::collapse_an_edge(
 		{
 			std::vector<int>& pair = buffers.pair;
 			pair.clear();
-			set_intersection( tet_vertices[ tets[ t_id ][ mod4( j12[ mod2( i + 1 ) ] + 1 ) ] ].connTets,
+			setIntersection( tet_vertices[ tets[ t_id ][ mod4( j12[ mod2( i + 1 ) ] + 1 ) ] ].connTets,
 			  tet_vertices[ tets[ t_id ][ mod4( j12[ mod2( i + 1 ) ] + 2 ) ] ].connTets,
 			  tet_vertices[ tets[ t_id ][ mod4( j12[ mod2( i + 1 ) ] + 3 ) ] ].connTets, pair );
 			//            if(!(pair.size() == 1 || pair.size() == 2)) {
@@ -502,8 +502,7 @@ int floatTetWild::collapse_an_edge(
 	{
 		int j = js_n1_t_ids[ ii++ ];
 		tets[ t_id ][ j ] = v2_id;
-		//        tet_vertices[v2_id].conn_tets.insert(t_id);
-		tet_vertices[ v2_id ].connTets.push_back( t_id );
+		tet_vertices[ v2_id ].connTets.add( t_id );
 		if( is_update_tss )
 			tet_tss[ t_id ] = ts;  // update timestamp
 	}
@@ -513,8 +512,7 @@ int floatTetWild::collapse_an_edge(
 		for( int j = 0; j < 4; j++ )
 		{
 			if( tets[ t_id ][ j ] != v1_id )
-				//                tet_vertices[tets[t_id][j]].conn_tets.erase(t_id);
-				vector_erase( tet_vertices[ tets[ t_id ][ j ] ].connTets, t_id );
+				tet_vertices[ tets[ t_id ][ j ] ].connTets.remove( t_id );
 		}
 	}
 

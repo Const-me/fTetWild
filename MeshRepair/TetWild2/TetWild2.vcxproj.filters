@@ -118,6 +118,7 @@
     <ClInclude Include="src\MeshVertex.h" />
     <ClInclude Include="src\MeshTet.h" />
     <ClInclude Include="Utils\TimeMeasure.h" />
+    <ClInclude Include="src\VertexConnectedTets.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp" />
@@ -216,6 +217,7 @@
     <ClCompile Include="src\LocalOperations2.cpp" />
     <ClCompile Include="Utils\Logger.cpp" />
     <ClCompile Include="Utils\TimeMeasure.cpp" />
+    <ClCompile Include="src\VertexConnectedTets.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="external">
