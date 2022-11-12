@@ -531,21 +531,6 @@ int floatTetWild::is_tri_tri_cutted_hint(
 
 	if( hint == CUT_COPLANAR )
 	{
-		//        if(tri_tri_overlap_test_3d(&p_1[0], &q_1[0], &r_1[0], &p_2[0], &q_2[0], &r_2[0]))
-		//            return CUT_COPLANAR;
-
-		// todo: to2d
-		//        auto to_2d = [](const Vector3& v, int t) {
-		//            return Vector2(v[(t + 1) % 3], v[(t + 2) % 3]);
-		//        };
-		//        int t = 2;
-		//        for (int k = 0; k < 3; k++) {
-		//            if (p3[k] == p1[k] && p1[k] == p2[k]) {
-		//                t = k;
-		//                break;
-		//            }
-		//        }
-
 		int t = get_t( p1, p2, p3 );
 
 		if( is_tri_tri_cutted_2d( { { to_2d( p1, t ), to_2d( p2, t ), to_2d( p3, t ) } }, { { to_2d( q1, t ), to_2d( q2, t ), to_2d( q3, t ) } } ) )
@@ -553,70 +538,15 @@ int floatTetWild::is_tri_tri_cutted_hint(
 		return CUT_EMPTY;
 	}
 
-	if( nullptr != log )
-	{
-		//        p_1 = {{22, -27.478179999999998, 3.5}};
-		//        q_1 = {{25.5, -27.478179999999998, 0}};
-		//        r_1 = {{-25.5, -27.478179999999998, 0}};
-		//        p_2 = {{28.050000000000001, -30.028179999999999, -2.5500000000000003}};
-		//        q_2 = {{25.5, -13.183373550207467, 0}};
-		//        r_2 = {{25.5, -19.059304172821577, 0}};
-		//
-		//        cout<<"res = "<<tri_tri_intersection_test_3d(&p_1[0], &q_1[0], &r_1[0], &p_2[0], &q_2[0], &r_2[0], &coplanar, &s[0], &t[0])<<endl;
-		//        cout<<std::setprecision(17);
-		//        cout<<"s"<<endl;
-		//        cout<<s[0]<<" "<<s[1]<<" "<<s[2]<<endl;
-		//        cout<<"t"<<endl;
-		//        cout<<t[0]<<" "<<t[1]<<" "<<t[2]<<endl;
-		//        cout<<"coplanar = "<<coplanar<<endl;
-		//        cout<<"pqr 1"<<endl;
-		//        for(int j=0;j<3;j++)
-		//            cout<<p_1[j]<<" ";
-		//        cout<<endl;
-		//        for(int j=0;j<3;j++)
-		//            cout<<q_1[j]<<" ";
-		//        cout<<endl;
-		//        for(int j=0;j<3;j++)
-		//            cout<<r_1[j]<<" ";
-		//        cout<<endl;
-		//        cout<<"pqr 2"<<endl;
-		//        for(int j=0;j<3;j++)
-		//            cout<<p_2[j]<<" ";
-		//        cout<<endl;
-		//        for(int j=0;j<3;j++)
-		//            cout<<q_2[j]<<" ";
-		//        cout<<endl;
-		//        for(int j=0;j<3;j++)
-		//            cout<<r_2[j]<<" ";
-		//        cout<<endl;
-		// pausee();
-	}
-
 	int result = triangleIntersectionTest( &p_1[ 0 ], &q_1[ 0 ], &r_1[ 0 ], &p_2[ 0 ], &q_2[ 0 ], &r_2[ 0 ], &coplanar, &s[ 0 ], &t[ 0 ] );
 	if( nullptr != log )
-	{
 		log->logDebug( ">>result = %i", result );
-	}
 
 	if( result != 1 )
-	{
-		//        if (coplanar != 0) {
-		//            cout<<"CUT_EMPTY "<<result<<endl;
-		//            //pausee();
-		//        }
 		return CUT_EMPTY;
-	}
-	//    if (coplanar != 0) {
-	//        cout<<"NOT CUT_EMPTY "<<coplanar<<" "<<result<<endl;
-	//        //pausee();
-	//    }
 
 	if( std::abs( s[ 0 ] - t[ 0 ] ) <= SCALAR_ZERO && std::abs( s[ 1 ] - t[ 1 ] ) <= SCALAR_ZERO && std::abs( s[ 2 ] - t[ 2 ] ) <= SCALAR_ZERO )
 		return CUT_EMPTY;
-
-	//    cout<<"s"<<s[0]<<" "<<s[1]<<" "<<s[2]<<endl;
-	//    cout<<"t"<<t[0]<<" "<<t[1]<<" "<<t[2]<<endl;
-	//    cout<<(s[0]-t[0])<<" "<<(s[1]-t[1])<<" "<<(s[2]-t[2])<<endl;
 
 	if( hint == CUT_EDGE_0 )
 		return CUT_EDGE_0;
