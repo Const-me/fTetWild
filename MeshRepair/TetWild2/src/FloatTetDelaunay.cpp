@@ -256,10 +256,10 @@ namespace floatTetWild
 			tetra = _mm_shuffle_epi32( tetra, _MM_SHUFFLE( 1, 2, 3, 0 ) );
 			_mm_storeu_si128( (__m128i*)&tets[ i ].indices, tetra );
 
-			tet_vertices[ _mm_cvtsi128_si32( tetra ) ].conn_tets.push_back( (int)i );
-			tet_vertices[ _mm_extract_epi32( tetra, 1 ) ].conn_tets.push_back( (int)i );
-			tet_vertices[ _mm_extract_epi32( tetra, 2 ) ].conn_tets.push_back( (int)i );
-			tet_vertices[ _mm_extract_epi32( tetra, 3 ) ].conn_tets.push_back( (int)i );
+			tet_vertices[ _mm_cvtsi128_si32( tetra ) ].connTets.push_back( (int)i );
+			tet_vertices[ _mm_extract_epi32( tetra, 1 ) ].connTets.push_back( (int)i );
+			tet_vertices[ _mm_extract_epi32( tetra, 2 ) ].connTets.push_back( (int)i );
+			tet_vertices[ _mm_extract_epi32( tetra, 3 ) ].connTets.push_back( (int)i );
 		}
 
 		for( int i = 0; i < mesh.tets.size(); i++ )

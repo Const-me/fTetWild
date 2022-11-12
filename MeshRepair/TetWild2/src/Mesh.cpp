@@ -28,7 +28,7 @@ namespace floatTetWild
 				continue;
 
 			ring.clear();
-			for( const auto& t : v.conn_tets )
+			for( const auto& t : v.connTets )
 			{
 				for( int j = 0; j < 4; ++j )
 					ring.push_back( tets[ t ][ j ] );

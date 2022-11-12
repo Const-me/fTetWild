@@ -200,7 +200,7 @@ namespace floatTetWild
 						continue;
 
 					bool is_recal = false;
-					const std::vector<int>& conn_tets = tet_vertices[ inf_es_i[ 0 ] ].conn_tets;
+					const std::vector<int>& conn_tets = tet_vertices[ inf_es_i[ 0 ] ].connTets;
 					const int recallLimit = inf_e_tss[ i ];
 					for( int t_id : conn_tets )
 					{
@@ -267,7 +267,7 @@ int floatTetWild::collapse_an_edge(
 	std::vector<int>& n12_t_ids = buffers.n12_t_ids;
 	n12_t_ids.clear();
 
-	set_intersection( tet_vertices[ v1_id ].conn_tets, tet_vertices[ v2_id ].conn_tets, n12_t_ids );
+	set_intersection( tet_vertices[ v1_id ].connTets, tet_vertices[ v2_id ].connTets, n12_t_ids );
 	if( n12_t_ids.empty() )
 		return EC_FAIL_INVERSION;
 	//    std::unordered_set<int> n1_t_ids = tet_vertices[v1_id].conn_tets;//v1.conn_tets - n12_t_ids
@@ -276,10 +276,10 @@ int floatTetWild::collapse_an_edge(
 	std::vector<int>& n1_t_ids = buffers.n1_t_ids;	// v1.conn_tets - n12_t_ids
 	n1_t_ids.clear();
 
-	std::sort( tet_vertices[ v1_id ].conn_tets.begin(), tet_vertices[ v1_id ].conn_tets.end() );
+	std::sort( tet_vertices[ v1_id ].connTets.begin(), tet_vertices[ v1_id ].connTets.end() );
 	std::sort( n12_t_ids.begin(), n12_t_ids.end() );
 	std::set_difference(
-	  tet_vertices[ v1_id ].conn_tets.begin(), tet_vertices[ v1_id ].conn_tets.end(), n12_t_ids.begin(), n12_t_ids.end(), std::back_inserter( n1_t_ids ) );
+	  tet_vertices[ v1_id ].connTets.begin(), tet_vertices[ v1_id ].connTets.end(), n12_t_ids.begin(), n12_t_ids.end(), std::back_inserter( n1_t_ids ) );
 
 	// inversion
 	std::vector<int>& js_n1_t_ids = buffers.js_n1_t_ids;
@@ -302,7 +302,7 @@ int floatTetWild::collapse_an_edge(
 	{
 		if( is_check_quality )
 		{
-			for( int t_id : tet_vertices[ v1_id ].conn_tets )
+			for( int t_id : tet_vertices[ v1_id ].connTets )
 			{
 				if( tets[ t_id ].quality > old_max_quality )
 					old_max_quality = tets[ t_id ].quality;
@@ -311,7 +311,7 @@ int floatTetWild::collapse_an_edge(
 	}
 	std::vector<Scalar>& new_qs = buffers.new_qs;
 	new_qs.clear();
-	new_qs.reserve( tet_vertices[ v1_id ].conn_tets.size() );
+	new_qs.reserve( tet_vertices[ v1_id ].connTets.size() );
 	int ii = 0;
 	for( int t_id : n1_t_ids )
 	{
@@ -458,9 +458,9 @@ int floatTetWild::collapse_an_edge(
 		{
 			std::vector<int>& pair = buffers.pair;
 			pair.clear();
-			set_intersection( tet_vertices[ tets[ t_id ][ mod4( j12[ mod2( i + 1 ) ] + 1 ) ] ].conn_tets,
-			  tet_vertices[ tets[ t_id ][ mod4( j12[ mod2( i + 1 ) ] + 2 ) ] ].conn_tets,
-			  tet_vertices[ tets[ t_id ][ mod4( j12[ mod2( i + 1 ) ] + 3 ) ] ].conn_tets, pair );
+			set_intersection( tet_vertices[ tets[ t_id ][ mod4( j12[ mod2( i + 1 ) ] + 1 ) ] ].connTets,
+			  tet_vertices[ tets[ t_id ][ mod4( j12[ mod2( i + 1 ) ] + 2 ) ] ].connTets,
+			  tet_vertices[ tets[ t_id ][ mod4( j12[ mod2( i + 1 ) ] + 3 ) ] ].connTets, pair );
 			//            if(!(pair.size() == 1 || pair.size() == 2)) {
 			//                cout << "!(pair.size() == 1 || pair.size() == 2)" << endl;
 			//                cout << "******"<<mod4(j12[mod2(i + 1)] + 1) << endl;
@@ -503,7 +503,7 @@ int floatTetWild::collapse_an_edge(
 		int j = js_n1_t_ids[ ii++ ];
 		tets[ t_id ][ j ] = v2_id;
 		//        tet_vertices[v2_id].conn_tets.insert(t_id);
-		tet_vertices[ v2_id ].conn_tets.push_back( t_id );
+		tet_vertices[ v2_id ].connTets.push_back( t_id );
 		if( is_update_tss )
 			tet_tss[ t_id ] = ts;  // update timestamp
 	}
@@ -514,11 +514,11 @@ int floatTetWild::collapse_an_edge(
 		{
 			if( tets[ t_id ][ j ] != v1_id )
 				//                tet_vertices[tets[t_id][j]].conn_tets.erase(t_id);
-				vector_erase( tet_vertices[ tets[ t_id ][ j ] ].conn_tets, t_id );
+				vector_erase( tet_vertices[ tets[ t_id ][ j ] ].connTets, t_id );
 		}
 	}
 
-	tet_vertices[ v1_id ].conn_tets.clear();
+	tet_vertices[ v1_id ].connTets.clear();
 
 	////re-push
 	for( int v_id : n1_v_ids )
@@ -567,7 +567,7 @@ bool floatTetWild::is_collapsable_bbox( Mesh& mesh, int v1_id, int v2_id )
 	//    }
 
 	std::vector<int> bbox_fs2;
-	for( int t_id : mesh.tet_vertices[ v2_id ].conn_tets )
+	for( int t_id : mesh.tet_vertices[ v2_id ].connTets )
 	{
 		for( int j = 0; j < 4; j++ )
 		{
@@ -577,7 +577,7 @@ bool floatTetWild::is_collapsable_bbox( Mesh& mesh, int v1_id, int v2_id )
 	}
 	vector_unique( bbox_fs2 );
 
-	for( int t_id : mesh.tet_vertices[ v1_id ].conn_tets )
+	for( int t_id : mesh.tet_vertices[ v1_id ].connTets )
 	{
 		for( int j = 0; j < 4; j++ )
 		{

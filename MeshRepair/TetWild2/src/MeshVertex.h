@@ -43,7 +43,7 @@ namespace floatTetWild
 			return pos[ index ];
 		}
 
-		std::vector<int> conn_tets;
+		std::vector<int> connTets;
 		uint16_t flags = 0;
 		inline bool hasFlag( eVertexFlags f ) const
 		{

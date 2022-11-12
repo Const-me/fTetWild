@@ -255,7 +255,7 @@ void floatTetWild::cleanup_empty_slots( Mesh& mesh, double percentage )
 	{
 		if( v.isRemoved() )
 			continue;
-		for( auto& t_id : v.conn_tets )
+		for( auto& t_id : v.connTets )
 			t_id = map_t_ids[ t_id ];
 	}
 	for( auto& t : mesh.tets )
@@ -441,7 +441,7 @@ bool floatTetWild::update_scaling_field( Mesh& mesh, Scalar max_energy )
 			continue;
 
 		bool is_refine = false;
-		for( int t_id : v.conn_tets )
+		for( int t_id : v.connTets )
 		{
 			if( mesh.tets[ t_id ].quality > filter_energy )
 				is_refine = true;
@@ -486,7 +486,7 @@ bool floatTetWild::update_scaling_field( Mesh& mesh, Scalar max_energy )
 			int v_id = v_queue.front();
 			v_queue.pop();
 
-			for( int t_id : mesh.tet_vertices[ v_id ].conn_tets )
+			for( int t_id : mesh.tet_vertices[ v_id ].connTets )
 			{
 				for( int j = 0; j < 4; j++ )
 				{
@@ -805,7 +805,7 @@ void floatTetWild::filter_outside( Mesh& mesh, bool invert_faces )
 		if( v.isRemoved() )
 			continue;
 		bool is_remove = true;
-		for( int t_id : v.conn_tets )
+		for( int t_id : v.connTets )
 		{
 			if( !mesh.tets[ t_id ].is_removed )
 			{
@@ -876,7 +876,7 @@ void floatTetWild::filter_outside( Mesh& mesh, const std::vector<Vector3>& input
 		if( v.isRemoved())
 			continue;
 		bool is_remove = true;
-		for( int t_id : v.conn_tets )
+		for( int t_id : v.connTets )
 		{
 			if( !mesh.tets[ t_id ].is_removed )
 			{
@@ -926,7 +926,7 @@ void floatTetWild::filter_outside_floodfill( Mesh& mesh, bool invert_faces )
 		}
 		for( int j = 0; j < 4; j++ )
 		{
-			vector_erase( tet_vertices[ tets[ t_id ][ j ] ].conn_tets, t_id );
+			vector_erase( tet_vertices[ tets[ t_id ][ j ] ].connTets, t_id );
 		}
 	}
 
@@ -934,7 +934,7 @@ void floatTetWild::filter_outside_floodfill( Mesh& mesh, bool invert_faces )
 	{
 		if( tet_vertices[ i ].isRemoved() )
 			continue;
-		if( tet_vertices[ i ].conn_tets.empty() )
+		if( tet_vertices[ i ].connTets.empty() )
 			tet_vertices[ i ].setFlag( eVertexFlags::Removed );
 	}
 }
@@ -1003,7 +1003,7 @@ void floatTetWild::mark_outside( Mesh& mesh, bool invert_faces )
 			continue;
 		}
 		bool is_outside = true;
-		for( int t_id : v.conn_tets )
+		for( int t_id : v.connTets )
 		{
 			if( !mesh.tets[ t_id ].is_outside )
 			{
@@ -1269,7 +1269,7 @@ void floatTetWild::smooth_open_boundary_aux( Mesh& mesh, const AABBWrapper& tree
 				p = tet_vertices[ v_id ].pos + dis / pow( 2, n ) * v;
 				bool is_valid = true;
 				//                std::vector<double> new_qs;
-				for( int t_id : tet_vertices[ v_id ].conn_tets )
+				for( int t_id : tet_vertices[ v_id ].connTets )
 				{
 					int j = tets[ t_id ].find( v_id );
 					if( is_inverted( mesh, t_id, j, p ) )
@@ -1289,7 +1289,7 @@ void floatTetWild::smooth_open_boundary_aux( Mesh& mesh, const AABBWrapper& tree
 
 				cnt_s++;
 				tet_vertices[ v_id ].pos = p;
-				for( int t_id : tet_vertices[ v_id ].conn_tets )
+				for( int t_id : tet_vertices[ v_id ].connTets )
 					tets[ t_id ].quality = get_quality( mesh, t_id );
 				break;
 			}
@@ -1344,7 +1344,7 @@ void floatTetWild::manifold_edges( Mesh& mesh )
 
 		////check inversion
 		//        std::vector<int> old_t_ids;
-		set_intersection( tet_vertices[ v1_id ].conn_tets, tet_vertices[ v2_id ].conn_tets, old_t_ids );
+		set_intersection( tet_vertices[ v1_id ].connTets, tet_vertices[ v2_id ].connTets, old_t_ids );
 		for( int t_id : old_t_ids )
 		{
 			for( int j = 0; j < 4; j++ )
@@ -1384,18 +1384,18 @@ void floatTetWild::manifold_edges( Mesh& mesh )
 			tets[ old_t_ids[ i ] ].quality = get_quality( mesh, old_t_ids[ i ] );
 		}
 
-		tet_vertices[ v_id ].conn_tets.insert( tet_vertices[ v_id ].conn_tets.end(), old_t_ids.begin(), old_t_ids.end() );
-		tet_vertices[ v_id ].conn_tets.insert( tet_vertices[ v_id ].conn_tets.end(), new_t_ids.begin(), new_t_ids.end() );
+		tet_vertices[ v_id ].connTets.insert( tet_vertices[ v_id ].connTets.end(), old_t_ids.begin(), old_t_ids.end() );
+		tet_vertices[ v_id ].connTets.insert( tet_vertices[ v_id ].connTets.end(), new_t_ids.begin(), new_t_ids.end() );
 		for( int i = 0; i < old_t_ids.size(); i++ )
 		{
 			for( int j = 0; j < 4; j++ )
 			{
 				if( tets[ old_t_ids[ i ] ][ j ] != v_id && tets[ old_t_ids[ i ] ][ j ] != v2_id )
-					tet_vertices[ tets[ old_t_ids[ i ] ][ j ] ].conn_tets.push_back( new_t_ids[ i ] );
+					tet_vertices[ tets[ old_t_ids[ i ] ][ j ] ].connTets.push_back( new_t_ids[ i ] );
 			}
-			tet_vertices[ v1_id ].conn_tets.erase(
-			  std::find( tet_vertices[ v1_id ].conn_tets.begin(), tet_vertices[ v1_id ].conn_tets.end(), old_t_ids[ i ] ) );
-			tet_vertices[ v1_id ].conn_tets.push_back( new_t_ids[ i ] );
+			tet_vertices[ v1_id ].connTets.erase(
+			  std::find( tet_vertices[ v1_id ].connTets.begin(), tet_vertices[ v1_id ].connTets.end(), old_t_ids[ i ] ) );
+			tet_vertices[ v1_id ].connTets.push_back( new_t_ids[ i ] );
 		}
 
 		return v_id;
@@ -1465,7 +1465,7 @@ void floatTetWild::manifold_edges( Mesh& mesh )
 		edge_queue.pop();
 
 		std::vector<int> n_t_ids;
-		set_intersection( tet_vertices[ e[ 0 ] ].conn_tets, tet_vertices[ e[ 1 ] ].conn_tets, n_t_ids );
+		set_intersection( tet_vertices[ e[ 0 ] ].connTets, tet_vertices[ e[ 1 ] ].connTets, n_t_ids );
 		if( n_t_ids.empty() )
 			continue;
 
@@ -1540,7 +1540,7 @@ void floatTetWild::manifold_edges( Mesh& mesh )
 				tet_vertices.push_back( tet_vertices[ v_id ] );
 				dup_v_id = tet_vertices.size() - 1;
 			}
-			tet_vertices[ dup_v_id ].conn_tets.clear();
+			tet_vertices[ dup_v_id ].connTets.clear();
 			for( int old_t_id : tet_groups[ i ] )
 			{
 				int new_t_id = new_t_ids[ old_t_ids_map[ old_t_id ] ];
@@ -1548,8 +1548,8 @@ void floatTetWild::manifold_edges( Mesh& mesh )
 				tets[ old_t_id ][ j ] = dup_v_id;
 				j = tets[ new_t_id ].find( v_id );
 				tets[ new_t_id ][ j ] = dup_v_id;
-				tet_vertices[ dup_v_id ].conn_tets.push_back( old_t_id );
-				tet_vertices[ dup_v_id ].conn_tets.push_back( new_t_id );
+				tet_vertices[ dup_v_id ].connTets.push_back( old_t_id );
+				tet_vertices[ dup_v_id ].connTets.push_back( new_t_id );
 			}
 		}
 
@@ -1632,14 +1632,14 @@ void floatTetWild::manifold_vertices( Mesh& mesh )
 	for( int b_v_id : b_v_ids )
 	{
 		std::map<int, bool> is_visited;
-		for( int t_id : tet_vertices[ b_v_id ].conn_tets )
+		for( int t_id : tet_vertices[ b_v_id ].connTets )
 		{
 			if( !tets[ t_id ].is_removed )
 				is_visited[ t_id ] = false;
 		}
 
 		std::vector<std::vector<int>> tet_groups;
-		for( int t_id : tet_vertices[ b_v_id ].conn_tets )
+		for( int t_id : tet_vertices[ b_v_id ].connTets )
 		{
 			if( is_visited.find( t_id ) == is_visited.end() )
 				continue;
@@ -1777,15 +1777,15 @@ void floatTetWild::manifold_surface( Mesh& mesh, Eigen::MatrixXd& V, Eigen::Matr
 		if( v.isRemoved() )
 			continue;
 
-		for( int i = 0; i < v.conn_tets.size(); i++ )
+		for( int i = 0; i < v.connTets.size(); i++ )
 		{
-			if( tets[ v.conn_tets[ i ] ].is_removed )
+			if( tets[ v.connTets[ i ] ].is_removed )
 			{
-				v.conn_tets.erase( v.conn_tets.begin() + i );
+				v.connTets.erase( v.connTets.begin() + i );
 				i--;
 			}
 		}
-		if( v.conn_tets.empty() )
+		if( v.connTets.empty() )
 			v.setFlag( eVertexFlags::Removed );
 	}
 

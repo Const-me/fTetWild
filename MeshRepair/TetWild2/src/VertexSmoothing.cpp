@@ -68,7 +68,7 @@ namespace
 
 		// quality
 		int cnt = 0;
-		for( int t_id : tet_vertices[ idx ].conn_tets )
+		for( int t_id : tet_vertices[ idx ].connTets )
 		{
 			if( !new_qs.empty() )
 				tets[ t_id ].quality = new_qs[ cnt++ ];
@@ -134,12 +134,12 @@ bool floatTetWild::project_and_check( Mesh& mesh, int v_id, Vector3& p, const AA
 
 	// check inversion & quality
 	double max_q = 0;
-	for( int t_id : mesh.tet_vertices[ v_id ].conn_tets )
+	for( int t_id : mesh.tet_vertices[ v_id ].connTets )
 	{
 		if( mesh.tets[ t_id ].quality > max_q )
 			max_q = mesh.tets[ t_id ].quality;
 	}
-	for( int t_id : mesh.tet_vertices[ v_id ].conn_tets )
+	for( int t_id : mesh.tet_vertices[ v_id ].connTets )
 	{
 		auto& t = mesh.tets[ t_id ];
 		int j = t.find( v_id );
@@ -163,12 +163,12 @@ bool floatTetWild::find_new_pos( Mesh& mesh, const int v_id, Vector3& x )
 	Mesh::FindNewPosBuffers& fnpb = mesh.findNewPosBuffers[ omp_get_thread_num() ];
 	std::vector<int>& js = fnpb.js;
 	js.clear();
-	js.reserve( tet_vertices[ v_id ].conn_tets.size() );
+	js.reserve( tet_vertices[ v_id ].connTets.size() );
 
 	std::vector<std::array<double, 12>>& Ts = fnpb.Ts;
 	Ts.clear();
 
-	for( int t_id : tet_vertices[ v_id ].conn_tets )
+	for( int t_id : tet_vertices[ v_id ].connTets )
 	{
 		int j = tets[ t_id ].find( v_id );
 		js.push_back( j );
@@ -269,7 +269,7 @@ bool floatTetWild::find_new_pos( Mesh& mesh, const int v_id, Vector3& x )
 			// check inversion
 			bool is_valid = true;
 			int ii = 0;
-			for( int t_id : tet_vertices[ v_id ].conn_tets )
+			for( int t_id : tet_vertices[ v_id ].connTets )
 			{
 				int j = js[ ii++ ];
 				if( is_inverted( mesh, t_id, j, x_next ) )

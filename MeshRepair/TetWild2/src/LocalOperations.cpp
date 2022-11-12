@@ -100,8 +100,8 @@ using floatTetWild::Scalar;
 int floatTetWild::get_opp_t_id( const Mesh& mesh, int t_id, int j )
 {
 	std::vector<int> pair;
-	set_intersection( mesh.tet_vertices[ mesh.tets[ t_id ][ ( j + 1 ) % 4 ] ].conn_tets, mesh.tet_vertices[ mesh.tets[ t_id ][ ( j + 2 ) % 4 ] ].conn_tets,
-	  mesh.tet_vertices[ mesh.tets[ t_id ][ ( j + 3 ) % 4 ] ].conn_tets, pair );
+	set_intersection( mesh.tet_vertices[ mesh.tets[ t_id ][ ( j + 1 ) % 4 ] ].connTets, mesh.tet_vertices[ mesh.tets[ t_id ][ ( j + 2 ) % 4 ] ].connTets,
+	  mesh.tet_vertices[ mesh.tets[ t_id ][ ( j + 3 ) % 4 ] ].connTets, pair );
 	if( pair.size() == 2 )
 		return pair[ 0 ] == t_id ? pair[ 1 ] : pair[ 0 ];
 	return OPP_T_ID_BOUNDARY;
@@ -125,7 +125,7 @@ void floatTetWild::set_opp_t_id( Mesh& mesh, int t_id, int j )
 	static std::vector<int> pair;
 	pair.clear();
 	//    set_intersection(mesh.tet_vertices[t[(j + 3) % 4]].conn_tets, tmp, pair);
-	set_intersection( mesh.tet_vertices[ t[ jp1 ] ].conn_tets, mesh.tet_vertices[ t[ jp2 ] ].conn_tets, mesh.tet_vertices[ t[ jp3 ] ].conn_tets, pair );
+	set_intersection( mesh.tet_vertices[ t[ jp1 ] ].connTets, mesh.tet_vertices[ t[ jp2 ] ].connTets, mesh.tet_vertices[ t[ jp3 ] ].connTets, pair );
 	//    timer.stop();
 	//    time+=timer.getElapsedTimeInSec();
 	//    std::cout<<"set_opp_t_id "<<time<<std::endl;
@@ -319,7 +319,7 @@ bool floatTetWild::is_valid_edge( const Mesh& mesh, int v1_id, int v2_id, const 
 
 bool floatTetWild::is_isolate_surface_point( const Mesh& mesh, int v_id )
 {
-	for( int t_id : mesh.tet_vertices[ v_id ].conn_tets )
+	for( int t_id : mesh.tet_vertices[ v_id ].connTets )
 	{
 		for( int j = 0; j < 4; j++ )
 		{
@@ -515,7 +515,7 @@ bool floatTetWild::is_out_boundary_envelope( const Mesh& mesh, int v_id, const V
 		return true;
 
 	std::vector<int> tmp_b_v_ids;
-	for( int t_id : mesh.tet_vertices[ v_id ].conn_tets )
+	for( int t_id : mesh.tet_vertices[ v_id ].connTets )
 	{
 		for( int j = 0; j < 4; j++ )
 		{
@@ -634,7 +634,7 @@ bool floatTetWild::is_out_envelope( Mesh& mesh, int v_id, const Vector3& new_pos
 #endif
 
 	std::vector<GEO2::vec3> ps;
-	for( int t_id : mesh.tet_vertices[ v_id ].conn_tets )
+	for( int t_id : mesh.tet_vertices[ v_id ].connTets )
 	{
 		for( int j = 0; j < 4; j++ )
 		{

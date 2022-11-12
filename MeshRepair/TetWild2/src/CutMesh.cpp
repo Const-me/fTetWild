@@ -355,7 +355,7 @@ void floatTetWild::CutMesh::expand_new( std::vector<int>& cut_t_ids )
 			//                continue;
 
 			bool is_in = true;
-			for( int gt_id : mesh.tet_vertices[ gv_id ].conn_tets )
+			for( int gt_id : mesh.tet_vertices[ gv_id ].connTets )
 			{
 				if( is_in_cutmesh[ gt_id ] )
 					continue;
@@ -536,7 +536,7 @@ int floatTetWild::CutMesh::project_to_plane( int input_vertices_size )
 		Vector3 proj_p = mesh.tet_vertices[ v_ids[ i ] ].pos - p_n * dist;
 		//        cout << get_to_plane_dist(proj_p) << endl;
 		bool is_snappable = true;
-		for( int t_id : mesh.tet_vertices[ v_ids[ i ] ].conn_tets )
+		for( int t_id : mesh.tet_vertices[ v_ids[ i ] ].connTets )
 		{
 			int j = mesh.tets[ t_id ].find( v_ids[ i ] );
 			if( is_inverted( mesh, t_id, j, proj_p ) )
@@ -673,7 +673,7 @@ bool floatTetWild::CutMesh::get_intersecting_edges_and_points(
 	//    timer.start();
 	vector_unique( e_v_ids );
 	for( int v_id : e_v_ids )
-		subdivide_t_ids.insert( subdivide_t_ids.end(), mesh.tet_vertices[ v_id ].conn_tets.begin(), mesh.tet_vertices[ v_id ].conn_tets.end() );
+		subdivide_t_ids.insert( subdivide_t_ids.end(), mesh.tet_vertices[ v_id ].connTets.begin(), mesh.tet_vertices[ v_id ].connTets.end() );
 	vector_unique( subdivide_t_ids );
 	//    time_get_intersecting_edges_and_points1 += timer.getElapsedTime();
 
