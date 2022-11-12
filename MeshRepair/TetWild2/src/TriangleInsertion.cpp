@@ -777,11 +777,13 @@ void floatTetWild::find_cutting_tets( int f_id, const std::vector<Vector3>& inpu
 
 	if( !is_again )
 	{
-		std::vector<int> n_t_ids;
+		std::vector<int>& n_t_ids = buffers.n_t_ids;
+		n_t_ids.clear();
+
 		for( int j = 0; j < 3; j++ )
 		{
-			n_t_ids.insert(
-			  n_t_ids.end(), mesh.tet_vertices[ input_faces[ f_id ][ j ] ].conn_tets.begin(), mesh.tet_vertices[ input_faces[ f_id ][ j ] ].conn_tets.end() );
+			const std::vector<int>& conn_tets = mesh.tet_vertices[ input_faces[ f_id ][ j ] ].conn_tets;
+			n_t_ids.insert( n_t_ids.end(), conn_tets.begin(), conn_tets.end() );
 		}
 		vector_unique( n_t_ids );
 
