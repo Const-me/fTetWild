@@ -14,10 +14,33 @@ namespace
 	thread_local IntersectionBuffers buffers;
 }  // namespace
 
+#if CONN_TETS_SORTED_COPY
+const std::vector<int>& floatTetWild::VertexConnectedTets::makeSortedVector() const
+{
+	if( !vec.empty() )
+	{
+		if( !sortedVec.empty() )
+			return sortedVec;
+
+		sortedVec = vec;
+		std::sort( sortedVec.begin(), sortedVec.end() );
+		return sortedVec;
+	}
+
+	sortedVec.clear();
+	return sortedVec;
+}
+#endif
+
 void floatTetWild::setIntersection( const VertexConnectedTets& a, const VertexConnectedTets& b, std::vector<int>& result )
 {
 #if USE_ORIGINAL_VERSION
 	set_intersection( a.vec, b.vec, result );
+#else
+#if CONN_TETS_SORTED_COPY
+	const std::vector<int>& as = a.makeSortedVector();
+	const std::vector<int>& bs = b.makeSortedVector();
+	std::set_intersection( as.begin(), as.end(), bs.begin(), bs.end(), std::back_inserter( result ) );
 #else
 	IntersectionBuffers& ib = buffers;
 	ib.a = a.vec;
@@ -25,6 +48,7 @@ void floatTetWild::setIntersection( const VertexConnectedTets& a, const VertexCo
 	std::sort( ib.a.begin(), ib.a.end() );
 	std::sort( ib.b.begin(), ib.b.end() );
 	std::set_intersection( ib.a.begin(), ib.a.end(), ib.b.begin(), ib.b.end(), std::back_inserter( result ) );
+#endif
 #endif
 }
 
@@ -151,6 +175,12 @@ void floatTetWild::setIntersection( const VertexConnectedTets& a, const VertexCo
 	if( a.empty() || b.empty() || c.empty() )
 		return;
 
+#if CONN_TETS_SORTED_COPY
+	const std::vector<int>& as = a.makeSortedVector();
+	const std::vector<int>& bs = b.makeSortedVector();
+	const std::vector<int>& cs = c.makeSortedVector();
+	merge3( as, bs, cs, result );
+#else
 	IntersectionBuffers& ib = buffers;
 	ib.a = a.vec;
 	ib.b = b.vec;
@@ -163,6 +193,7 @@ void floatTetWild::setIntersection( const VertexConnectedTets& a, const VertexCo
 	// auto it = std::set_intersection( result.begin(), result.end(), ib.c.begin(), ib.c.end(), result.begin() );
 	// result.resize( it - result.begin() );
 	merge3( ib.a, ib.b, ib.c, result );
+#endif
 
 #if COMPARE_VERSION
 	std::vector<int> orig;
