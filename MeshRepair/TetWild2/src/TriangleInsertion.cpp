@@ -272,39 +272,6 @@ void floatTetWild::insert_triangles_aux( const std::vector<Vector3>& input_verti
 	int cnt_fail = 0;
 	int cnt_total = 0;
 
-	/////
-	//    if(!is_again) {
-	//        std::vector<std::vector<int>> conn_fs(input_vertices.size());
-	//        for (int i = 0; i < input_faces.size(); i++) {
-	//            for (int j = 0; j < 3; j++)
-	//                conn_fs[input_faces[i][j]].push_back(i);
-	//        }
-	//        std::vector<bool> is_visited(input_faces.size(), false);
-	//        std::vector<Vector3> ns(input_faces.size());
-	//        for (int i = 0; i < input_faces.size(); i++) {
-	//            ns[i] = (input_vertices[input_faces[i][1]] - input_vertices[input_faces[i][0]]).cross(
-	//                    input_vertices[input_faces[i][2]] - input_vertices[input_faces[i][0]]).normalized();
-	//        }
-	//        for (int i = 0; i < sorted_f_ids.size(); i++) {
-	//            int f_id = sorted_f_ids[i];
-	//            if (is_face_inserted[f_id])
-	//                continue;
-	//
-	//            std::vector<int> f_ids;
-	//            if (insert_multi_triangles(f_id, input_vertices, input_faces, input_tags,
-	//                                       conn_fs, ns, is_visited, f_ids,
-	//                                       mesh, track_surface_fs, tree, is_again)) {
-	//                for (int inserted_f_id: f_ids)
-	//                    is_face_inserted[inserted_f_id] = true;
-	//            } else
-	//                cnt_total += f_ids.size();
-	//            cnt_total += f_ids.size();
-	//        }
-	//        logger().info("insert_multi_triangles * n done, #v = {}, #t = {}", mesh.tet_vertices.size(), mesh.tets.size());
-	//        logger().info("uninserted #f = {}/{}", std::count(is_face_inserted.begin(), is_face_inserted.end(), false),
-	//                      is_face_inserted.size() - cnt_matched);
-	//    }
-
 	//////
 	for( int i = 0; i < sorted_f_ids.size(); i++ )
 	{
@@ -314,22 +281,11 @@ void floatTetWild::insert_triangles_aux( const std::vector<Vector3>& input_verti
 			mesh.logger().logDebug( "inserting f%i... %i failed", i, cnt_fail );
 			mesh.logger().logDebug( "snapped %i/%i", cnt_snapped, cnt_total );
 			mesh.logger().logDebug( "\t- time_find_cutting_tets = %gs (total %gs)", time_find_cutting_tets - old_time_find_cutting_tets, time_find_cutting_tets );
-			//            logger().info("\t\t- time_find_cutting_tets1 = {}s", time_find_cutting_tets1);
-			//            logger().info("\t\t- time_find_cutting_tets2 = {}s", time_find_cutting_tets2);
-			//            logger().info("\t\t- time_find_cutting_tets3 = {}s", time_find_cutting_tets3);
-			//            logger().info("\t\t- time_find_cutting_tets4 = {}s", time_find_cutting_tets4);
 			mesh.logger().logDebug( "\t- time_cut_mesh = %gs (total %gs)", time_cut_mesh - old_time_cut_mesh, time_cut_mesh );
-			//            logger().info("\t\t- time_cut_mesh1 = {}s", time_cut_mesh1);
-			//            logger().info("\t\t- time_cut_mesh2 = {}s", time_cut_mesh2);
-			//            print_times1();
 			mesh.logger().logDebug( "\t- time_get_intersecting_edges_and_points = %gs (total %gs)",
 			  time_get_intersecting_edges_and_points - old_time_get_intersecting_edges_and_points, time_get_intersecting_edges_and_points );
-			// print_times1();
 			mesh.logger().logDebug( "\t- time_subdivide_tets = %gs (total %gs)", time_subdivide_tets - old_time_subdivide_tets, time_subdivide_tets );
 			mesh.logger().logDebug( "\t- time_push_new_tets = %gs (total %gs)", time_push_new_tets - old_time_push_new_tets, time_push_new_tets );
-			//            logger().info("\t\t- time_push_new_tets1 = {}s", time_push_new_tets1);
-			//            logger().info("\t\t- time_push_new_tets2 = {}s", time_push_new_tets2);
-			//            logger().info("\t\t- time_push_new_tets3 = {}s", time_push_new_tets3);
 			mesh.logger().logDebug( "\t- time_simplify_subdivision_result = %gs (total %gs)",
 			  time_simplify_subdivision_result - old_time_simplify_subdivision_result,
 			  time_simplify_subdivision_result );
@@ -343,20 +299,6 @@ void floatTetWild::insert_triangles_aux( const std::vector<Vector3>& input_verti
 			mesh.logger().logDebug( "#v = %i/%zu", mesh.get_v_num(), mesh.tet_vertices.size() );
 			mesh.logger().logDebug( "#t = %i/%zu", mesh.get_t_num(), mesh.tets.size() );
 		}
-		// fortest
-
-		//        //fortest
-		//        if(i>0 && i%10000 == 0) {
-		//            logger().info("before opt");
-		//            logger().info("#v = {}/{}", mesh.get_v_num(), mesh.tet_vertices.size());
-		//            logger().info("#t = {}/{}", mesh.get_t_num(), mesh.tets.size());
-		//            optimize_non_surface(input_vertices, input_faces, input_tags, is_face_inserted, track_surface_fs,
-		//                                 mesh, tree, is_again);
-		//            logger().info("after opt");
-		//            logger().info("#v = {}/{}", mesh.get_v_num(), mesh.tet_vertices.size());
-		//            logger().info("#t = {}/{}", mesh.get_t_num(), mesh.tets.size());
-		//        }
-		//        //fortest
 
 		int f_id = sorted_f_ids[ i ];
 		if( is_face_inserted[ f_id ] )
@@ -392,31 +334,13 @@ void floatTetWild::insert_triangles_aux( const std::vector<Vector3>& input_verti
 	  known_surface_fs, known_not_surface_fs );
 	mesh.logger().logInfo( "uninserted #f = %zu/%i", std::count( is_face_inserted.begin(), is_face_inserted.end(), false ), (int)is_face_inserted.size() - cnt_matched );
 
-	// fortest
-	// check_track_surface_fs( mesh, track_surface_fs, input_vertices, input_faces, sorted_f_ids );
-	// fortest
-
-	/////
 	std::vector<std::array<int, 2>> b_edges2;
 	mark_surface_fs(
 	  input_vertices, input_faces, input_tags, track_surface_fs, is_face_inserted, known_surface_fs, known_not_surface_fs, b_edges2, mesh, tree );
-	// fortest: output and check
-	//    output_surface(mesh, mesh.params.output_path+"_"+mesh.params.postfix+"_surface.stl");
 	mesh.logger().logInfo( "mark_surface_fs done" );
 
-	/////
 	// build b_tree using b_edges
 	tree.init_tmp_b_mesh_and_tree( input_vertices, input_faces, b_edges1, mesh, b_edges2 );
-	//    for (int v_id = 0; v_id < mesh.tet_vertices.size(); v_id++) {
-	//        if (mesh.tet_vertices[v_id].is_removed)
-	//            continue;
-	//        if (!mesh.tet_vertices[v_id].is_on_boundary)
-	//            continue;
-	//
-	//        GEO2::index_t prev_facet;
-	//        if (tree.is_out_tmp_b_envelope(mesh.tet_vertices[v_id].pos, mesh.params.eps_2, prev_facet))
-	//            mesh.tet_vertices[v_id].is_on_boundary = false;
-	//    }
 
 #ifdef FLOAT_TETWILD_USE_TBB
 	tbb::parallel_for( size_t( 0 ), mesh.tets.size(),
@@ -440,34 +364,6 @@ void floatTetWild::insert_triangles_aux( const std::vector<Vector3>& input_verti
 	if( std::count( is_face_inserted.begin(), is_face_inserted.end(), false ) == 0 )
 		mesh.is_input_all_inserted = true;
 	mesh.logger().logInfo( "#b_edge1 = %zu, #b_edges2 = %zu", b_edges1.size(), b_edges2.size() );
-
-	//    ///fortest
-	//    Eigen::MatrixXd V(input_vertices.size(), 3);
-	//    Eigen::MatrixXi F(std::count(is_face_inserted.begin(), is_face_inserted.end(), false), 3);
-	//    for (int i = 0; i < input_vertices.size(); i++)
-	//        V.row(i) = input_vertices[i];
-	//    int cnt = 0;
-	//    for (int i = 0; i < input_faces.size(); i++) {
-	//        if (is_face_inserted[i])
-	//            continue;
-	//        F.row(cnt) << input_faces[i][0], input_faces[i][1], input_faces[i][2];
-	//        cnt++;
-	//    }
-	//    igl::writeSTL(mesh.params.output_path+"_"+mesh.params.postfix+"_uninserted.stl", V, F);
-	//    //
-	//    std::ofstream fout(mesh.params.output_path+"_"+mesh.params.postfix+"_b_es.obj");
-	//    for(int i=0;i<tree.tmp_b_mesh.vertices.nb();i++){
-	//        fout<<"v "<<tree.tmp_b_mesh.vertices.point(i)[0]<<" "
-	//                <<tree.tmp_b_mesh.vertices.point(i)[1]<<" "
-	//                <<tree.tmp_b_mesh.vertices.point(i)[2]<<endl;
-	//    }
-	//    for(int i=0;i<tree.tmp_b_mesh.facets.nb();i++) {
-	//        fout << "l " << tree.tmp_b_mesh.facets.vertex(i, 1) + 1 << " "
-	//             << tree.tmp_b_mesh.facets.vertex(i, 2) + 1 << endl;
-	//    }
-	//    fout.close();
-	//    //fortest
-
 	pausee();
 }
 
@@ -688,29 +584,13 @@ bool floatTetWild::insert_one_triangle( int insert_f_id, const std::vector<Vecto
 void floatTetWild::push_new_tets( Mesh& mesh, std::vector<std::array<std::vector<int>, 4>>& track_surface_fs, std::vector<Vector3>& points,
   std::vector<MeshTet>& new_tets, std::vector<std::array<std::vector<int>, 4>>& new_track_surface_fs, std::vector<int>& modified_t_ids, bool is_again )
 {
-	//    igl::Timer timer;
-	//    timer.start();
-	/// vs
 	const int old_v_size = mesh.tet_vertices.size();
 	mesh.tet_vertices.resize( mesh.tet_vertices.size() + points.size() );
 	for( int i = 0; i < points.size(); i++ )
-	{
 		mesh.tet_vertices[ old_v_size + i ].pos = points[ i ];
-		// todo: tags???
-	}
-	//    time_push_new_tets1 += timer.getElapsedTime();
 
-	/// tets
-	//    timer.start();
-	//    mesh.tets.reserve(mesh.tets.size() + new_tets.size() - modified_t_ids.size());
-	//    time_push_new_tets2 += timer.getElapsedTime();
-
-	//    timer.start();
 	for( int i = 0; i < new_tets.size(); i++ )
 	{
-		//        if (is_again)
-		//            new_tets[i].quality = get_quality(mesh, new_tets[i]);
-
 		if( i < modified_t_ids.size() )
 		{
 			for( int j = 0; j < 4; j++ )
@@ -726,25 +606,13 @@ void floatTetWild::push_new_tets( Mesh& mesh, std::vector<std::array<std::vector
 		}
 		else
 		{
-			//            mesh.tets.push_back(new_tets[i]);
-			//            track_surface_fs.push_back(new_track_surface_fs[i]);
-			//            for (int j = 0; j < 4; j++) {
-			//                mesh.tet_vertices[mesh.tets.back()[j]].conn_tets.push_back(mesh.tets.size() - 1);
-			//            }
 			for( int j = 0; j < 4; j++ )
-			{
 				mesh.tet_vertices[ new_tets[ i ][ j ] ].conn_tets.push_back( mesh.tets.size() + i - modified_t_ids.size() );
-			}
 		}
-		// todo: tags???
 	}
-	//    time_push_new_tets2 += timer.getElapsedTime();
-
-	//    timer.start();
 	mesh.tets.insert( mesh.tets.end(), new_tets.begin() + modified_t_ids.size(), new_tets.end() );
 	track_surface_fs.insert( track_surface_fs.end(), new_track_surface_fs.begin() + modified_t_ids.size(), new_track_surface_fs.end() );
 	modified_t_ids.clear();
-	//    time_push_new_tets3 += timer.getElapsedTime();
 }
 
 #include "EdgeCollapsing.h"
@@ -791,7 +659,8 @@ void floatTetWild::simplify_subdivision_result(
 		else
 		{
 			if( !is_duplicated )
-			{  /// boundary edges
+			{
+				// boundary edges
 				freezed_v_ids.insert( edges[ i ][ 0 ] );
 				freezed_v_ids.insert( edges[ i ][ 1 ] );
 			}
@@ -813,17 +682,16 @@ void floatTetWild::simplify_subdivision_result(
 		if( freezed_v_ids.find( e[ 1 ] ) == freezed_v_ids.end() )
 			ec_queue.push( ElementInQueue( { { e[ 1 ], e[ 0 ] } }, l_2 ) );
 	}
-	//
 	if( ec_queue.empty() )
 		return;
-	//
+
 	std::unordered_set<int> all_v_ids;
 	for( const auto& e : edges )
 	{
 		all_v_ids.insert( e[ 0 ] );
 		all_v_ids.insert( e[ 1 ] );
 	}
-	//
+
 	int _ts = 0;
 	std::vector<int> _tet_tss;
 	bool is_update_tss = false;
@@ -892,54 +760,7 @@ void floatTetWild::simplify_subdivision_result(
 				} );
 			cnt_suc++;
 		}
-
-		//        ////
-		//        std::vector<int> n12_t_ids;
-		//        set_intersection(mesh.tet_vertices[v1_id].conn_tets, mesh.tet_vertices[v2_id].conn_tets, n12_t_ids);
-		//        std::vector<int> n1_t_ids;//v1.conn_tets - n12_t_ids
-		//        std::sort(mesh.tet_vertices[v1_id].conn_tets.begin(), mesh.tet_vertices[v1_id].conn_tets.end());
-		//        std::sort(n12_t_ids.begin(), n12_t_ids.end());
-		//        std::set_difference(mesh.tet_vertices[v1_id].conn_tets.begin(), mesh.tet_vertices[v1_id].conn_tets.end(),
-		//                            n12_t_ids.begin(), n12_t_ids.end(), std::back_inserter(n1_t_ids));
-		//
-		//        //inversion
-		//        std::vector<int> js_n1_t_ids;
-		//        for (int t_id:n1_t_ids) {
-		//            int j = mesh.tets[t_id].find(v1_id);
-		//            js_n1_t_ids.push_back(j);
-		//            if (is_inverted(mesh, t_id, j, mesh.tet_vertices[v2_id].pos)) {
-		//                is_valid = false;
-		//                break;
-		//            }
-		//        }
-		//        if (!is_valid)
-		//            continue;
-		//
-		//        //check quality
-		//        //todo
-		//
-		//        //real update
-		//        mesh.tet_vertices[v2_id].pos = mesh.tet_vertices[v1_id].pos;
-		//        int ii = 0;
-		//        for (int t_id:n1_t_ids) {
-		//            int j = js_n1_t_ids[ii++];
-		//            mesh.tets[t_id][j] = v2_id;
-		//            mesh.tet_vertices[v2_id].conn_tets.push_back(t_id);
-		//        }
-		//        for (int t_id: n12_t_ids) {
-		//            mesh.tets[t_id].is_removed = true;
-		//            for (int j = 0; j < 4; j++) {
-		//                if (mesh.tets[t_id][j] != v1_id)
-		//                    vector_erase(mesh.tet_vertices[mesh.tets[t_id][j]].conn_tets, t_id);
-		//            }
-		//        }
-		//        mesh.tet_vertices[v1_id].is_removed = true;
-		//        mesh.tet_vertices[v1_id].conn_tets.clear();
-		//
-		//        cnt_suc++;
 	}
-	//    if (cnt_suc > 0)
-	//        cout << "cnt_suc = " << cnt_suc << endl;
 }
 
 void floatTetWild::find_cutting_tets( int f_id, const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces,
@@ -1008,12 +829,6 @@ void floatTetWild::find_cutting_tets( int f_id, const std::vector<Vector3>& inpu
 #endif
 	}
 
-	//    const int CUT_UNKNOWN = INT_MIN;
-	//    std::vector<std::array<int, 4>> visited_results(mesh.tets.size(), {{CUT_UNKNOWN, CUT_UNKNOWN, CUT_UNKNOWN, CUT_UNKNOWN}});
-	//    const int test_f_id = 771;
-	//    const int test_f_id = -1;
-	//    const int test_j = 1;
-	//    const int test_v_id = input_faces[test_f_id][test_j];
 	while( !queue_t_ids.empty() )
 	{
 		int t_id = queue_t_ids.front();
@@ -1051,21 +866,8 @@ void floatTetWild::find_cutting_tets( int f_id, const std::vector<Vector3>& inpu
 		}
 
 		std::array<eOrientation, 4> oris;
-		//        int cnt_pos = 0;
-		//        int cnt_neg = 0;
-		//        int cnt_on = 0;
 		for( int j = 0; j < 4; j++ )
-		{
 			oris[ j ] = Predicates::orient_3d( vs[ 0 ], vs[ 1 ], vs[ 2 ], mesh.tet_vertices[ mesh.tets[ t_id ][ j ] ].pos );
-			//            if (oris[j] == Predicates::ORI_ZERO)
-			//                cnt_on++;
-			//            else if (oris[j] == Predicates::ORI_POSITIVE)
-			//                cnt_pos++;
-			//            else
-			//                cnt_neg++;
-		}
-		//        if (cnt_pos == 0 && cnt_neg == 0 && cnt_on < 3)
-		//            continue;
 
 		bool is_cutted = false;
 		std::vector<bool> is_cut_vs = { { false, false, false, false } };  /// is v on cut face
@@ -1089,29 +891,6 @@ void floatTetWild::find_cutting_tets( int f_id, const std::vector<Vector3>& inpu
 			auto& tp2 = mesh.tet_vertices[ mesh.tets[ t_id ][ ( j + 2 ) % 4 ] ].pos;
 			auto& tp3 = mesh.tet_vertices[ mesh.tets[ t_id ][ ( j + 3 ) % 4 ] ].pos;
 
-			//            if (cnt_on == 3) {
-			//                result = is_tri_tri_cutted_hint(vs[0], vs[1], vs[2], tp1, tp2, tp3, CUT_COPLANAR);
-			//            } else if (cnt_pos > 0 && cnt_neg > 0) {
-			//                result = is_tri_tri_cutted_hint(vs[0], vs[1], vs[2], tp1, tp2, tp3, CUT_FACE);
-			//            }
-			//            if (result == CUT_EMPTY)
-			//                continue;
-			//
-			//            is_cutted = true;
-			//            is_cut_vs[(j + 1) % 4] = true;
-			//            is_cut_vs[(j + 2) % 4] = true;
-			//            is_cut_vs[(j + 3) % 4] = true;
-
-			//            //fortest
-			//            if(t_id == 1016 && f_id == test_f_id) {
-			//                cout<<"1016"<<endl;
-			//                mesh.tets[t_id].print();
-			//                cout<<oris[0]<<" "<<oris[1]<<" "<<oris[2]<<" "<<oris[3]<<endl;
-			//                is_tri_tri_cutted_hint(vs[0], vs[1], vs[2], tp1, tp2, tp3, CUT_FACE, true);
-			//                pausee();
-			//            }
-			//            //fortest
-
 			if( cnt_on == 3 )
 			{
 				if( is_tri_tri_cutted_hint( vs[ 0 ], vs[ 1 ], vs[ 2 ], tp1, tp2, tp3, CUT_COPLANAR ) == CUT_COPLANAR )
@@ -1125,28 +904,6 @@ void floatTetWild::find_cutting_tets( int f_id, const std::vector<Vector3>& inpu
 			}
 			else if( cnt_pos > 0 && cnt_neg > 0 )
 			{
-				//                //fortest
-				//                if(t_id == 3976 && f_id == test_f_id) {
-				//                    mesh.tets[t_id].print();
-				//                    cout << oris[0] << " " << oris[1] << " " << oris[2] << " " << oris[3] << endl;
-				//                    std::vector<int> tmp;
-				//                    set_intersection(mesh.tet_vertices[mesh.tets[t_id][1]].conn_tets,
-				//                                     mesh.tet_vertices[mesh.tets[t_id][2]].conn_tets,
-				//                                     mesh.tet_vertices[mesh.tets[t_id][3]].conn_tets, tmp);
-				//                    vector_print(tmp);
-				//                    is_tri_tri_cutted_hint(vs[0], vs[1], vs[2], tp1, tp2, tp3, CUT_FACE, true);
-				//                    is_tri_tri_cutted_hint(vs[0], vs[1], vs[2], tp1, tp3, tp2, CUT_FACE, true);
-				//                    is_tri_tri_cutted_hint(vs[0], vs[2], vs[1], tp1, tp2, tp3, CUT_FACE, true);
-				//                    is_tri_tri_cutted_hint(vs[0], vs[2], vs[1], tp1, tp3, tp2, CUT_FACE, true);
-				//                    for (int k = 0; k < 3; k++) {
-				//                        cout << Predicates::orient_3d(tp1, tp2, tp3, vs[k]) << " "
-				//                             << Predicates::orient_3d(tp1, tp3, tp2, vs[k]) << " "
-				//                             << Predicates::orient_3d(tp3, tp2, tp1, vs[k]) << endl;
-				//                    }
-				//                    pausee();
-				//                }
-				//                //fortest
-
 				if( is_tri_tri_cutted_hint( vs[ 0 ], vs[ 1 ], vs[ 2 ], tp1, tp2, tp3, CUT_FACE ) == CUT_FACE )
 				{
 					result = CUT_FACE;
@@ -1183,115 +940,6 @@ void floatTetWild::find_cutting_tets( int f_id, const std::vector<Vector3>& inpu
 					is_cut_vs[ ( j + 1 ) % 4 ] = true;
 				}
 			}
-			//            if (is_cut_vs[0] && is_cut_vs[1] && is_cut_vs[2] && is_cut_vs[3])
-			//                break;
-
-			//            //fortest
-			//            if (f_id == test_f_id && mesh.tets[t_id].find(test_v_id) >= 0) {
-			//                cout << "input_f " << input_faces[f_id].transpose() << endl;
-			////                cout << input_vertices[input_faces[f_id][0]].transpose() << endl;
-			////                cout << input_vertices[input_faces[f_id][1]].transpose() << endl;
-			////                cout << input_vertices[input_faces[f_id][2]].transpose() << endl;
-			//                cout << "t " << t_id << ": ";
-			//                mesh.tets[t_id].print();
-			//                cout << "j " << j << endl;
-			//                cout << "cnt_on = " << cnt_on << endl;
-			//                cout << "cnt_pos = " << cnt_pos << endl;
-			//                cout << "cnt_neg = " << cnt_neg << endl;
-			//                cout << "result = " << result << endl;
-			////                if (cnt_pos > 0 && cnt_neg > 0) {
-			//                if(t_id == 3976 || t_id == 1016){
-			//                    cout<<"//////"<<endl;
-			//                    std::array<Vector3_r, 4> tet_vr;
-			//                    std::array<Vector3_r, 3> tri_vr;
-			//                    std::array<Vector3, 4> tet_vf;
-			//                    std::array<Vector3, 3> tri_vf;
-			//                    std::array<int, 4> tet_vids;
-			//                    std::array<int, 3> tri_vids;
-			//                    for(int k=0;k<4;k++){
-			//                        for(int r=0;r<3;r++) {
-			//                            tet_vr[k][r] = mesh.tet_vertices[mesh.tets[t_id][k]].pos[r];
-			//                            tet_vf[k][r] = mesh.tet_vertices[mesh.tets[t_id][k]].pos[r];
-			//                        }
-			//                        tet_vids[k] = mesh.tets[t_id][k];
-			//                    }
-			//                    for(int k=0;k<3;k++){
-			//                        for(int r=0;r<3;r++) {
-			//                            tri_vr[k][r] = input_vertices[input_faces[f_id][k]][r];
-			//                            tri_vf[k][r] = input_vertices[input_faces[f_id][k]][r];
-			//                        }
-			//                        tri_vids[k] = input_faces[f_id][k];
-			//                    }
-			//                    for(int k=0;k<4;k++) {
-			//                        cout << "tet " << t_id << " face" << k << endl;
-			//                        cout<<"plane of tet face:"<<endl;
-			//                        for (int r = 0; r < 3; r++) {
-			////                            cout<<mesh.tets[t_id][k]<<" "<<mesh.tets[t_id][(k + 1) % 4]<<" "<<mesh.tets[t_id][(k + 2) % 4]<<endl;
-			////                            cout<<input_faces[f_id][r]<<endl;
-			//                            cout<<tet_vids[k]<<" "<<tet_vids[(k + 1) % 4]<<" "<<tet_vids[(k + 2) % 4]<<endl;
-			//                            cout<<tri_vids[r]<<endl;
-			//                            if(tri_vids[r] == 406 && tet_vids[(k + 1) % 4] == 406){
-			//                                auto v = tet_vr[(k + 1) % 4] - tri_vr[r];
-			//                                cout<<v[0]<<" "<<v[1]<<" "<<v[2]<<endl;
-			//                                if(v[0] != 0)
-			//                                    cout<<"v0!=0"<<endl;
-			//                                if(v[1] != 0)
-			//                                    cout<<"v1!=0"<<endl;
-			//                                if(v[2] != 0)
-			//                                    cout<<"v2!=0"<<endl;
-			//                                pausee();
-			//                            }
-			//                            cout << orient_rational(tet_vr[k], tet_vr[(k + 1) % 4], tet_vr[(k + 2) % 4], tri_vr[r])
-			//                                 << "/ f:";
-			//                            cout << Predicates::orient_3d(tet_vf[k], tet_vf[(k + 1) % 4], tet_vf[(k + 2) % 4], tri_vf[r])
-			//                                 << endl;
-			//                        }
-			//                        cout<<"plane of tri:"<<endl;
-			//                        for (int r = 0; r < 3; r++) {
-			////                            cout<<input_faces[f_id][0]<<" "<<input_faces[f_id][1]<<" "<<input_faces[f_id][2]<<endl;
-			////                            cout<<mesh.tets[t_id][(k + r) % 4]<<endl;
-			//                            cout<<tri_vids[0]<<" "<<tri_vids[1]<<" "<<tri_vids[2]<<endl;
-			//                            cout<<tet_vids[(k + r) % 4]<<endl;
-			//                            cout << orient_rational(tri_vr[0], tri_vr[1], tri_vr[2], tet_vr[(k + r) % 4]) << "/ f:";
-			//                            cout << Predicates::orient_3d(tri_vf[0], tri_vf[1], tri_vf[2], tet_vf[(k + r) % 4]) << endl;
-			//                        }
-			//                    }
-			//                    cout<<"//////"<<endl;
-			//                }
-			//
-			//                if (t_id == 3976){
-			//                    {
-			//                        Eigen::MatrixXd V(4, 3);
-			//                        Eigen::MatrixXi F(4, 3);
-			//                        for (int k = 0; k < 4; k++) {
-			//                            V.row(k) = mesh.tet_vertices[mesh.tets[t_id][k]].pos;
-			//                            F.row(k) << (k + 1) % 4, (k + 2) % 4, (k + 3) % 4;
-			//                        }
-			//                        igl::writeOFF("test_cut_t_ids1_"+std::to_string(t_id)+".off", V, F);
-			//                    }
-			//                }
-			//                if (t_id == 1016) {
-			//                    {
-			//                        Eigen::MatrixXd V(4, 3);
-			//                        Eigen::MatrixXi F(4, 3);
-			//                        for (int k = 0; k < 4; k++) {
-			//                            V.row(k) = mesh.tet_vertices[mesh.tets[t_id][k]].pos;
-			//                            F.row(k) << (k + 1) % 4, (k + 2) % 4, (k + 3) % 4;
-			//                        }
-			//                        igl::writeOFF("test_cut_t_ids1_"+std::to_string(t_id)+".off", V, F);
-			//                    }
-			//                    {
-			//                        Eigen::MatrixXd V(3, 3);
-			//                        Eigen::MatrixXi F(1, 3);
-			//                        for (int k = 0; k < 3; k++)
-			//                            V.row(k) = input_vertices[input_faces[f_id][k]];
-			//                        F.row(0) << 0, 1, 2;
-			//                        igl::writeOFF("test_cut_t_ids2_"+std::to_string(t_id)+".off", V, F);
-			//                    }
-			////                    pausee();
-			//                }
-			//            }
-			//            //fortest
 		}
 		if( is_cutted )
 			cut_t_ids.push_back( t_id );
@@ -1310,56 +958,6 @@ void floatTetWild::find_cutting_tets( int f_id, const std::vector<Vector3>& inpu
 			}
 		}
 	}
-
-	//    //fortest
-	//    if (cut_t_ids.empty()) {
-	//        cout << "cut_t_ids.empty()" << endl;
-	//        cout << "f" << f_id << ": " << input_faces[f_id][0] << " " << input_faces[f_id][1] << " "
-	//             << input_faces[f_id][2] << endl;
-	//        std::vector<int> all_cut_t_ids;
-	//        for (int t_id = 0; t_id < mesh.tets.size(); t_id++) {
-	//            std::array<int, 4> oris;
-	//            for (int j = 0; j < 4; j++) {
-	//                oris[j] = Predicates::orient_3d(vs[0], vs[1], vs[2], mesh.tet_vertices[mesh.tets[t_id][j]].pos);
-	//            }
-	//
-	//            for (int j = 0; j < 4; j++) {
-	//                int cnt_pos = 0;
-	//                int cnt_neg = 0;
-	//                int cnt_on = 0;
-	//                for (int k = 0; k < 3; k++) {
-	//                    if (oris[(j + k + 1) % 4] == Predicates::ORI_ZERO)
-	//                        cnt_on++;
-	//                    else if (oris[(j + k + 1) % 4] == Predicates::ORI_POSITIVE)
-	//                        cnt_pos++;
-	//                    else
-	//                        cnt_neg++;
-	//                }
-	//
-	//                int result = CUT_EMPTY;
-	//                auto &tp1 = mesh.tet_vertices[mesh.tets[t_id][(j + 1) % 4]].pos;
-	//                auto &tp2 = mesh.tet_vertices[mesh.tets[t_id][(j + 2) % 4]].pos;
-	//                auto &tp3 = mesh.tet_vertices[mesh.tets[t_id][(j + 3) % 4]].pos;
-	//                if (cnt_on == 3) {
-	//                    result = is_tri_tri_cutted_hint(vs[0], vs[1], vs[2], tp1, tp2, tp3, CUT_COPLANAR);
-	//                } else if (cnt_pos > 0 && cnt_neg > 0) {
-	//                    result = is_tri_tri_cutted_hint(vs[0], vs[1], vs[2], tp1, tp2, tp3, CUT_FACE);
-	//                }
-	//                if (result == CUT_EMPTY)
-	//                    continue;
-	//
-	//                all_cut_t_ids.push_back(t_id);
-	//                break;
-	//            }
-	//        }
-	//        cout << all_cut_t_ids.size() << endl;
-	//        for (int t_id:all_cut_t_ids) {
-	//            cout << "t" << t_id << ": ";
-	//            mesh.tets[t_id].print();
-	//        }
-	//        pausee();
-	//    }
-	//    //fortest
 }
 
 bool floatTetWild::subdivide_tets( int insert_f_id, Mesh& mesh, CutMesh& cut_mesh, std::vector<Vector3>& points,
@@ -1371,23 +969,11 @@ bool floatTetWild::subdivide_tets( int insert_f_id, Mesh& mesh, CutMesh& cut_mes
 	static const std::array<std::array<int, 3>, 4> t_f_es = { { { { 1, 5, 4 } }, { { 5, 3, 2 } }, { { 3, 0, 4 } }, { { 0, 1, 2 } } } };
 	static const std::array<std::array<int, 3>, 4> t_f_vs = { { { { 3, 1, 2 } }, { { 0, 2, 3 } }, { { 1, 3, 0 } }, { { 2, 0, 1 } } } };
 
-	// fortest
-	//    for (auto m: map_edge_to_intersecting_point)
-	//        cout << (m.first[0]) << " " << (m.first[1]) << ": " << mesh.tet_vertices.size() + m.second << endl;
-	// fortest
-
 	covered_tet_fs.clear();
 	for( int I = 0; I < subdivide_t_ids.size(); I++ )
 	{
 		int t_id = subdivide_t_ids[ I ];
 		bool is_mark_sf = is_mark_surface[ I ];
-
-		// fortest
-		//        cout << endl << "t_id = " << t_id << endl;
-		//        cout << "is_mark_sf = " << is_mark_sf << endl;
-		//        cout << mesh.tets[t_id][0] << " " << mesh.tets[t_id][1] << " " << mesh.tets[t_id][2] << " "
-		//             << mesh.tets[t_id][3] << endl;
-		// fortest
 
 		/////
 		std::bitset<6> config_bit;
@@ -1412,12 +998,10 @@ bool floatTetWild::subdivide_tets( int insert_f_id, Mesh& mesh, CutMesh& cut_mes
 			}
 		}
 		int config_id = config_bit.to_ulong();
-		//        cout << "config_id = " << config_id << endl;//fortest
 		if( config_id == 0 )
 		{  // no intersection
 			if( is_mark_sf )
 			{
-				//                cout << "is_mark_surface" << endl;//fortest
 				for( int j = 0; j < 4; j++ )
 				{
 					int cnt_on = 0;
@@ -1428,15 +1012,11 @@ bool floatTetWild::subdivide_tets( int insert_f_id, Mesh& mesh, CutMesh& cut_mes
 						if( cut_mesh.is_v_on_plane( cut_mesh.map_v_ids[ mesh.tets[ t_id ][ ( j + k + 1 ) % 4 ] ] ) )
 						{
 							cnt_on++;
-							//                            cout << (j + k + 1) % 4 << endl;//fortest
 						}
 					}
-					//                    cout << "cnt_on = " << cnt_on << endl;//fortest
 					// fortest
 					if( cnt_on == 4 )
-					{
 						mesh.logger().logWarning( "cnt_on==4!!" );
-					}
 					// fortest
 
 					if( cnt_on == 3 )
@@ -1448,24 +1028,6 @@ bool floatTetWild::subdivide_tets( int insert_f_id, Mesh& mesh, CutMesh& cut_mes
 
 						covered_tet_fs.push_back(
 						  { { mesh.tets[ t_id ][ ( j + 1 ) % 4 ], mesh.tets[ t_id ][ ( j + 2 ) % 4 ], mesh.tets[ t_id ][ ( j + 3 ) % 4 ] } } );
-
-						//                        //fortest
-						//                        int opp_t_id = get_opp_t_id(t_id, j, mesh);
-						//                        if(std::find(subdivide_t_ids.begin(), subdivide_t_ids.end(), opp_t_id) == subdivide_t_ids.end()) {
-						//                            cout << "cannot find opp_t_id in subdivide_t_ids!" << endl;
-						//                            cout << "t_id j: " << t_id << " " << j << endl;
-						//                            mesh.tets[t_id].print();
-						//                            cout << "opp_t_id: " << opp_t_id << endl;
-						//                            mesh.tets[opp_t_id].print();
-						//                            for (int k = 0; k < 3; k++) {
-						//                                int lv_id = cut_mesh.map_v_ids[mesh.tets[t_id][(j + k + 1) % 4]];
-						//                                cout << lv_id << ": " << cut_mesh.to_plane_dists[lv_id] << " "
-						//                                     << cut_mesh.is_snapped[lv_id] << endl;
-						//                            }
-						//                            pausee();
-						//                        }
-						//                        //fortest
-
 						break;
 					}
 				}
