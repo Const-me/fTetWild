@@ -1,11 +1,32 @@
 #pragma once
+#ifdef __AVX__
+#include "AvxMath.h"
+#else
 #include <emmintrin.h>
 #include <smmintrin.h>
+#endif
 
 namespace Simd
 {
 	struct alignas( 32 ) Vec3
 	{
+#ifdef __AVX__
+		__m256d v;
+
+		Vec3 operator-( const Vec3& b ) const
+		{
+			return Vec3 { _mm256_sub_pd( v, b ) };
+		}
+		Vec3 operator*( double s ) const
+		{
+			__m256d sv = _mm256_set1_pd( s );
+			return Vec3 { _mm256_mul_pd( v, sv ) };
+		}
+		operator __m256d() const
+		{
+			return v;
+		}
+#else
 		__m128d xy, z;
 
 		Vec3 operator-( const Vec3& b ) const
@@ -31,8 +52,29 @@ namespace Simd
 		{
 			return _mm_unpackhi_pd( xy, xy );
 		}
+#endif
 	};
 
+#ifdef __AVX__
+	inline Vec3 load3( const double* rsi )
+	{
+		return Vec3 { AvxMath::loadDouble3( rsi ) };
+	}
+	inline void store3( double* rdi, Vec3 v )
+	{
+		AvxMath::storeDouble3( rdi, v );
+	}
+
+	inline double dot( const Vec3& a, const Vec3& b )
+	{
+		return AvxMath::vector3DotScalar( a, b );
+	}
+
+	inline Vec3 cross( const Vec3& a, const Vec3& b )
+	{
+		return Vec3 { AvxMath::vector3Cross( a, b ) };
+	}
+#else
 	inline Vec3 load3( const double* rsi )
 	{
 		return Vec3 { _mm_loadu_pd( rsi ), _mm_load_sd( rsi + 2 ) };
@@ -60,4 +102,5 @@ namespace Simd
 		res.z = _mm_sub_pd( _mm_mul_pd( a.xy, b.yy() ), _mm_mul_pd( a.yy(), b.xy ) );
 		return res;
 	}
+#endif
 }  // namespace Simd
