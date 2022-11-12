@@ -280,15 +280,15 @@ void floatTetWild::insert_triangles_aux( const std::vector<Vector3>& input_verti
 		{
 			mesh.logger().logDebug( "inserting f%i... %i failed", i, cnt_fail );
 			mesh.logger().logDebug( "snapped %i/%i", cnt_snapped, cnt_total );
-			mesh.logger().logDebug( "\t- time_find_cutting_tets = %gs (total %gs)", time_find_cutting_tets - old_time_find_cutting_tets, time_find_cutting_tets );
+			mesh.logger().logDebug(
+			  "\t- time_find_cutting_tets = %gs (total %gs)", time_find_cutting_tets - old_time_find_cutting_tets, time_find_cutting_tets );
 			mesh.logger().logDebug( "\t- time_cut_mesh = %gs (total %gs)", time_cut_mesh - old_time_cut_mesh, time_cut_mesh );
 			mesh.logger().logDebug( "\t- time_get_intersecting_edges_and_points = %gs (total %gs)",
 			  time_get_intersecting_edges_and_points - old_time_get_intersecting_edges_and_points, time_get_intersecting_edges_and_points );
 			mesh.logger().logDebug( "\t- time_subdivide_tets = %gs (total %gs)", time_subdivide_tets - old_time_subdivide_tets, time_subdivide_tets );
 			mesh.logger().logDebug( "\t- time_push_new_tets = %gs (total %gs)", time_push_new_tets - old_time_push_new_tets, time_push_new_tets );
 			mesh.logger().logDebug( "\t- time_simplify_subdivision_result = %gs (total %gs)",
-			  time_simplify_subdivision_result - old_time_simplify_subdivision_result,
-			  time_simplify_subdivision_result );
+			  time_simplify_subdivision_result - old_time_simplify_subdivision_result, time_simplify_subdivision_result );
 
 			old_time_find_cutting_tets = time_find_cutting_tets;
 			old_time_cut_mesh = time_cut_mesh;
@@ -315,7 +315,8 @@ void floatTetWild::insert_triangles_aux( const std::vector<Vector3>& input_verti
 			break;	// fortest
 	}
 	mesh.logger().logInfo( "insert_one_triangle * n done, #v = %zu, #t = %zu", mesh.tet_vertices.size(), mesh.tets.size() );
-	mesh.logger().logInfo( "uninserted #f = %zu/%i", std::count( is_face_inserted.begin(), is_face_inserted.end(), false ), (int)is_face_inserted.size() - cnt_matched );
+	mesh.logger().logInfo(
+	  "uninserted #f = %zu/%i", std::count( is_face_inserted.begin(), is_face_inserted.end(), false ), (int)is_face_inserted.size() - cnt_matched );
 	mesh.logger().logInfo(
 	  "total timing: %gs", time_find_cutting_tets + time_cut_mesh + time_get_intersecting_edges_and_points + time_subdivide_tets + time_push_new_tets );
 
@@ -332,7 +333,8 @@ void floatTetWild::insert_triangles_aux( const std::vector<Vector3>& input_verti
 	std::vector<std::array<int, 3>> known_not_surface_fs;
 	insert_boundary_edges( input_vertices, input_faces, b_edge_infos, is_on_cut_edges, track_surface_fs, mesh, tree, is_face_inserted, is_again,
 	  known_surface_fs, known_not_surface_fs );
-	mesh.logger().logInfo( "uninserted #f = %zu/%i", std::count( is_face_inserted.begin(), is_face_inserted.end(), false ), (int)is_face_inserted.size() - cnt_matched );
+	mesh.logger().logInfo(
+	  "uninserted #f = %zu/%i", std::count( is_face_inserted.begin(), is_face_inserted.end(), false ), (int)is_face_inserted.size() - cnt_matched );
 
 	std::vector<std::array<int, 2>> b_edges2;
 	mark_surface_fs(
@@ -749,7 +751,9 @@ void floatTetWild::simplify_subdivision_result(
 		int result = collapse_an_edge( mesh, v_ids[ 0 ], v_ids[ 1 ], tree, new_edges, _ts, _tet_tss, is_check_quality, is_update_tss );
 		if( result > 0 )
 		{
-			new_edges.enumerate( [&]( int e0, int e1 ) {
+			new_edges.enumerate(
+			  [ & ]( int e0, int e1 )
+			  {
 				  if( all_v_ids.find( e0 ) == all_v_ids.end() || all_v_ids.find( e1 ) == all_v_ids.end() )
 					  return;
 				  Scalar l_2 = get_edge_length_2( mesh, e0, e1 );
@@ -757,17 +761,72 @@ void floatTetWild::simplify_subdivision_result(
 					  ec_queue.push( ElementInQueue( e0, e1, l_2 ) );
 				  if( freezed_v_ids.find( e1 ) == freezed_v_ids.end() )
 					  ec_queue.push( ElementInQueue( e1, e0, l_2 ) );
-				} );
+			  } );
 			cnt_suc++;
 		}
 	}
 }
 
+namespace
+{
+	using namespace floatTetWild;
+
+	static void findCuttingTetsOmp( Mesh& mesh, const Vector3& min_f, const Vector3& max_f, std::queue<int>& queue_t_ids, std::vector<bool>& is_visited )
+	{
+		const int length = (int)mesh.tets.size();
+#pragma omp parallel for
+		for( int t_id = 0; t_id < mesh.tets.size(); t_id++ )
+		{
+			const auto& mt = mesh.tets[ t_id ];
+			if( mt.is_removed )
+				continue;
+
+			Vector3 min_t, max_t;
+			get_bbox_tet( mesh.tet_vertices[ mt[ 0 ] ].pos, mesh.tet_vertices[ mt[ 1 ] ].pos, mesh.tet_vertices[ mt[ 2 ] ].pos,
+			  mesh.tet_vertices[ mt[ 3 ] ].pos, min_t, max_t );
+
+			if( !is_bbox_intersected( min_f, max_f, min_t, max_t ) )
+				continue;
+
+#pragma omp critical
+			{
+				queue_t_ids.push( t_id );
+				is_visited[ t_id ] = true;
+			}
+		}
+	}
+
+	static void findCuttingTets( Mesh& mesh, const Vector3& min_f, const Vector3& max_f, std::queue<int>& queue_t_ids, std::vector<bool>& is_visited )
+	{
+		for( size_t t_id = 0; t_id < mesh.tets.size(); t_id++ )
+		{
+			const auto& mt = mesh.tets[ t_id ];
+			if( mt.is_removed )
+				continue;
+
+			Vector3 min_t, max_t;
+			get_bbox_tet( mesh.tet_vertices[ mt[ 0 ] ].pos, mesh.tet_vertices[ mt[ 1 ] ].pos, mesh.tet_vertices[ mt[ 2 ] ].pos,
+			  mesh.tet_vertices[ mt[ 3 ] ].pos, min_t, max_t );
+
+			if( !is_bbox_intersected( min_f, max_f, min_t, max_t ) )
+				continue;
+
+			queue_t_ids.push( t_id );
+			is_visited[ t_id ] = true;
+		}
+	}
+}  // namespace
+
 void floatTetWild::find_cutting_tets( int f_id, const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces,
   const std::array<Vector3, 3>& vs, Mesh& mesh, std::vector<int>& cut_t_ids, bool is_again )
 {
-	std::vector<bool> is_visited( mesh.tets.size(), false );
-	std::queue<int> queue_t_ids;
+	Mesh::FindCuttingTetsBuffers& buffers = mesh.findCuttingTetsBuffers;
+
+	std::vector<bool>& is_visited = buffers.is_visited;
+	is_visited.clear();
+	is_visited.resize( mesh.tets.size(), false );
+
+	std::queue<int>& queue_t_ids = buffers.queue_t_ids;
 
 	if( !is_again )
 	{
@@ -790,43 +849,10 @@ void floatTetWild::find_cutting_tets( int f_id, const std::vector<Vector3>& inpu
 		Vector3 min_f, max_f;
 		get_bbox_face(
 		  input_vertices[ input_faces[ f_id ][ 0 ] ], input_vertices[ input_faces[ f_id ][ 1 ] ], input_vertices[ input_faces[ f_id ][ 2 ] ], min_f, max_f );
-#ifdef FLOAT_TETWILD_USE_TBB
-		tbb::concurrent_vector<int> tbb_t_ids;
-		tbb::parallel_for( size_t( 0 ), mesh.tets.size(),
-		  [ & ]( size_t t_id )
-		  {
-			  if( mesh.tets[ t_id ].is_removed )
-				  return;
-
-			  Vector3 min_t, max_t;
-			  get_bbox_tet( mesh.tet_vertices[ mesh.tets[ t_id ][ 0 ] ].pos, mesh.tet_vertices[ mesh.tets[ t_id ][ 1 ] ].pos,
-				mesh.tet_vertices[ mesh.tets[ t_id ][ 2 ] ].pos, mesh.tet_vertices[ mesh.tets[ t_id ][ 3 ] ].pos, min_t, max_t );
-			  if( !is_bbox_intersected( min_f, max_f, min_t, max_t ) )
-				  return;
-
-			  tbb_t_ids.push_back( t_id );
-		  } );
-		for( int t_id : tbb_t_ids )
-		{
-			queue_t_ids.push( t_id );
-			is_visited[ t_id ] = true;
-		}
-#else
-		for( int t_id = 0; t_id < mesh.tets.size(); t_id++ )
-		{
-			if( mesh.tets[ t_id ].is_removed )
-				continue;
-
-			Vector3 min_t, max_t;
-			get_bbox_tet( mesh.tet_vertices[ mesh.tets[ t_id ][ 0 ] ].pos, mesh.tet_vertices[ mesh.tets[ t_id ][ 1 ] ].pos,
-			  mesh.tet_vertices[ mesh.tets[ t_id ][ 2 ] ].pos, mesh.tet_vertices[ mesh.tets[ t_id ][ 3 ] ].pos, min_t, max_t );
-			if( !is_bbox_intersected( min_f, max_f, min_t, max_t ) )
-				continue;
-
-			queue_t_ids.push( t_id );
-			is_visited[ t_id ] = true;
-		}
-#endif
+		if( mesh.params.num_threads > 1 )
+			findCuttingTetsOmp( mesh, min_f, max_f, queue_t_ids, is_visited );
+		else
+			findCuttingTets( mesh, min_f, max_f, queue_t_ids, is_visited );
 	}
 
 	while( !queue_t_ids.empty() )
@@ -870,7 +896,7 @@ void floatTetWild::find_cutting_tets( int f_id, const std::vector<Vector3>& inpu
 			oris[ j ] = Predicates::orient_3d( vs[ 0 ], vs[ 1 ], vs[ 2 ], mesh.tet_vertices[ mesh.tets[ t_id ][ j ] ].pos );
 
 		bool is_cutted = false;
-		std::vector<bool> is_cut_vs = { { false, false, false, false } };  /// is v on cut face
+		std::array<bool, 4> is_cut_vs = { { false, false, false, false } };	 /// is v on cut face
 		for( int j = 0; j < 4; j++ )
 		{
 			int cnt_pos = 0;
@@ -2399,8 +2425,7 @@ void floatTetWild::mark_surface_fs( const std::vector<Vector3>& input_vertices, 
 			eOrientation ori = Predicates::orient_3d( fv1, fv2, fv3, mesh.tet_vertices[ mesh.tets[ t_id ][ j ] ].pos );
 			eOrientation opp_ori = Predicates::orient_3d( fv1, fv2, fv3, mesh.tet_vertices[ mesh.tets[ opp_t_id ][ k ] ].pos );
 			//
-			if( ori == eOrientation::Positive && opp_ori == eOrientation::Negative ||
-				ori == eOrientation::Negative && opp_ori == eOrientation::Positive )
+			if( ori == eOrientation::Positive && opp_ori == eOrientation::Negative || ori == eOrientation::Negative && opp_ori == eOrientation::Positive )
 			{
 				mesh.tets[ t_id ].is_surface_fs[ j ] = (int8_t)ori;
 				mesh.tets[ opp_t_id ].is_surface_fs[ k ] = (int8_t)opp_ori;

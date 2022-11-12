@@ -181,7 +181,10 @@
     <ClCompile Include="src\Mesh.cpp" />
     <ClCompile Include="src\MeshImprovement.cpp" />
     <ClCompile Include="src\Simplification.cpp" />
-    <ClCompile Include="src\TriangleInsertion.cpp" />
+    <ClCompile Include="src\TriangleInsertion.cpp">
+      <OpenMPSupport>true</OpenMPSupport>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="src\VertexSmoothing.cpp">
       <OpenMPSupport>true</OpenMPSupport>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>

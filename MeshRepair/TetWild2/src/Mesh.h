@@ -191,6 +191,13 @@ namespace floatTetWild
 		};
 		EdgeCollapsingBuffers edgeCollapsingBuffers;
 
+		struct FindCuttingTetsBuffers
+		{
+			std::vector<bool> is_visited;
+			std::queue<int> queue_t_ids;
+		};
+		FindCuttingTetsBuffers findCuttingTetsBuffers;
+
 		void createThreadLocalBuffers();
 	};
 }  // namespace floatTetWild
