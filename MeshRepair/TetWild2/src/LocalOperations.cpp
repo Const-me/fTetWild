@@ -294,7 +294,7 @@ bool floatTetWild::is_boundary_edge( const Mesh& mesh, int v1_id, int v2_id, con
 
 bool floatTetWild::is_valid_edge( const Mesh& mesh, int v1_id, int v2_id )
 {
-	if( mesh.tet_vertices[ v1_id ].isRemoved()|| mesh.tet_vertices[ v2_id ].isRemoved() )
+	if( mesh.tet_vertices[ v1_id ].isRemoved() || mesh.tet_vertices[ v2_id ].isRemoved() )
 		return false;
 	//    std::vector<int> tmp;
 	//    set_intersection(mesh.tet_vertices[v1_id].conn_tets, mesh.tet_vertices[v2_id].conn_tets, tmp);
@@ -455,32 +455,31 @@ bool floatTetWild::is_inverted( const Mesh& mesh, int t_id )
 	return true;
 }
 
+namespace
+{
+	// clang-format off
+	alignas( 16 ) static const std::array<uint8_t, 16> isInvertedIndices = 
+	{
+		4, 1, 2, 3, // new_p, v1, v2, v3
+		0, 4, 2, 3, // v0, new_p, v2, v3
+		0, 1, 4, 3, // v0, v1, new_p, v3
+		0, 1, 2, 4	// v0, v1, v2, new_p
+	};
+	// clang-format on
+}
+
 bool floatTetWild::is_inverted( const Mesh& mesh, int t_id, int j, const Vector3& new_p )
 {
-	eOrientation ori;
-	if( j == 0 )
-	{
-		ori = Predicates::orient_3d( new_p, mesh.tet_vertices[ mesh.tets[ t_id ][ 1 ] ].pos, mesh.tet_vertices[ mesh.tets[ t_id ][ 2 ] ].pos,
-		  mesh.tet_vertices[ mesh.tets[ t_id ][ 3 ] ].pos );
-	}
-	else if( j == 1 )
-	{
-		ori = Predicates::orient_3d( mesh.tet_vertices[ mesh.tets[ t_id ][ 0 ] ].pos, new_p, mesh.tet_vertices[ mesh.tets[ t_id ][ 2 ] ].pos,
-		  mesh.tet_vertices[ mesh.tets[ t_id ][ 3 ] ].pos );
-	}
-	else if( j == 2 )
-	{
-		ori = Predicates::orient_3d( mesh.tet_vertices[ mesh.tets[ t_id ][ 0 ] ].pos, mesh.tet_vertices[ mesh.tets[ t_id ][ 1 ] ].pos, new_p,
-		  mesh.tet_vertices[ mesh.tets[ t_id ][ 3 ] ].pos );
-	}
-	else
-	{
-		ori = Predicates::orient_3d( mesh.tet_vertices[ mesh.tets[ t_id ][ 0 ] ].pos, mesh.tet_vertices[ mesh.tets[ t_id ][ 1 ] ].pos,
-		  mesh.tet_vertices[ mesh.tets[ t_id ][ 2 ] ].pos, new_p );
-	}
-	if( ori == eOrientation::Positive )
-		return false;
-	return true;
+	assert( j >= 0 && j < 4 );
+
+	const Vector4i& tet = mesh.tets[ t_id ].indices;
+	std::array<const Vector3*, 5> sourcePointers = {
+	  &mesh.tet_vertices[ tet[ 0 ] ].pos, &mesh.tet_vertices[ tet[ 1 ] ].pos, &mesh.tet_vertices[ tet[ 2 ] ].pos, &mesh.tet_vertices[ tet[ 3 ] ].pos, &new_p };
+
+	const uint8_t* lookup = isInvertedIndices.data() + 4 * j;
+	const Vector3** rsi = sourcePointers.data();
+	eOrientation ori = Predicates::orient_3d( *rsi[ lookup[ 0 ] ], *rsi[ lookup[ 1 ] ], *rsi[ lookup[ 2 ] ], *rsi[ lookup[ 3 ] ] );
+	return ori != eOrientation::Positive;
 }
 
 bool floatTetWild::is_inverted( const MeshVertex& v0, const MeshVertex& v1, const MeshVertex& v2, const MeshVertex& v3 )
