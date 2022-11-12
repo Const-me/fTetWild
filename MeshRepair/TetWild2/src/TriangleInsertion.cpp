@@ -464,41 +464,20 @@ bool floatTetWild::insert_multi_triangles( int insert_f_id, const std::vector<Ve
 bool floatTetWild::insert_one_triangle( int insert_f_id, const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces,
   const std::vector<int>& input_tags, Mesh& mesh, std::vector<std::array<std::vector<int>, 4>>& track_surface_fs, AABBWrapper& tree, bool is_again )
 {
-	//    igl::Timer timer;
 	std::array<Vector3, 3> vs = { { input_vertices[ input_faces[ insert_f_id ][ 0 ] ], input_vertices[ input_faces[ insert_f_id ][ 1 ] ],
 	  input_vertices[ input_faces[ insert_f_id ][ 2 ] ] } };
 	Vector3 n = ( vs[ 1 ] - vs[ 0 ] ).cross( vs[ 2 ] - vs[ 0 ] );
 	n.normalize();
 	int t = get_t( vs[ 0 ], vs[ 1 ], vs[ 2 ] );
 
-	/////
-	//    timer.start();
 	std::vector<int> cut_t_ids;
 	find_cutting_tets( insert_f_id, input_vertices, input_faces, vs, mesh, cut_t_ids, is_again );
-	//    time_find_cutting_tets += timer.getElapsedTime();
 
-	// fortest
-	// myassert( !cut_t_ids.empty(), "cut_t_ids.empty()!!!" );
 	if( cut_t_ids.empty() )
-	{
-		/*  cout << get_area( vs[ 0 ], vs[ 1 ], vs[ 2 ] ) << endl;
-		cout << "f" << insert_f_id << ": " << input_faces[ insert_f_id ][ 0 ] << " " << input_faces[ insert_f_id ][ 1 ] << " "
-			 << input_faces[ insert_f_id ][ 2 ] << endl;
-		pausee();
-		return false; */
 		throw std::logic_error( "cut_t_ids.empty()" );
-	}
-	// fortest
 
-	/////
-	//    timer.start();
-	//    igl::Timer timer1;
-	//    timer1.start();
 	CutMesh cut_mesh( mesh, n, vs );
 	cut_mesh.construct( cut_t_ids );
-	//    time_cut_mesh1 += timer1.getElapsedTime();
-	//    timer1.start();
-	//    bool is_expanded = false;//fortest
 
 	if( cut_mesh.snap_to_plane() )
 	{
@@ -506,24 +485,13 @@ bool floatTetWild::insert_one_triangle( int insert_f_id, const std::vector<Vecto
 		cut_mesh.project_to_plane( input_vertices.size() );
 		cut_mesh.expand_new( cut_t_ids );
 		cut_mesh.project_to_plane( input_vertices.size() );
-		// fortest
-		//        int cnt_proj = cut_mesh.project_to_plane(input_vertices.size());
-		//        int cnt_all = std::count(cut_mesh.is_snapped.begin(), cut_mesh.is_snapped.end(), true);
-		//        if (cnt_proj != cnt_all)
-		//            cout << cnt_proj << "/" << cnt_all << endl;
-		// fortest
 	}
-	//    time_cut_mesh2 += timer1.getElapsedTime();
-	//    time_cut_mesh += timer.getElapsedTime();
 
-	/////
-	//    timer.start();
 	std::vector<Vector3> points;
 	std::map<std::array<int, 2>, int> map_edge_to_intersecting_point;
 	std::vector<int> subdivide_t_ids;
 	if( !cut_mesh.get_intersecting_edges_and_points( points, map_edge_to_intersecting_point, subdivide_t_ids ) )
 	{
-		//        time_get_intersecting_edges_and_points += timer.getElapsedTime();
 		if( is_again )
 		{
 			if( is_uninserted_face_covered( insert_f_id, input_vertices, input_faces, cut_t_ids, mesh ) )
@@ -532,7 +500,7 @@ bool floatTetWild::insert_one_triangle( int insert_f_id, const std::vector<Vecto
 		mesh.logger().logError( "FAIL get_intersecting_edges_and_points" );
 		return false;
 	}
-	//    time_get_intersecting_edges_and_points += timer.getElapsedTime();
+
 	// have to add all cut_t_ids
 	vector_unique( cut_t_ids );
 	std::vector<int> tmp;
@@ -540,18 +508,13 @@ bool floatTetWild::insert_one_triangle( int insert_f_id, const std::vector<Vecto
 	std::vector<bool> is_mark_surface( cut_t_ids.size(), true );
 	cut_t_ids.insert( cut_t_ids.end(), tmp.begin(), tmp.end() );
 	is_mark_surface.resize( is_mark_surface.size() + tmp.size(), false );
-	//    cout << "cut_mesh.get_intersecting_edges_and_points OK" << endl;
-	//    time_get_intersecting_edges_and_points += timer.getElapsedTime();
 
-	/////
-	//    timer.start();
 	std::vector<MeshTet> new_tets;
 	std::vector<std::array<std::vector<int>, 4>> new_track_surface_fs;
 	std::vector<int> modified_t_ids;
 	if( !subdivide_tets( insert_f_id, mesh, cut_mesh, points, map_edge_to_intersecting_point, track_surface_fs, cut_t_ids, is_mark_surface, new_tets,
 		  new_track_surface_fs, modified_t_ids ) )
 	{
-		//        time_subdivide_tets += timer.getElapsedTime();
 		if( is_again )
 		{
 			if( is_uninserted_face_covered( insert_f_id, input_vertices, input_faces, cut_t_ids, mesh ) )
@@ -560,16 +523,10 @@ bool floatTetWild::insert_one_triangle( int insert_f_id, const std::vector<Vecto
 		mesh.logger().logWarning( "FAIL subdivide_tets" );
 		return false;
 	}
-	//    time_subdivide_tets += timer.getElapsedTime();
 
-	//    timer.start();
 	push_new_tets( mesh, track_surface_fs, points, new_tets, new_track_surface_fs, modified_t_ids, is_again );
-	//    time_push_new_tets += timer.getElapsedTime();
 
-	//    timer.start();
 	simplify_subdivision_result( insert_f_id, input_vertices.size(), mesh, tree, track_surface_fs );
-	//    time_simplify_subdivision_result += timer.getElapsedTime();
-
 	return true;
 }
 
