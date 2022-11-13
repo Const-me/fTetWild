@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="SortTest.cpp" />
+    <ClCompile Include="AASort\AASort.cpp">
+      <Filter>AASort</Filter>
+    </ClCompile>
+    <ClCompile Include="AASort\OuterCyclesCompressor.cpp">
+      <Filter>AASort</Filter>
+    </ClCompile>
+    <ClCompile Include="AASort\AASortTranspose.cpp">
+      <Filter>AASort</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AASort\AASort.h">
+      <Filter>AASort</Filter>
+    </ClInclude>
+    <ClInclude Include="AASort\AASortUtils.hpp">
+      <Filter>AASort</Filter>
+    </ClInclude>
+    <ClInclude Include="AASort\OuterCyclesCompressor.h">
+      <Filter>AASort</Filter>
+    </ClInclude>
+    <ClInclude Include="AASort\AASortTranspose.h">
+      <Filter>AASort</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="AASort">
+      <UniqueIdentifier>{6dac14c4-560f-4e2e-b8a6-b9d322a9ec80}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="AASort\TransposePermutations.inl">
+      <Filter>AASort</Filter>
+    </None>
+  </ItemGroup>
+</Project>

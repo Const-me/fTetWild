@@ -13,6 +13,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ComLightLib", "ComLightLib\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RepairTest", "RepairTest\RepairTest.vcxproj", "{45368F5B-C99A-48EF-A3E5-4634624ED4D8}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SortTest", "SortTest\SortTest.vcxproj", "{EDDE27B3-03FF-4F26-BF2F-A94649DCB044}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -39,6 +41,10 @@ Global
 		{45368F5B-C99A-48EF-A3E5-4634624ED4D8}.Debug|x64.Build.0 = Debug|x64
 		{45368F5B-C99A-48EF-A3E5-4634624ED4D8}.Release|x64.ActiveCfg = Release|x64
 		{45368F5B-C99A-48EF-A3E5-4634624ED4D8}.Release|x64.Build.0 = Release|x64
+		{EDDE27B3-03FF-4F26-BF2F-A94649DCB044}.Debug|x64.ActiveCfg = Debug|x64
+		{EDDE27B3-03FF-4F26-BF2F-A94649DCB044}.Debug|x64.Build.0 = Debug|x64
+		{EDDE27B3-03FF-4F26-BF2F-A94649DCB044}.Release|x64.ActiveCfg = Release|x64
+		{EDDE27B3-03FF-4F26-BF2F-A94649DCB044}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
