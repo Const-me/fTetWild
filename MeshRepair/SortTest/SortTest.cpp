@@ -8,7 +8,7 @@
 std::vector<int> createTest()
 {
 	srand( 0 );
-	constexpr int len = 1777;
+	constexpr int len = 999;
 	std::vector<int> res;
 	res.resize( len );
 	for( int& i : res )
@@ -27,10 +27,14 @@ int main()
 	// AASort::compressTransposeCycles();
 
 	std::vector<int> src = createTest();
-	std::vector<int> sortedStd, sorgedAA;
+	std::vector<int> sortedStd, sortedAA;
 	sortStd( src, sortedStd );
-	AASort::sortVector( src, sorgedAA );
-	if( sortedStd != sorgedAA )
+	AASort::sortVector( src, sortedAA );
+	if( sortedStd != sortedAA )
+		__debugbreak();
+	std::vector<int> sortedAAInplace = src;
+	AASort::sortVector( sortedAAInplace );
+	if( sortedStd != sortedAAInplace )
 		__debugbreak();
 
 	std::cout << "Hello World!\n";

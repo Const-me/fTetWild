@@ -137,9 +137,40 @@ namespace
 
 		static __forceinline size_t divByShrinkFactor( size_t n )
 		{
-			// The authors used 1.3 for the shrink factor
-			// We don't want any FP math here, due to the latency
-			return ( n * 10 ) / 13;
+			// 5.1. Implementation details "The shrink factor for our in core sorting algorithm was 1.28"
+			// Probably not coincidentally, the inverse of that value is 25/32, the product can be computed with two fast instructions
+			return ( n * 25 ) / 32;
+		}
+
+		// Implement combsort on the array into the transposed order
+		static void sortStep2( __m128i* buffer, size_t countVectors )
+		{
+			__m128i* const ptr = buffer;
+			size_t gap = divByShrinkFactor( countVectors );
+
+			while( gap > 1 )
+			{
+				// Straight comparisons
+				for( size_t i = 0; i < countVectors - gap; i++ )
+					Which::vector_cmpswap( ptr + i, ptr + i + gap );
+				// Skewed comparisons, when i + gap exceeds N/4
+				for( size_t i = countVectors - gap; i < countVectors; i++ )
+					Which::vector_cmpswap_skew( ptr + i, ptr + i + gap - countVectors );
+
+				// Shrink the gap
+				gap = divByShrinkFactor( gap );
+			}
+
+			while( true )
+			{
+				for( size_t i = 0; i < countVectors - 1; i++ )
+					Which::vector_cmpswap( ptr + i, ptr + i + 1 );
+
+				Which::vector_cmpswap_skew( ptr + countVectors - 1, ptr );
+
+				if( Which::isSorted( ptr, countVectors ) )
+					break;
+			}
 		}
 
 	  public:
@@ -171,40 +202,59 @@ namespace
 			const size_t countVectors = sortStep1( source, buffer, countBlocks );
 
 			// ==== Step #2 of the algorithm, vertically sort these vectors ====
-			__m128i* const ptr = buffer;
-			size_t gap = divByShrinkFactor( countVectors );
-
-			while( gap > 1 )
-			{
-				// Straight comparisons
-				for( size_t i = 0; i < countVectors - gap; i++ )
-					Which::vector_cmpswap( ptr + i, ptr + i + gap );
-				// Skewed comparisons, when i + gap exceeds N/4
-				for( size_t i = countVectors - gap; i < countVectors; i++ )
-					Which::vector_cmpswap_skew( ptr + i, ptr + i + gap - countVectors );
-
-				// Shrink the gap
-				gap = divByShrinkFactor( gap );
-			}
-
-			while( true )
-			{
-				for( size_t i = 0; i < countVectors - 1; i++ )
-					Which::vector_cmpswap( ptr + i, ptr + i + 1 );
-
-				Which::vector_cmpswap_skew( ptr + countVectors - 1, ptr );
-				if( Which::isSorted( ptr, countVectors ) )
-					break;
-			}
+			sortStep2( buffer, countVectors );
 
 			// ==== Step #3 of the algorithm, transpose the output back to normal ====
 			if( inPlace )
 			{
 				transposeInplace( buffer, countVectors / 4 );
+				// Truncate vector to the original size
 				dest.resize( source.size() );
 			}
 			else
 				transposeWithCopy( buffer, countVectors / 4, (int*)dest.data(), dest.size() );
+		}
+
+		static void sortInPlace( std::vector<E>& vec )
+		{
+			const size_t sourceSize = vec.size();
+			if( 0 == sourceSize )
+				return;
+
+			const size_t countBlocks = ( sourceSize + 15 ) / 16;
+			const bool inPlace = countBlocks <= maxInplaceBlocks();
+			__m128i* buffer;
+			if( inPlace )
+			{
+				// Slightly expand the vector to the next multiple of 16 elements, appending maximum value for the integer type
+				vec.resize( countBlocks * 16, Which::maxValue );
+				buffer = (__m128i*)vec.data();
+
+				// Note the first step of the algorithm becomes way more efficient
+				__m128i* const bufferEnd = buffer + countBlocks * 4;
+				for( __m128i* p = buffer; p < bufferEnd; p += 4 )
+					Which::copySortedBlock( p, p );
+			}
+			else
+			{
+				// Unfortunately, we need a local copy for the large final transpose
+				// We only have a lookup table for up to 64 4x4 blocks in the vector
+				buffer = makeTempBuffer( countBlocks );
+				sortStep1( vec, buffer, countBlocks );
+			}
+
+			// ==== Step #2 of the algorithm, execute combsort on the vector integer array into the transposed order ====
+			sortStep2( buffer, countBlocks * 4 );
+
+			// ==== Step #3 of the algorithm, transpose the output back to normal ====
+			if( inPlace )
+			{
+				transposeInplace( buffer, countBlocks );
+				// Truncate vector to the original size
+				vec.resize( sourceSize );
+			}
+			else
+				transposeWithCopy( buffer, countBlocks, (int*)vec.data(), sourceSize );
 		}
 	};
 }  // namespace
@@ -215,9 +265,17 @@ namespace AASort
 	{
 		SortImpl<int, Primitives<IntTraits>>::sort( source, dest );
 	}
+	void sortVector( std::vector<int>& vec )
+	{
+		SortImpl<int, Primitives<IntTraits>>::sortInPlace( vec );
+	}
 
 	void sortVector( const std::vector<uint32_t>& source, std::vector<uint32_t>& dest )
 	{
 		SortImpl<uint32_t, Primitives<UintTraits>>::sort( source, dest );
+	}
+	void sortVector( std::vector<uint32_t>& vec )
+	{
+		SortImpl<uint32_t, Primitives<UintTraits>>::sortInPlace( vec );
 	}
 };	// namespace AASort

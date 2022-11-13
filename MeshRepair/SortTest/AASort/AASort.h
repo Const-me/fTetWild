@@ -10,7 +10,11 @@ namespace AASort
 {
 	// Sort the vector of signed 32-bit integers
 	void sortVector( const std::vector<int>& source, std::vector<int>& dest );
+	// Sort the vector of signed 32-bit integers
+	void sortVector( std::vector<int>& vec );
 
 	// Sort the vector of unsigned 32-bit integers
 	void sortVector( const std::vector<uint32_t>& source, std::vector<uint32_t>& dest );
+	// Sort the vector of unsigned 32-bit integers
+	void sortVector( std::vector<uint32_t>& vec );
 };
