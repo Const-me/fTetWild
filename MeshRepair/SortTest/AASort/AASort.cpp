@@ -78,6 +78,13 @@ namespace
 	// Otherwise, the algorithm works in-place
 	static thread_local std::vector<__m128i> temporaryBuffer;
 
+	static __declspec( noinline ) __m128i* makeTempBuffer( size_t countBlocks )
+	{
+		std::vector<__m128i>& tmp = temporaryBuffer;
+		tmp.resize( countBlocks * 4 );
+		return tmp.data();
+	}
+
 	template<class E, class Which>
 	class SortImpl
 	{
@@ -96,36 +103,35 @@ namespace
 				rdi += 4;
 			}
 
-			if( 0 == ( inputIntegers % 16 ) )
-				return countBlocks * 4;
+			if( 0 != ( inputIntegers % 16 ) )
+			{
+				// Horizontally sort remaining 0-3 complete vectors
+				const size_t completeVectors = ( inputIntegers % 16 ) / 4;
+				__m128i* const rdiEnd = rdi + 4;
+				for( size_t i = 0; i < completeVectors; i++ )
+				{
+					__m128i v = _mm_loadu_si128( (const __m128i*)rsi );
+					rsi += 4;
+					v = Which::sortLanes( v );
+					_mm_storeu_si128( rdi, v );
+					rdi++;
+				}
 
-			// Horizontally sort remaining 0-3 complete vectors
-			const size_t completeVectors = ( inputIntegers % 16 ) / 4;
-			const __m128i* const rdiEnd = rdi + 4;
-			for( size_t i = 0; i < completeVectors; i++ )
-			{
-				__m128i v = _mm_loadu_si128( (const __m128i*)rsi );
-				rsi += 4;
-				v = Which::sortLanes( v );
-				_mm_storeu_si128( rdi, v );
-				rdi++;
+				// Unless the input size is a multiple of 4, horizontally sort the incomplete vector
+				const size_t incompleteVec = ( inputIntegers % 4 );
+				if( 0 != incompleteVec )
+				{
+					__m128i v = Which::loadPartialMaxPad( rsi, incompleteVec );
+					v = Which::sortLanes( v );
+					_mm_storeu_si128( rdi, v );
+					rdi++;
+				}
+
+				// Fill the remaining 0-3 destination vectors with maximum integer value
+				for( ; rdi < rdiEnd; rdi++ )
+					_mm_storeu_si128( rdi, Which::maxVector() );
 			}
-			// Unless the input size is a multiple of 4, horizontally sort the incomplete vector
-			const size_t incompleteVec = ( inputIntegers % 4 );
-			if( 0 != incompleteVec )
-			{
-				__m128i v = Which::loadPartialMaxPad( rsi, incompleteVec );
-				v = Which::sortLanes( v );
-				_mm_storeu_si128( rdi, v );
-				rdi++;
-			}
-			// Fill the remaining 0-3 destination vectors with maximum integer value
-			for( ; rdi < rdiEnd; rsi++ )
-			{
-				__m128i v = Which::maxVector();
-				_mm_storeu_si128( rdi, v );
-				rdi++;
-			}
+
 			return countBlocks * 4;
 		}
 
@@ -137,7 +143,7 @@ namespace
 		}
 
 	  public:
-		static __forceinline void sort( const std::vector<E>& source, std::vector<E>& dest )
+		static void sort( const std::vector<E>& source, std::vector<E>& dest )
 		{
 			if( source.empty() )
 			{
@@ -155,9 +161,8 @@ namespace
 			}
 			else
 			{
-				temporaryBuffer.resize( countBlocks * 4 );
+				buffer = makeTempBuffer( countBlocks );
 				dest.resize( source.size() );
-				buffer = temporaryBuffer.data();
 			}
 
 			// ==== Step #1 of the algorithm ====
