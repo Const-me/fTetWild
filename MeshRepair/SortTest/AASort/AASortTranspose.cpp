@@ -19,8 +19,13 @@ namespace
 	  public:
 		__forceinline Cycle( size_t start, size_t end )
 		{
+			assert( end > start );	// The compressor filters out empty cycles
 			cycle = &s_permuteInner[ start ];
-			cycleEnd = &s_permuteInner[ end ];
+
+			// C++ guarantees the pointers "one past the end" are valid.
+			// However, we can't use operator[] of the array to make such a pointer, because it fails with assertion in debug builds
+			assert( end <= s_permuteInner.size() );
+			cycleEnd = s_permuteInner.data() + end;
 		}
 
 		__forceinline bool notFinished() const
@@ -51,6 +56,10 @@ namespace
 			const size_t outerBegin = s_permuteOuter[ countBlocks - 1 ];
 			const size_t outerEnd = s_permuteOuter[ countBlocks ];
 
+			// Thus range is sometimes empty, that's why the ">=" in the assert.
+			// More specifically, when transposing a 4x4 block, the compressed collection returns an empty range.
+			assert( outerEnd >= outerBegin );
+
 			cycles = &s_permuteCycles[ outerBegin ];
 			cyclesEnd = &s_permuteCycles[ outerEnd ];
 		}
@@ -70,10 +79,6 @@ namespace
 			return Cycle { cycleStartIndex, cycleEndIndex };
 		}
 	};
-}  // namespace
-
-namespace AASort
-{
 
 	void transposeWithLookupTable( __m128i* const begin, size_t countBlocks )
 	{
@@ -107,43 +112,18 @@ namespace AASort
 			_mm_storeu_si128( ptrFirst, prevVec );
 		}
 	}
-
-	void transposeWithLookupTable_x2( __m128i* const begin, size_t countBlocks )
-	{
-		assert( countBlocks <= lookupTableSizeBlocks * lookupTableSizeBlocks );
-
-		// First pass, transpose the 4xN pieces where N is found in the lookup table
-		const size_t countOuter = ( countBlocks + lookupTableSizeBlocks - 1 ) / lookupTableSizeBlocks;
-		for( size_t i = 0; i < countOuter; i++ )
-		{
-			const size_t i1 = i * lookupTableSizeBlocks;
-			size_t i2 = ( i + 1 ) * lookupTableSizeBlocks;
-			i2 = std::min( i2, countBlocks );
-			size_t len = i2 - i1;
-			transposeWithLookupTable( begin + i1 * 4, len );
-		}
-
-		__m128i buffer[ lookupTableSizeBlocks ];
-
-
-		throw std::exception( "Not implemented" );
-	}
 }  // namespace AASort
 
 namespace AASort
 {
-	void transposeResultOuter( __m128i* const begin, size_t countBlocks )
+	size_t maxInplaceBlocks()
 	{
-		if( countBlocks <= lookupTableSizeBlocks )
-		{
-			transposeWithLookupTable( begin, countBlocks );
-			return;
-		}
-		if( countBlocks <= lookupTableSizeBlocks * lookupTableSizeBlocks )
-		{
-			transposeWithLookupTable_x2( begin, countBlocks );
-			return;
-		}
-		throw std::exception( "Not implemented" );
+		return lookupTableSizeBlocks;
+	}
+
+	void transposeBlocksInplace( __m128i* const begin, size_t countBlocks )
+	{
+		assert( countBlocks <= lookupTableSizeBlocks );
+		transposeWithLookupTable( begin, countBlocks );
 	}
 }  // namespace AASort

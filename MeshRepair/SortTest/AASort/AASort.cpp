@@ -4,11 +4,13 @@
 
 namespace
 {
-	static void transposeResult( __m128i* const begin, size_t countBlocks )
+	using namespace AASort;
+
+	// First pass of the transpose, process 4x4 matrices
+	__forceinline void transpose4x4Blocks( __m128i* const begin, size_t countBlocks )
 	{
 		__m128i* const rdiEnd = begin + countBlocks * 4;
 
-		// First pass, transpose 4x4 matrices
 		for( __m128i* p = begin; p < rdiEnd; p += 4 )
 		{
 			__m128i v0 = _mm_loadu_si128( p );
@@ -23,30 +25,68 @@ namespace
 			_mm_storeu_si128( p + 2, v2 );
 			_mm_storeu_si128( p + 3, v3 );
 		}
-
-		// Second transpose pass, the implementation depends on the length of the vector
-		// When the data size doesn't exceed 256 vectors = 4kb, TransposePermutations.inl file contains a lookup table for single-pass transposes
-		// Larger vectors should do something else 
-		AASort::transposeResultOuter( begin, countBlocks );
 	}
+
+	// Step #3 of the algorithm, when vector size does not exceed 4kb = 1024 elements
+	static void transposeInplace( __m128i* const begin, size_t countBlocks )
+	{
+		transpose4x4Blocks( begin, countBlocks );
+		transposeBlocksInplace( begin, countBlocks );
+	}
+
+	static void transposeWithCopy( __m128i* const begin, const size_t countBlocks, int* const rdi, const size_t outputLength )
+	{
+		assert( countBlocks == ( ( outputLength + 15 ) / 16 ) );
+		const size_t blockLength = maxInplaceBlocks();
+		const size_t outerLoopLength = ( countBlocks + blockLength - 1 ) / blockLength;
+
+		// Integers per column in the complete buffer
+		const size_t columnSize = countBlocks * 4;
+
+		for( size_t i = 0; i < outerLoopLength; i++ )
+		{
+			const size_t i0 = i * blockLength;
+			const size_t i2 = std::min( ( i + 1 ) * blockLength, countBlocks );
+			assert( i2 > i0 );
+
+			// Transpose a middle portion of the buffer in-place. That portion is up to 4kb, fits in L1D cache
+			__m128i* const buffer = begin + i0 * 4;
+			const size_t len = i2 - i0;
+			transposeInplace( buffer, len );
+
+			// Copy 4 slices of the newly transposed portion into the corresponding location of the output buffer
+			// The output buffer can be smaller than the input due to the INT_MAX values added to make the temporary buffer a multiple of 16 elements
+			// That's why we need to clip these slices
+			const int* rsi = (const int*)buffer;
+			const size_t columnHeight = len * 4;
+			size_t columnStart = i0 * 4;
+			const size_t columnsEnd = columnStart + columnSize * 4;
+			for( ; columnStart < columnsEnd; columnStart += columnSize, rsi += columnHeight )
+			{
+				if( columnStart >= outputLength )
+					continue;
+				size_t columnEnd = columnStart + columnHeight;
+				columnEnd = std::min( columnEnd, outputLength );
+				if( columnEnd <= columnStart )
+					continue;
+				memcpy( rdi + columnStart, rsi, ( columnEnd - columnStart ) * 4 );
+			}
+		}
+	}
+
+	// This temporary buffer is only used when input vector exceeds 1024 elements
+	// Otherwise, the algorithm works in-place
+	static thread_local std::vector<__m128i> temporaryBuffer;
 
 	template<class E, class Which>
 	class SortImpl
 	{
-		static __forceinline size_t sortStep1( const std::vector<E>& source, std::vector<E>& dest )
+		static size_t sortStep1( const std::vector<E>& source, __m128i* rdi, size_t countBlocks )
 		{
 			const size_t inputIntegers = source.size();
-			if( 0 == inputIntegers )
-			{
-				dest.clear();
-				return 0;
-			}
-
-			const size_t countBlocks = ( inputIntegers + 15 ) / 16;
-			dest.resize( countBlocks * 16 );
+			assert( countBlocks == ( ( inputIntegers + 15 ) / 16 ) );
 
 			const E* rsi = source.data();
-			__m128i* rdi = (__m128i*)dest.data();
 			// Vertically sort and transpose complete 4x4 blocks
 			const size_t completeBlocks = inputIntegers / 16;
 			for( size_t i = 0; i < completeBlocks; i++ )
@@ -96,27 +136,37 @@ namespace
 			return ( n * 10 ) / 13;
 		}
 
-		static __forceinline void transposeVector( std::vector<E>& dest )
-		{
-			assert( !dest.empty() );
-			assert( 0 == ( dest.size() % 16 ) );
-
-			const size_t countBlocks = dest.size() / 16;
-			transposeResult( (__m128i*)dest.data(), countBlocks );
-		}
-
 	  public:
 		static __forceinline void sort( const std::vector<E>& source, std::vector<E>& dest )
 		{
+			if( source.empty() )
+			{
+				dest.clear();
+				return;
+			}
+
+			const size_t countBlocks = ( source.size() + 15 ) / 16;
+			const bool inPlace = countBlocks <= maxInplaceBlocks();
+			__m128i* buffer;
+			if( inPlace )
+			{
+				dest.resize( countBlocks * 16 );
+				buffer = (__m128i*)dest.data();
+			}
+			else
+			{
+				temporaryBuffer.resize( countBlocks * 4 );
+				dest.resize( source.size() );
+				buffer = temporaryBuffer.data();
+			}
+
 			// ==== Step #1 of the algorithm ====
 			// move to the transposed vector, while sorting lanes in the vector
 			// Also pad the remainder with INT_MAX / UINT_MAX
-			const size_t countVectors = sortStep1( source, dest );
-			if( 0 == countVectors )
-				return;
+			const size_t countVectors = sortStep1( source, buffer, countBlocks );
 
 			// ==== Step #2 of the algorithm, vertically sort these vectors ====
-			__m128i* const ptr = (__m128i*)dest.data();
+			__m128i* const ptr = buffer;
 			size_t gap = divByShrinkFactor( countVectors );
 
 			while( gap > 1 )
@@ -143,8 +193,13 @@ namespace
 			}
 
 			// ==== Step #3 of the algorithm, transpose the output back to normal ====
-			transposeVector( dest );
-			dest.resize( source.size() );
+			if( inPlace )
+			{
+				transposeInplace( buffer, countVectors / 4 );
+				dest.resize( source.size() );
+			}
+			else
+				transposeWithCopy( buffer, countVectors / 4, (int*)dest.data(), dest.size() );
 		}
 	};
 }  // namespace

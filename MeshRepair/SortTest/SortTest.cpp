@@ -8,7 +8,7 @@
 std::vector<int> createTest()
 {
 	srand( 0 );
-	constexpr int len = 27;
+	constexpr int len = 1777;
 	std::vector<int> res;
 	res.resize( len );
 	for( int& i : res )
