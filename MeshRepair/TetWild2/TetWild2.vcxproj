@@ -91,6 +91,9 @@
     <ClInclude Include="src\MeshTet.h" />
     <ClInclude Include="src\MeshVertex.h" />
     <ClInclude Include="src\Random.hpp" />
+    <ClInclude Include="Utils\AASort\AASort.h" />
+    <ClInclude Include="Utils\AASort\AASortTranspose.h" />
+    <ClInclude Include="Utils\AASort\AASortUtils.hpp" />
     <ClInclude Include="Utils\TimeMeasure.h" />
     <ClInclude Include="Utils\AvxMath.h" />
     <ClInclude Include="Utils\AvxMathMem.h" />
@@ -146,6 +149,8 @@
     <ClInclude Include="src\VertexConnectedTets.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Utils\AASort\AASort.cpp" />
+    <ClCompile Include="Utils\AASort\AASortTranspose.cpp" />
     <ClCompile Include="Utils\TimeMeasure.cpp" />
     <ClCompile Include="Utils\Logger.cpp" />
     <ClCompile Include="src\LocalOperations2.cpp" />
@@ -203,6 +208,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="src\CutTable2.inl" />
+    <None Include="Utils\AASort\TransposePermutations.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

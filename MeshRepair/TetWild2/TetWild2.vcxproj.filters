@@ -119,6 +119,9 @@
     <ClInclude Include="src\MeshTet.h" />
     <ClInclude Include="Utils\TimeMeasure.h" />
     <ClInclude Include="src\VertexConnectedTets.h" />
+    <ClInclude Include="Utils\AASort\AASort.h" />
+    <ClInclude Include="Utils\AASort\AASortTranspose.h" />
+    <ClInclude Include="Utils\AASort\AASortUtils.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp" />
@@ -218,6 +221,8 @@
     <ClCompile Include="Utils\Logger.cpp" />
     <ClCompile Include="Utils\TimeMeasure.cpp" />
     <ClCompile Include="src\VertexConnectedTets.cpp" />
+    <ClCompile Include="Utils\AASort\AASort.cpp" />
+    <ClCompile Include="Utils\AASort\AASortTranspose.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="external">
@@ -238,5 +243,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="src\CutTable2.inl" />
+    <None Include="Utils\AASort\TransposePermutations.inl" />
   </ItemGroup>
 </Project>
