@@ -64,6 +64,8 @@ namespace floatTetWild
 	 */
 	class MeshFacetsAABBWithEps
 	{
+		static constexpr bool dbgCompareVersions = false;
+
 	  public:
 		/**
 		 * \brief Creates the Axis Aligned Bounding Boxes tree.
@@ -131,9 +133,10 @@ namespace floatTetWild
 			get_nearest_facet_hint( p, nearest_facet, nearest_point, sq_dist );
 			__m128i vec = _mm_setr_epi32( 1, 0, (int)mesh_.countTriangles(), 0 );
 			__m256d pt = AvxMath::loadDouble3( &p.x );
-			// facetInEnvelopeRecursive( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist, vec );
-			// facetInEnvelopeCompare( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist, vec );
-			facetInEnvelopeStack( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist, vec );
+			if constexpr( dbgCompareVersions )
+				facetInEnvelopeCompare( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist, vec );
+			else
+				facetInEnvelopeStack( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist, vec );
 			return nearest_facet;
 		}
 
@@ -148,9 +151,10 @@ namespace floatTetWild
 				get_nearest_facet_hint( p, nearest_facet, nearest_point, sq_dist );
 			__m128i vec = _mm_setr_epi32( 1, 0, (int)mesh_.countTriangles(), 0 );
 			__m256d pt = AvxMath::loadDouble3( &p.x );
-			// facetInEnvelopeRecursive( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist, vec );
-			// facetInEnvelopeCompare( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist, vec );
-			facetInEnvelopeStack( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist, vec );
+			if constexpr( dbgCompareVersions )
+				facetInEnvelopeCompare( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist, vec );
+			else
+				facetInEnvelopeStack( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist, vec );
 		}
 
 	  protected:

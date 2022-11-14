@@ -556,12 +556,19 @@ namespace floatTetWild
 		}
 	}
 
-	inline __m128i makeUint3( uint32_t x, uint32_t y, uint32_t z )
+	inline __m128i makeUInt3( uint32_t x, uint32_t y, uint32_t z )
 	{
 		__m128i v = _mm_cvtsi32_si128( (int)x );
 		v = _mm_insert_epi32( v, (int)y, 1 );
 		v = _mm_insert_epi32( v, (int)z, 2 );
 		return v;
+	}
+
+	inline void unpackUInt3( __m128i vec, uint32_t& x, uint32_t& y, uint32_t& z )
+	{
+		x = (uint32_t)_mm_cvtsi128_si32( vec );
+		y = (uint32_t)_mm_extract_epi32( vec, 1 );
+		z = (uint32_t)_mm_extract_epi32( vec, 2 );
 	}
 
 	void MeshFacetsAABBWithEps::facetInEnvelopeStack(
@@ -570,33 +577,39 @@ namespace floatTetWild
 		std::vector<FacetRecursionFrame>& stack = recursionStacks[ omp_get_thread_num() ].stack;
 		stack.clear();
 
-		// Push the initial element
-		{
-			const uint32_t n = (uint32_t)_mm_cvtsi128_si32( nbe );
-			const uint32_t b = (uint32_t)_mm_extract_epi32( nbe, 1 );
-			const uint32_t e = (uint32_t)_mm_extract_epi32( nbe, 2 );
-			assert( e > b );
-
-			FacetRecursionFrame& f = stack.emplace_back();
-			f.storeIndices( nbe );
-			f.d = 0.0;
-		}
-
 		// Copy that value from memory to a register, saves a few loads/stores in the loop below
 		double sqDist = sqDistResult;
 
+		// Setup initial state
+		uint32_t n, b, e;
+		unpackUInt3( nbe, n, b, e );
+		double d = 0.0;
+
+#define POP_FROM_THE_STACK()                     \
+	if( stack.empty() )                          \
+		break;                                   \
+	const FacetRecursionFrame& f = stack.back(); \
+	n = f.n;                                     \
+	b = f.b;                                     \
+	e = f.e;                                     \
+	d = f.d;                                     \
+	stack.pop_back()
+
 		// Run the "recursion" using an std::vector instead of the stack
-		while( !stack.empty() )
+		while( true )
 		{
-			FacetRecursionFrame& f = stack.back();
-			const uint32_t n = f.n;
-			const uint32_t b = f.b;
-			const uint32_t e = f.e;
 			assert( e > b );
 
-			// If node is a leaf: compute point-facet distance and replace current if nearer
+			if( d >= sqDist || d > sqEpsilon )
+			{
+				// The original version would have skipped this frame with "if( d < sq_dist && d <= sq_epsilon )"
+				POP_FROM_THE_STACK();
+				continue;
+			}
+
 			if( b + 1 == e )
 			{
+				// If node is a leaf: compute point-facet distance and replace current if nearer
 				vec3 cur_nearest_point;
 				double cur_sq_dist;
 				get_point_facet_nearest_point( mesh_, p, b, cur_nearest_point, cur_sq_dist );
@@ -613,16 +626,7 @@ namespace floatTetWild
 						break;
 					}
 				}
-
-				// Pop the top stack entry
-				stack.pop_back();
-				continue;
-			}
-
-			if( f.d >= sqDist || f.d > sqEpsilon )
-			{
-				// The original version would have skipped this frame with "if( d < sq_dist && d <= sq_epsilon )"
-				stack.pop_back();
+				POP_FROM_THE_STACK();
 				continue;
 			}
 
@@ -640,20 +644,21 @@ namespace floatTetWild
 			const __m128i lt = _mm_castpd_si128( _mm_cmplt_pd( dl, dr ) );
 
 			// Create left/right index vectors
-			const __m128i recLeft = makeUint3( childl, b, m );
-			const __m128i recRight = makeUint3( childr, m, e );
+			const __m128i recLeft = makeUInt3( childl, b, m );
+			const __m128i recRight = makeUInt3( childr, m, e );
 
-			// Replace the current frame with the SECOND recursive call of the original version
+			// Push the SECOND recursive call of the original version to the stack
 			__m128i rec = _mm_blendv_epi8( recLeft, recRight, lt );
-			f.storeIndices( rec );
-			f.d = _mm_cvtsd_f64( _mm_max_sd( dr, dl ) );
-
-			// Push a new frame with the FIRST recursive call of the original version
 			FacetRecursionFrame& newFrame = stack.emplace_back();
-			rec = _mm_blendv_epi8( recRight, recLeft, lt );
 			newFrame.storeIndices( rec );
-			newFrame.d = _mm_cvtsd_f64( _mm_min_sd( dr, dl ) );
+			newFrame.d = _mm_cvtsd_f64( _mm_max_sd( dr, dl ) );
+
+			// Replace the local variables with the FIRST recursive call of the original version
+			rec = _mm_blendv_epi8( recRight, recLeft, lt );
+			unpackUInt3( rec, n, b, e );
+			d = _mm_cvtsd_f64( _mm_min_sd( dr, dl ) );
 		}
+#undef POP_FROM_THE_STACK
 		// Store the result back to memory
 		sqDistResult = sqDist;
 	}
