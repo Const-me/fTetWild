@@ -572,17 +572,17 @@ namespace floatTetWild
 	}
 
 	void MeshFacetsAABBWithEps::facetInEnvelopeStack(
-	  __m256d p, double sqEpsilon, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDistResult, __m128i nbe ) const
+	  __m256d p, double sqEpsilon, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDistResult ) const
 	{
 		std::vector<FacetRecursionFrame>& stack = recursionStacks[ omp_get_thread_num() ].stack;
-		stack.clear();
 
-		// Copy that value from memory to a register, saves a few loads/stores in the loop below
+		// Copy that value from memory to a register, saves quite a few loads/stores in the loop below
 		double sqDist = sqDistResult;
 
-		// Setup initial state
-		uint32_t n, b, e;
-		unpackUInt3( nbe, n, b, e );
+		// Setup the initial state
+		uint32_t n = 1;
+		uint32_t b = 0;
+		uint32_t e = (uint32_t)mesh_.countTriangles();
 		double d = 0.0;
 
 #define POP_FROM_THE_STACK()                     \
@@ -659,6 +659,8 @@ namespace floatTetWild
 			d = _mm_cvtsd_f64( _mm_min_sd( dr, dl ) );
 		}
 #undef POP_FROM_THE_STACK
+
+		assert( stack.empty() );
 		// Store the result back to memory
 		sqDistResult = sqDist;
 	}
@@ -678,7 +680,7 @@ namespace floatTetWild
 		nearestFacet = nfInput;
 		nearestPoint = npInput;
 		sqDist = sqDistInput;
-		facetInEnvelopeStack( p, sqEpsilon, nearestFacet, nearestPoint, sqDist, nbe );
+		facetInEnvelopeStack( p, sqEpsilon, nearestFacet, nearestPoint, sqDist );
 
 		if( sqDist <= sqd1 )
 		{
@@ -686,6 +688,7 @@ namespace floatTetWild
 			// I have no idea why, let's hope that's a good thing
 			return;
 		}
+
 		__debugbreak();
 	}
 }  // namespace floatTetWild

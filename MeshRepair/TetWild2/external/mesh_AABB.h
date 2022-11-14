@@ -136,7 +136,7 @@ namespace floatTetWild
 			if constexpr( dbgCompareVersions )
 				facetInEnvelopeCompare( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist, vec );
 			else
-				facetInEnvelopeStack( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist, vec );
+				facetInEnvelopeStack( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist );
 			return nearest_facet;
 		}
 
@@ -154,7 +154,7 @@ namespace floatTetWild
 			if constexpr( dbgCompareVersions )
 				facetInEnvelopeCompare( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist, vec );
 			else
-				facetInEnvelopeStack( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist, vec );
+				facetInEnvelopeStack( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist );
 		}
 
 	  protected:
@@ -200,7 +200,7 @@ namespace floatTetWild
 		void facetInEnvelopeRecursive(
 		  __m256d p, double sq_epsilon, GEO2::index_t& nearest_facet, GEO2::vec3& nearest_point, double& sq_dist, __m128i nbe ) const;
 
-		void facetInEnvelopeStack( __m256d p, double sqEpsilon, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDist, __m128i nbe ) const;
+		void facetInEnvelopeStack( __m256d p, double sqEpsilon, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDist ) const;
 
 		void facetInEnvelopeCompare( __m256d p, double sqEpsilon, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDist, __m128i nbe ) const;
 
