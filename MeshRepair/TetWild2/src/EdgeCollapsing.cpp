@@ -132,42 +132,10 @@ namespace floatTetWild
 #if EC_POSTPROCESS
 					else
 					{
-						//                //fortest
-						//                int v1_id = v_ids[0];
-						//                int v2_id = v_ids[1];
-						////                std::vector<int> n12_t_ids;
-						////                set_intersection(tet_vertices[v1_id].conn_tets, tet_vertices[v2_id].conn_tets, n12_t_ids);
-						//
-						//                Scalar old_max_quality = 0;
-						//                std::vector<Scalar> new_qs;
-						//                new_qs.reserve(tet_vertices[v1_id].conn_tets.size());
-						//                for (int t_id:tet_vertices[v1_id].conn_tets) {
-						//                    if (tets[t_id].quality > old_max_quality)
-						//                        old_max_quality = tets[t_id].quality;
-						//                }
-						//                if(old_max_quality>5e9){
-						//                    cout<<"resilt = "<<result<<endl;
-						//                    cout<<"old_max_quality = "<<old_max_quality<<endl;
-						//                    cout<<"e = "<<v1_id<<" "<<v2_id<<endl;
-						//                }
-						//                Eigen::MatrixXd V;
-						//                Eigen::MatrixXi T;
-						//
-						//                //fortest
-
-						//                if(weight<SCALAR_ZERO_2){
-						//                    cout<<"len = "<<weight<<" but failed "<<result<<" "<<mesh.is_input_all_inserted<<endl;
-						//                    //pausee();
-						//                }
-						//                if(counter < 25){
-						//                    cout<<"len = "<<weight<<" but failed "<<result<<" "<<mesh.is_input_all_inserted<<endl;
-						//                    //pausee();
-						//                }
 						inf_es.push_back( v_ids );
 						inf_e_tss.push_back( ts );
 					}
 #endif
-
 					counter++;
 				}
 
@@ -227,7 +195,6 @@ namespace floatTetWild
 #endif
 			} while( suc_counter > 0 );
 		}
-
 	}  // namespace
 }  // namespace floatTetWild
 
