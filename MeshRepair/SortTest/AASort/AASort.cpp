@@ -55,8 +55,6 @@ namespace
 			transposeInplace( buffer, len );
 
 			// Copy 4 slices of the newly transposed portion into the corresponding location of the output buffer
-			// The output buffer can be smaller than the input due to the INT_MAX values added to make the temporary buffer a multiple of 16 elements
-			// That's why we need to clip these slices
 			const int* rsi = (const int*)buffer;
 			const size_t columnHeight = len * 4;
 			size_t columnStart = i0 * 4;
@@ -66,6 +64,8 @@ namespace
 				if( columnStart >= outputLength )
 					continue;
 				size_t columnEnd = columnStart + columnHeight;
+				// The output buffer can be smaller than the input due to the INT_MAX values added to make the temporary buffer a multiple of 16 elements
+				// That's why clipping the slices
 				columnEnd = std::min( columnEnd, outputLength );
 				if( columnEnd <= columnStart )
 					continue;
@@ -146,31 +146,24 @@ namespace
 		static void sortStep2( __m128i* buffer, size_t countVectors )
 		{
 			__m128i* const ptr = buffer;
-			size_t gap = divByShrinkFactor( countVectors );
 
-			while( gap > 1 )
+			for( size_t gap = divByShrinkFactor( countVectors ); gap > 1; gap = divByShrinkFactor( gap ) )
 			{
 				// Straight comparisons
 				for( size_t i = 0; i < countVectors - gap; i++ )
 					Which::vector_cmpswap( ptr + i, ptr + i + gap );
+
 				// Skewed comparisons, when i + gap exceeds N/4
 				for( size_t i = countVectors - gap; i < countVectors; i++ )
 					Which::vector_cmpswap_skew( ptr + i, ptr + i + gap - countVectors );
-
-				// Shrink the gap
-				gap = divByShrinkFactor( gap );
 			}
 
-			while( true )
+			do
 			{
 				for( size_t i = 0; i < countVectors - 1; i++ )
 					Which::vector_cmpswap( ptr + i, ptr + i + 1 );
-
 				Which::vector_cmpswap_skew( ptr + countVectors - 1, ptr );
-
-				if( Which::isSorted( ptr, countVectors ) )
-					break;
-			}
+			} while( !Which::isSorted( ptr, countVectors ) );
 		}
 
 	  public:

@@ -82,6 +82,9 @@ namespace
 
 	void transposeWithLookupTable( __m128i* const begin, size_t countBlocks )
 	{
+		// The source code looks complicated, but VC++ only made 36 instructions from this function
+		// 2 of them are NOP instructions to pad the two loops, which do nothing.
+
 		assert( countBlocks <= lookupTableSizeBlocks );
 		__m128i* const sourceEnd = begin + ( countBlocks * 4 );
 

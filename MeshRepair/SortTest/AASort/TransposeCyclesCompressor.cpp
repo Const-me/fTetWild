@@ -1,11 +1,16 @@
+﻿// You don’t need to compile this source file, unless you want to.
+// See TransposePermutations.inl for the output data it generates.
+
 // Compile with /FC (Full Path of Source Code File in Diagnostics)
 // https://learn.microsoft.com/en-us/cpp/build/reference/fc-full-path-of-source-code-file-in-diagnostics?view=msvc-170
+#include "AASort.h"
+#if TRANSPOSE_CYCLE_COMPRESSOR
+
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
 #include <atlstr.h>
 #include <atlpath.h>
-#include "OuterCyclesCompressor.h"
 #include <vector>
 #include <stdio.h>
 #include <assert.h>
@@ -38,7 +43,7 @@ namespace
 		std::vector<uint8_t> inner;
 		// 1 entry = one cycle, values are offsets into the inner vector
 		std::vector<uint16_t> cycles;
-		// 1 entry = complete permutation of the matrix
+		// 1 entry = complete permutation of the matrix, values are offsets into the cycles vector
 		std::vector<uint16_t> permutations;
 
 	  public:
@@ -187,3 +192,5 @@ namespace AASort
 		__debugbreak();
 	}
 }  // namespace AASort
+
+#endif	// TRANSPOSE_CYCLE_COMPRESSOR

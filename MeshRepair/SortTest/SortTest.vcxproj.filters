@@ -5,7 +5,7 @@
     <ClCompile Include="AASort\AASort.cpp">
       <Filter>AASort</Filter>
     </ClCompile>
-    <ClCompile Include="AASort\OuterCyclesCompressor.cpp">
+    <ClCompile Include="AASort\TransposeCyclesCompressor.cpp">
       <Filter>AASort</Filter>
     </ClCompile>
     <ClCompile Include="AASort\AASortTranspose.cpp">
@@ -17,9 +17,6 @@
       <Filter>AASort</Filter>
     </ClInclude>
     <ClInclude Include="AASort\AASortUtils.hpp">
-      <Filter>AASort</Filter>
-    </ClInclude>
-    <ClInclude Include="AASort\OuterCyclesCompressor.h">
       <Filter>AASort</Filter>
     </ClInclude>
     <ClInclude Include="AASort\AASortTranspose.h">

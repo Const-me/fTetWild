@@ -3,12 +3,11 @@
 #include <algorithm>
 #include <stdlib.h>
 #include "AASort/AASort.h"
-#include "AASort/OuterCyclesCompressor.h"
 
 std::vector<int> createTest()
 {
 	srand( 0 );
-	constexpr int len = 999;
+	constexpr int len = 9999;
 	std::vector<int> res;
 	res.resize( len );
 	for( int& i : res )

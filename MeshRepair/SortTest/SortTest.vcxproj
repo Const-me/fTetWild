@@ -79,14 +79,13 @@
   <ItemGroup>
     <ClCompile Include="AASort\AASortTranspose.cpp" />
     <ClCompile Include="AASort\AASort.cpp" />
-    <ClCompile Include="AASort\OuterCyclesCompressor.cpp" />
+    <ClCompile Include="AASort\TransposeCyclesCompressor.cpp" />
     <ClCompile Include="SortTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AASort\AASortTranspose.h" />
     <ClInclude Include="AASort\AASort.h" />
     <ClInclude Include="AASort\AASortUtils.hpp" />
-    <ClInclude Include="AASort\OuterCyclesCompressor.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="AASort\TransposePermutations.inl" />
