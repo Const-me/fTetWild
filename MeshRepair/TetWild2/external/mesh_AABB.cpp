@@ -565,7 +565,7 @@ namespace floatTetWild
 	}
 
 	void MeshFacetsAABBWithEps::facetInEnvelopeStack(
-	  __m256d p, double sqEpsilon, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDist, __m128i nbe ) const
+	  __m256d p, double sqEpsilon, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDistResult, __m128i nbe ) const
 	{
 		std::vector<FacetRecursionFrame>& stack = recursionStacks[ omp_get_thread_num() ].stack;
 		stack.clear();
@@ -582,6 +582,10 @@ namespace floatTetWild
 			f.d = 0.0;
 		}
 
+		// Copy that value from memory to a register, saves a few loads/stores in the loop below
+		double sqDist = sqDistResult;
+
+		// Run the "recursion" using an std::vector instead of the stack
 		while( !stack.empty() )
 		{
 			FacetRecursionFrame& f = stack.back();
@@ -606,7 +610,7 @@ namespace floatTetWild
 						// This alone saves non-trivial amount of overhead compared to recursive version
 						// Clearing the complete std::vector only takes a few instructions
 						stack.clear();
-						return;
+						break;
 					}
 				}
 
@@ -650,6 +654,8 @@ namespace floatTetWild
 			newFrame.storeIndices( rec );
 			newFrame.d = _mm_cvtsd_f64( _mm_min_sd( dr, dl ) );
 		}
+		// Store the result back to memory
+		sqDistResult = sqDist;
 	}
 
 	void MeshFacetsAABBWithEps::facetInEnvelopeCompare(
