@@ -89,6 +89,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\ElementInQueue.h" />
+    <ClInclude Include="src\FacetRecursionStack.h" />
     <ClInclude Include="src\MeshTet.h" />
     <ClInclude Include="src\MeshVertex.h" />
     <ClInclude Include="src\Random.hpp" />

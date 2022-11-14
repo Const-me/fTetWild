@@ -162,7 +162,7 @@ namespace
 	}
 
 #ifndef __AVX__
-	#error This code requires at least AVX1
+#error This code requires at least AVX1
 #endif
 	static __m128d pointBoxSignedSquaredDistance2( const __m256d pos, const Box& B )
 	{
@@ -247,8 +247,6 @@ namespace
 		return pointBoxSignedSquaredDistance( pos, B );
 	}
 
-	
-
 	/**
 	 * \brief Computes the squared distance between a point and the
 	 *  center of a box.
@@ -289,7 +287,6 @@ namespace
 			__debugbreak();
 		return my;
 #endif
-
 	}
 
 	/**
@@ -393,9 +390,9 @@ namespace
 
 namespace floatTetWild
 {
-
-	MeshFacetsAABBWithEps::MeshFacetsAABBWithEps( const Mesh& M )
+	MeshFacetsAABBWithEps::MeshFacetsAABBWithEps( const Mesh& M, std::vector<FacetRecursionStack>& stacks )
 		: mesh_( M )
+		, recursionStacks( stacks )
 	{
 		// if(!M.facets.are_simplices()) {
 		//     mesh_repair(
@@ -553,7 +550,7 @@ namespace floatTetWild
 		d = _mm_cvtsd_f64( _mm_max_sd( dr, dl ) );
 		if( d < sq_dist && d <= sq_epsilon )
 		{
-			const __m128i rec = _mm_blendv_epi8( recLeft, recRight, lt );	// ( dl < dr ) ? recRight : recLeft
+			const __m128i rec = _mm_blendv_epi8( recLeft, recRight, lt );  // ( dl < dr ) ? recRight : recLeft
 			facetInEnvelopeRecursive( p, sq_epsilon, nearest_f, nearest_point, sq_dist, rec );
 		}
 	}

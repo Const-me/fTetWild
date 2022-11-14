@@ -53,6 +53,7 @@
 #include <string>
 #include "../Utils/Geogram2.h"
 #include "../Utils/Mesh/TriangleMesh.h"
+#include "../src/FacetRecursionStack.h"
 
 namespace floatTetWild
 {
@@ -75,7 +76,7 @@ namespace floatTetWild
 		 *  called else the algorithm will be pretty unefficient).
 		 * \pre M.facets.are_simplices()
 		 */
-		MeshFacetsAABBWithEps( const GEO2::Mesh& M );
+		MeshFacetsAABBWithEps( const GEO2::Mesh& M, FacetRecursionStacks& stacks );
 
 		/**
 		 * \brief Finds the nearest facet from an arbitrary 3d query point.
@@ -193,6 +194,7 @@ namespace floatTetWild
 	  protected:
 		std::vector<GEO2::Box> bboxes_;
 		const GEO2::Mesh& mesh_;
+		FacetRecursionStacks& recursionStacks;
 	};
 
 	inline void get_point_facet_nearest_point( const GEO2::Mesh& M, __m256d p, GEO2::index_t f, GEO2::vec3& nearest_p, double& squared_dist )

@@ -67,7 +67,7 @@ void floatTetWild::AABBWrapper::init_b_mesh_and_tree(
 	}
 
 	b_mesh.reorderMorton();
-	b_tree = std::make_shared<MeshFacetsAABBWithEps>( b_mesh );
+	b_tree = std::make_shared<MeshFacetsAABBWithEps>( b_mesh, mesh.facetRecursionStacks );
 
 	if( b_edges.empty() )
 		mesh.is_closed = true;
@@ -122,7 +122,7 @@ void floatTetWild::AABBWrapper::init_tmp_b_mesh_and_tree( const std::vector<Vect
 		generateEdgeTriangles( tmp_b_mesh, b_edges1.size() + b_edges2.size() );
 	}
 	tmp_b_mesh.reorderMorton();
-	tmp_b_tree = std::make_shared<MeshFacetsAABBWithEps>( tmp_b_mesh );
+	tmp_b_tree = std::make_shared<MeshFacetsAABBWithEps>( tmp_b_mesh, const_cast<FacetRecursionStacks&>( mesh.facetRecursionStacks ) );
 
 #ifdef NEW_ENVELOPE
 	std::vector<Vector3> vs;

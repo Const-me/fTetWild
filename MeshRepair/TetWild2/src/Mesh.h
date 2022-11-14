@@ -17,6 +17,7 @@
 #include "MeshTet.h"
 #include "../Utils/TimeMeasure.h"
 #include "ElementInQueue.h"
+#include "FacetRecursionStack.h"
 
 namespace floatTetWild
 {
@@ -201,6 +202,8 @@ namespace floatTetWild
 			std::vector<int> n_t_ids;
 		};
 		FindCuttingTetsBuffers findCuttingTetsBuffers;
+
+		std::vector<FacetRecursionStack> facetRecursionStacks;
 
 		void createThreadLocalBuffers();
 

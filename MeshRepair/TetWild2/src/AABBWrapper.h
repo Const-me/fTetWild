@@ -26,9 +26,9 @@ namespace floatTetWild
 		//// initialization
 		inline Scalar get_sf_diag() const { return sf_mesh.boxDiagonal(); }
 
-		AABBWrapper( const GEO2::Mesh& sf_mesh )
+		AABBWrapper( const GEO2::Mesh& sf_mesh, FacetRecursionStacks& stacks )
 			: sf_mesh( sf_mesh )
-			, sf_tree( sf_mesh )
+			, sf_tree( sf_mesh, stacks )
 		{
 		}
 

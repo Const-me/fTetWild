@@ -123,6 +123,7 @@
     <ClInclude Include="Utils\AASort\AASortTranspose.h" />
     <ClInclude Include="Utils\AASort\AASortUtils.hpp" />
     <ClInclude Include="src\ElementInQueue.h" />
+    <ClInclude Include="src\FacetRecursionStack.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp" />

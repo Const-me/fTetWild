@@ -171,5 +171,6 @@ namespace floatTetWild
 	{
 		const size_t count = std::max( params.num_threads, 1u );
 		findNewPosBuffers.resize( count );
+		facetRecursionStacks.resize( count );
 	}
 }  // namespace floatTetWild

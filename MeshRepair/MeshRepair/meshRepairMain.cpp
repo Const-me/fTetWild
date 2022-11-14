@@ -32,7 +32,7 @@ HRESULT meshRepairMain(
 		CHECK( convertParameters( params, parameters ) );
 		mesh.createThreadLocalBuffers();
 
-		AABBWrapper tree( rsi.mesh );
+		AABBWrapper tree( rsi.mesh, mesh.facetRecursionStacks );
 		if( !params.init( tree.get_sf_diag() ) )
 			return E_INVALIDARG;
 
