@@ -339,11 +339,6 @@ bool floatTetWild::is_point_out_envelope( const Mesh& mesh, const Vector3& p, co
 	GEO2::index_t prev_facet;
 	return tree.is_out_sf_envelope( p, mesh.params.eps_2, prev_facet );
 #endif
-	//    GEO2::vec3 geo_p(p[0], p[1], p[2]);
-	//    if (sf_tree.squared_distance(geo_p) > mesh.params.eps_2)
-	//        return true;
-	//
-	//    return false;
 }
 
 bool floatTetWild::is_point_out_boundary_envelope( const Mesh& mesh, const Vector3& p, const AABBWrapper& tree )
@@ -353,12 +348,6 @@ bool floatTetWild::is_point_out_boundary_envelope( const Mesh& mesh, const Vecto
 
 	GEO2::index_t prev_facet;
 	return tree.is_out_tmp_b_envelope( p, mesh.params.eps_2, prev_facet );
-
-	//    GEO2::vec3 geo_p(p[0], p[1], p[2]);
-	//    if (b_tree.squared_distance(geo_p) > mesh.params.eps_2)
-	//        return true;
-	//
-	//    return false;
 }
 
 Scalar floatTetWild::get_quality( const Mesh& mesh, const MeshTet& t )

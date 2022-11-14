@@ -556,54 +556,6 @@ namespace floatTetWild
 			const __m128i rec = _mm_blendv_epi8( recLeft, recRight, lt );	// ( dl < dr ) ? recRight : recLeft
 			facet_in_envelope_recursive( p, sq_epsilon, nearest_f, nearest_point, sq_dist, rec );
 		}
-		/*
-		// Traverse the "nearest" child first, so that it has more chances
-		// to prune the traversal of the other child.
-		if( dl < dr )
-		{
-			if( dl < sq_dist && dl <= sq_epsilon )
-			{
-				facet_in_envelope_recursive( p, sq_epsilon, nearest_f, nearest_point, sq_dist, childl, b, m );
-			}
-			if( dr < sq_dist && dr <= sq_epsilon )
-			{
-				facet_in_envelope_recursive( p, sq_epsilon, nearest_f, nearest_point, sq_dist, childr, m, e );
-			}
-		}
-		else
-		{
-			if( dr < sq_dist && dr <= sq_epsilon )
-			{
-				facet_in_envelope_recursive( p, sq_epsilon, nearest_f, nearest_point, sq_dist, childr, m, e );
-			}
-			if( dl < sq_dist && dl <= sq_epsilon )
-			{
-				facet_in_envelope_recursive( p, sq_epsilon, nearest_f, nearest_point, sq_dist, childl, b, m );
-			}
-		} */
 	}
-
-	bool MeshFacetsAABBWithEps::segment_intersection( const vec3& q1, const vec3& q2 ) const
-	{
-		return segment_intersection_recursive( q1, q2, 1, 0, mesh_.countTriangles() );
-	}
-
-	bool MeshFacetsAABBWithEps::segment_intersection_recursive( const vec3& q1, const vec3& q2, index_t n, index_t b, index_t e ) const
-	{
-		if( !segment_box_intersection( q1, q2, bboxes_[ n ] ) )
-		{
-			return false;
-		}
-		if( b + 1 == e )
-		{
-			return segment_mesh_facet_intersection( q1, q2, mesh_, b );
-		}
-		index_t m = b + ( e - b ) / 2;
-		index_t childl = 2 * n;
-		index_t childr = 2 * n + 1;
-		return ( segment_intersection_recursive( q1, q2, childl, b, m ) || segment_intersection_recursive( q1, q2, childr, m, e ) );
-	}
-
-	/****************************************************************************/
 
 }  // namespace floatTetWild
