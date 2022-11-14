@@ -159,11 +159,13 @@
     <ClCompile Include="src\EdgesSet.cpp" />
     <ClCompile Include="Utils\cutTableDataCompare.cpp" />
     <ClCompile Include="Utils\designTimeUtils.cpp" />
-    <ClCompile Include="external\bfs_orient.cpp" />
+    <ClCompile Include="external\bfs_orient.cpp">
+      <OpenMPSupport>true</OpenMPSupport>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="external\FastWindingNumber.cpp" />
     <ClCompile Include="external\getRSS.c">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="external\get_mem.cpp" />
     <ClCompile Include="external\mesh_AABB.cpp" />
