@@ -249,48 +249,6 @@ namespace
 	}
 
 	/**
-	 * \brief Computes the squared distance between a point and the
-	 *  center of a box.
-	 * \param[in] p the point
-	 * \param[in] B the box
-	 * \return the squared distance between \p p and the center of \p B
-	 */
-	static double point_box_center_squared_distance_orig( const vec3& p, const Box& B )
-	{
-		double result = 0.0;
-		for( coord_index_t c = 0; c < 3; ++c )
-		{
-			double d = p[ c ] - 0.5 * ( B.xyz_min[ c ] + B.xyz_max[ c ] );
-			result += geo_sqr( d );
-		}
-		return result;
-	}
-
-	static double point_box_center_squared_distance_avx( __m256d pos, const Box& B )
-	{
-		using namespace AvxMath;
-		const __m256d box2 = loadDouble3( &B.xyz_max[ 0 ] );
-		const __m256d box1 = _mm256_loadu_pd( &B.xyz_min[ 0 ] );
-		__m256d boxCenter = _mm256_add_pd( box2, box1 );
-		boxCenter = _mm256_mul_pd( boxCenter, _mm256_set1_pd( 0.5 ) );
-		__m256d dist = _mm256_sub_pd( boxCenter, pos );
-		return vector3DotScalar( dist, dist );
-	}
-
-	double point_box_center_squared_distance( __m256d p, const Box& B )
-	{
-#if 1
-		return point_box_center_squared_distance_avx( p, B );
-#else
-		double orig = point_box_center_squared_distance_orig( p, B );
-		double my = point_box_center_squared_distance_avx( p, B );
-		if( orig != my )
-			__debugbreak();
-		return my;
-#endif
-	}
-
-	/**
 	 * \brief Tests whether a segment intersects a triangle.
 	 * \param[in] q1 , q2 the two extremities of the segment.
 	 * \param[in] p1 , p2 , p3 the three vertices of the triangle.
@@ -409,39 +367,6 @@ namespace floatTetWild
 		bboxes_.resize( max_node_index( 1, 0, mesh_.countTriangles() ) + 1	// <-- this is because size == max_index + 1 !!!
 		);
 		init_bboxes_recursive( mesh_, bboxes_, 1, 0, mesh_.countTriangles(), get_facet_bbox );
-	}
-
-	void MeshFacetsAABBWithEps::get_nearest_facet_hint( const vec3& p, index_t& nearest_f, vec3& nearest_point, double& sq_dist ) const
-	{
-		// Find a good initial value for nearest_f by traversing
-		// the boxes and selecting the child such that the center
-		// of its bounding box is nearer to the query point.
-		// For a large mesh (20M facets) this gains up to 10%
-		// performance as compared to picking nearest_f randomly.
-		index_t b = 0;
-		index_t e = mesh_.countTriangles();
-		index_t n = 1;
-		const __m256d pos = AvxMath::loadDouble3( &p.x );
-		while( e != b + 1 )
-		{
-			index_t m = b + ( e - b ) / 2;
-			index_t childl = 2 * n;
-			index_t childr = 2 * n + 1;
-			if( point_box_center_squared_distance( pos, bboxes_[ childl ] ) < point_box_center_squared_distance( pos, bboxes_[ childr ] ) )
-			{
-				e = m;
-				n = childl;
-			}
-			else
-			{
-				b = m;
-				n = childr;
-			}
-		}
-		nearest_f = b;
-
-		nearest_point = mesh_.getFirstTriangleVertex( nearest_f );
-		sq_dist = distance2( pos, nearest_point );
 	}
 
 	void MeshFacetsAABBWithEps::nearest_facet_recursive(

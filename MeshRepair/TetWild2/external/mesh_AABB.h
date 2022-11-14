@@ -89,8 +89,8 @@ namespace floatTetWild
 		 */
 		GEO2::index_t nearest_facet( const GEO2::vec3& p, GEO2::vec3& nearest_point, double& sq_dist ) const
 		{
-			GEO2::index_t nearest_facet;
-			get_nearest_facet_hint( p, nearest_facet, nearest_point, sq_dist );
+			GEO2::index_t nearest_facet = GEO2::NO_FACET;
+			sq_dist = DBL_MAX;
 			nearest_facet_recursive( p, nearest_facet, nearest_point, sq_dist, 1, 0, mesh_.countTriangles() );
 			return nearest_facet;
 		}
@@ -117,9 +117,7 @@ namespace floatTetWild
 		void nearest_facet_with_hint( const GEO2::vec3& p, GEO2::index_t& nearest_facet, GEO2::vec3& nearest_point, double& sq_dist ) const
 		{
 			if( nearest_facet == GEO2::NO_FACET )
-			{
-				get_nearest_facet_hint( p, nearest_facet, nearest_point, sq_dist );
-			}
+				sq_dist = DBL_MAX;
 			nearest_facet_recursive( p, nearest_facet, nearest_point, sq_dist, 1, 0, mesh_.countTriangles() );
 		}
 
@@ -129,8 +127,8 @@ namespace floatTetWild
 		 */
 		GEO2::index_t facet_in_envelope( const GEO2::vec3& p, double sq_epsilon, GEO2::vec3& nearest_point, double& sq_dist ) const
 		{
-			GEO2::index_t nearest_facet;
-			get_nearest_facet_hint( p, nearest_facet, nearest_point, sq_dist );
+			GEO2::index_t nearest_facet = GEO2::NO_FACET;
+			sq_dist = DBL_MAX;
 			__m128i vec = _mm_setr_epi32( 1, 0, (int)mesh_.countTriangles(), 0 );
 			__m256d pt = AvxMath::loadDouble3( &p.x );
 			if constexpr( dbgCompareVersions )
@@ -148,7 +146,7 @@ namespace floatTetWild
 		  const GEO2::vec3& p, double sq_epsilon, GEO2::index_t& nearest_facet, GEO2::vec3& nearest_point, double& sq_dist ) const
 		{
 			if( nearest_facet == GEO2::NO_FACET )
-				get_nearest_facet_hint( p, nearest_facet, nearest_point, sq_dist );
+				sq_dist = DBL_MAX;
 			__m128i vec = _mm_setr_epi32( 1, 0, (int)mesh_.countTriangles(), 0 );
 			__m256d pt = AvxMath::loadDouble3( &p.x );
 			if constexpr( dbgCompareVersions )
@@ -158,21 +156,6 @@ namespace floatTetWild
 		}
 
 	  protected:
-		/**
-		 * \brief Computes a reasonable initialization for
-		 *  nearest facet search.
-		 *
-		 * \details A good initialization makes the algorithm faster,
-		 *  by allowing early pruning of subtrees that provably
-		 *  do not contain the nearest neighbor.
-		 *
-		 * \param[in] p query point
-		 * \param[out] nearest_facet a facet reasonably near p
-		 * \param[out] nearest_point a point in nearest_facet
-		 * \param[out] sq_dist squared distance between p and nearest_point
-		 */
-		void get_nearest_facet_hint( const GEO2::vec3& p, GEO2::index_t& nearest_facet, GEO2::vec3& nearest_point, double& sq_dist ) const;
-
 		/**
 		 * \brief The recursive function used by the implementation
 		 *  of nearest_facet().
