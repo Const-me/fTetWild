@@ -188,7 +188,10 @@
     <ClCompile Include="src\intersections.cpp" />
     <ClCompile Include="src\LocalOperations.cpp" />
     <ClCompile Include="src\Mesh.cpp" />
-    <ClCompile Include="src\MeshImprovement.cpp" />
+    <ClCompile Include="src\MeshImprovement.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <OpenMPSupport>true</OpenMPSupport>
+    </ClCompile>
     <ClCompile Include="src\Simplification.cpp" />
     <ClCompile Include="src\TriangleInsertion.cpp">
       <OpenMPSupport>true</OpenMPSupport>

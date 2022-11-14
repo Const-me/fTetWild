@@ -6,7 +6,7 @@
 // obtain one at http://mozilla.org/MPL/2.0/.
 //
 
-#include "stdafx.h"
+#include "../includeEigen.h"
 #include "MeshImprovement.h"
 #include "LocalOperations.h"
 #include "EdgeSplitting.h"
