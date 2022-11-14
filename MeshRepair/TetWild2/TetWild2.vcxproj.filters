@@ -210,7 +210,6 @@
     <ClCompile Include="Utils\Mesh\TriangleMesh.reorder.cpp">
       <Filter>Utils\Mesh</Filter>
     </ClCompile>
-    <ClCompile Include="external\triangle_triangle_intersection.cpp" />
     <ClCompile Include="src\EdgesSet.cpp" />
     <ClCompile Include="Utils\cutTableDataPrint.cpp" />
     <ClCompile Include="src\CutTable2.cpp" />

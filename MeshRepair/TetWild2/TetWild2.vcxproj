@@ -157,7 +157,6 @@
     <ClCompile Include="Utils\randomShuffle.cpp" />
     <ClCompile Include="src\CutTable2.cpp" />
     <ClCompile Include="src\EdgesSet.cpp" />
-    <ClCompile Include="external\triangle_triangle_intersection.cpp" />
     <ClCompile Include="Utils\cutTableDataCompare.cpp" />
     <ClCompile Include="Utils\designTimeUtils.cpp" />
     <ClCompile Include="external\bfs_orient.cpp" />

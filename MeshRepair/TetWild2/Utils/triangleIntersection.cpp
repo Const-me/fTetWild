@@ -1,23 +1,13 @@
+// Fast and Robust Triangle-Triangle Overlap Test Using Orientation Predicates
+// Philippe Guigue, Olivier Devillers, January 2003
+// DOI: 10.1080/10867651.2003.10487580
 #include <stdafx.h>
 #include "triangleIntersection.h"
 #include "Geogram2.h"
 #include "SimdVector.h"
 
-extern "C++" int tri_tri_intersection_test_3d(
-  double p1[ 3 ], double q1[ 3 ], double r1[ 3 ], double p2[ 3 ], double q2[ 3 ], double r2[ 3 ], int* coplanar, double source[ 3 ], double target[ 3 ] );
-
 namespace
 {
-	int triangleIntersectionTestV1( const double* p1, const double* q1, const double* r1, const double* p2, const double* q2, const double* r2, bool* coplanar,
-	  double* source, double* target )
-	{
-		int cp;
-		int res = tri_tri_intersection_test_3d( const_cast<double*>( p1 ), const_cast<double*>( q1 ), const_cast<double*>( r1 ), const_cast<double*>( p2 ),
-		  const_cast<double*>( q2 ), const_cast<double*>( r2 ), &cp, source, target );
-		*coplanar = ( 0 != cp );
-		return res;
-	}
-
 	inline int sub_sub_cross_sub_dot( const double* pa, const double* pb, const double* pc, const double* pd )
 	{
 		auto result = -GEO2::orient_3d( pa, pb, pc, pd );
@@ -286,89 +276,54 @@ namespace
 		return constructIntersection(
 		  c, pqr1[ shuff[ 0 ] ], pqr1[ shuff[ 1 ] ], pqr1[ shuff[ 2 ] ], pqr2[ shuff[ 3 ] ], pqr2[ shuff[ 4 ] ], pqr2[ shuff[ 5 ] ] );
 	}
-
-	int triangleIntersectionTestV2( const double* p1, const double* q1, const double* r1, const double* p2, const double* q2, const double* r2, bool* coplanar,
-	  double* source, double* target )
-	{
-		std::array<int, 3> dpqr1, dpqr2;
-
-		dpqr1[ 0 ] = sub_sub_cross_sub_dot( p2, q2, r2, p1 );
-		dpqr1[ 1 ] = sub_sub_cross_sub_dot( p2, q2, r2, q1 );
-		dpqr1[ 2 ] = sub_sub_cross_sub_dot( p2, q2, r2, r1 );
-
-		if( ( ( dpqr1[ 0 ] * dpqr1[ 1 ] ) > 0 ) && ( ( dpqr1[ 0 ] * dpqr1[ 2 ] ) > 0 ) )
-			return 666;
-
-		dpqr2[ 0 ] = sub_sub_cross_sub_dot( p1, q1, r1, p2 );
-		dpqr2[ 1 ] = sub_sub_cross_sub_dot( p1, q1, r1, q2 );
-		dpqr2[ 2 ] = sub_sub_cross_sub_dot( p1, q1, r1, r2 );
-		if( ( ( dpqr2[ 0 ] * dpqr2[ 1 ] ) > 0 ) && ( ( dpqr2[ 0 ] * dpqr2[ 2 ] ) > 0 ) )
-			return 666;
-
-		// The first bunch of IFs
-		const uint8_t index2 = lookupShuffleIndex( dpqr1[ 0 ], dpqr1[ 1 ], dpqr1[ 2 ] );
-		if( index2 == 0xFF )
-		{
-			// triangles are co-planar
-			*coplanar = true;
-			return -1;
-		}
-		const std::array<uint8_t, 6>& shuff = switch1shuffles[ index2 ];
-		const std::array<const double*, 3> pqr1 = { p1, q1, r1 };
-		const std::array<const double*, 3> pqr2 = { p2, q2, r2 };
-
-		Context c;
-		c.coplanar = coplanar;
-		c.source = source;
-		c.target = target;
-
-		Vec tmp = load3( p1 );
-		Vec v1 = load3( q1 ) - tmp;
-		Vec v2 = load3( r1 ) - tmp;
-		c.N1 = cross( v1, v2 );
-
-		tmp = load3( r2 );
-		v1 = load3( p2 ) - tmp;
-		v2 = load3( q2 ) - tmp;
-		c.N2 = cross( v1, v2 );
-
-		return triInter3D( c, pqr1[ shuff[ 0 ] ], pqr1[ shuff[ 1 ] ], pqr1[ shuff[ 2 ] ], pqr2[ shuff[ 3 ] ], pqr2[ shuff[ 4 ] ], pqr2[ shuff[ 5 ] ],
-		  dpqr2[ shuff[ 3 ] ], dpqr2[ shuff[ 4 ] ], dpqr2[ shuff[ 5 ] ] );
-	}
-
-	inline bool equals( const std::array<double, 3>& a, const double* p )
-	{
-		return 0 == memcmp( a.data(), p, 8 * 3 );
-	}
-}  // namespace
+}
 
 int triangleIntersectionTest(
-  const double* p1, const double* q1, const double* r1, const double* p2, const double* q2, const double* r2, bool* coplanar, double* source, double* target )
+  const double* p1, const double* q1, const double* r1, const double* p2, const double* q2, const double* r2, bool* coplanar,
+	double* source, double* target )
 {
-#if 1
-	return triangleIntersectionTestV2( p1, q1, r1, p2, q2, r2, coplanar, source, target );
-#else
-	std::array<double, 3> s2 { source[ 0 ], source[ 1 ], source[ 2 ] };
-	std::array<double, 3> t2 { target[ 0 ], target[ 1 ], target[ 2 ] };
-	bool cp2 = *coplanar;
+	std::array<int, 3> dpqr1, dpqr2;
 
-	const int res2 = triangleIntersectionTestV2( p1, q1, r1, p2, q2, r2, &cp2, s2.data(), t2.data() );
-	const int res1 = triangleIntersectionTestV1( p1, q1, r1, p2, q2, r2, coplanar, source, target );
+	dpqr1[ 0 ] = sub_sub_cross_sub_dot( p2, q2, r2, p1 );
+	dpqr1[ 1 ] = sub_sub_cross_sub_dot( p2, q2, r2, q1 );
+	dpqr1[ 2 ] = sub_sub_cross_sub_dot( p2, q2, r2, r1 );
 
-	int diff = 0;
-	if( res1 != res2 )
-		diff |= 1;
-	if( *coplanar != cp2 )
-		diff |= 2;
-	if( !equals( s2, source ) )
-		diff |= 4;
-	if( !equals( t2, target ) )
-		diff |= 8;
-	if( 0 == diff )
-		return res2;
+	if( ( ( dpqr1[ 0 ] * dpqr1[ 1 ] ) > 0 ) && ( ( dpqr1[ 0 ] * dpqr1[ 2 ] ) > 0 ) )
+		return 666;
 
-	__debugbreak();
-	triangleIntersectionTestV2( p1, q1, r1, p2, q2, r2, &cp2, s2.data(), t2.data() );
-	return res2;
-#endif
+	dpqr2[ 0 ] = sub_sub_cross_sub_dot( p1, q1, r1, p2 );
+	dpqr2[ 1 ] = sub_sub_cross_sub_dot( p1, q1, r1, q2 );
+	dpqr2[ 2 ] = sub_sub_cross_sub_dot( p1, q1, r1, r2 );
+	if( ( ( dpqr2[ 0 ] * dpqr2[ 1 ] ) > 0 ) && ( ( dpqr2[ 0 ] * dpqr2[ 2 ] ) > 0 ) )
+		return 666;
+
+	// The first bunch of IFs
+	const uint8_t index2 = lookupShuffleIndex( dpqr1[ 0 ], dpqr1[ 1 ], dpqr1[ 2 ] );
+	if( index2 == 0xFF )
+	{
+		// triangles are co-planar
+		*coplanar = true;
+		return -1;
+	}
+	const std::array<uint8_t, 6>& shuff = switch1shuffles[ index2 ];
+	const std::array<const double*, 3> pqr1 = { p1, q1, r1 };
+	const std::array<const double*, 3> pqr2 = { p2, q2, r2 };
+
+	Context c;
+	c.coplanar = coplanar;
+	c.source = source;
+	c.target = target;
+
+	Vec tmp = load3( p1 );
+	Vec v1 = load3( q1 ) - tmp;
+	Vec v2 = load3( r1 ) - tmp;
+	c.N1 = cross( v1, v2 );
+
+	tmp = load3( r2 );
+	v1 = load3( p2 ) - tmp;
+	v2 = load3( q2 ) - tmp;
+	c.N2 = cross( v1, v2 );
+
+	return triInter3D( c, pqr1[ shuff[ 0 ] ], pqr1[ shuff[ 1 ] ], pqr1[ shuff[ 2 ] ], pqr2[ shuff[ 3 ] ], pqr2[ shuff[ 4 ] ], pqr2[ shuff[ 5 ] ],
+		dpqr2[ shuff[ 3 ] ], dpqr2[ shuff[ 4 ] ], dpqr2[ shuff[ 5 ] ] );
 }
