@@ -131,7 +131,9 @@ namespace floatTetWild
 			get_nearest_facet_hint( p, nearest_facet, nearest_point, sq_dist );
 			__m128i vec = _mm_setr_epi32( 1, 0, (int)mesh_.countTriangles(), 0 );
 			__m256d pt = AvxMath::loadDouble3( &p.x );
-			facetInEnvelopeRecursive( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist, vec );
+			// facetInEnvelopeRecursive( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist, vec );
+			// facetInEnvelopeCompare( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist, vec );
+			facetInEnvelopeStack( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist, vec );
 			return nearest_facet;
 		}
 
@@ -139,13 +141,16 @@ namespace floatTetWild
 		 * Same as before, but stops as soon as a point on the surface in
 		 * within a given distance bound from the triangle mesh.
 		 */
-		void facet_in_envelope_with_hint( const GEO2::vec3& p, double sq_epsilon, GEO2::index_t& nearest_facet, GEO2::vec3& nearest_point, double& sq_dist ) const
+		void facet_in_envelope_with_hint(
+		  const GEO2::vec3& p, double sq_epsilon, GEO2::index_t& nearest_facet, GEO2::vec3& nearest_point, double& sq_dist ) const
 		{
 			if( nearest_facet == GEO2::NO_FACET )
 				get_nearest_facet_hint( p, nearest_facet, nearest_point, sq_dist );
 			__m128i vec = _mm_setr_epi32( 1, 0, (int)mesh_.countTriangles(), 0 );
 			__m256d pt = AvxMath::loadDouble3( &p.x );
-			facetInEnvelopeRecursive( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist, vec );
+			// facetInEnvelopeRecursive( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist, vec );
+			// facetInEnvelopeCompare( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist, vec );
+			facetInEnvelopeStack( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist, vec );
 		}
 
 	  protected:
@@ -181,8 +186,8 @@ namespace floatTetWild
 		 * \param[in] e one position past the index of the last facet in the
 		 *  subtree under node \p n
 		 */
-		void nearest_facet_recursive(
-		  const GEO2::vec3& p, GEO2::index_t& nearest_facet, GEO2::vec3& nearest_point, double& sq_dist, GEO2::index_t n, GEO2::index_t b, GEO2::index_t e ) const;
+		void nearest_facet_recursive( const GEO2::vec3& p, GEO2::index_t& nearest_facet, GEO2::vec3& nearest_point, double& sq_dist, GEO2::index_t n,
+		  GEO2::index_t b, GEO2::index_t e ) const;
 
 		/*
 		 * Same as before, but stops early if a point within a given distance
@@ -190,6 +195,10 @@ namespace floatTetWild
 		 */
 		void facetInEnvelopeRecursive(
 		  __m256d p, double sq_epsilon, GEO2::index_t& nearest_facet, GEO2::vec3& nearest_point, double& sq_dist, __m128i nbe ) const;
+
+		void facetInEnvelopeStack( __m256d p, double sqEpsilon, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDist, __m128i nbe ) const;
+
+		void facetInEnvelopeCompare( __m256d p, double sqEpsilon, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDist, __m128i nbe ) const;
 
 	  protected:
 		std::vector<GEO2::Box> bboxes_;

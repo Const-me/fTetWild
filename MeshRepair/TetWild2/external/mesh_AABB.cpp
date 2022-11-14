@@ -49,6 +49,7 @@
 #ifdef __AVX__
 #include <Utils/AvxMath.h>
 #endif
+#include <omp.h>
 
 namespace
 {
@@ -555,4 +556,117 @@ namespace floatTetWild
 		}
 	}
 
+	void MeshFacetsAABBWithEps::facetInEnvelopeStack(
+	  __m256d p, double sqEpsilon, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDist, __m128i nbe ) const
+	{
+		std::vector<FacetRecursionFrame>& stack = recursionStacks[ omp_get_thread_num() ].stack;
+		stack.clear();
+
+		// Push the initial element
+		{
+			const uint32_t n = (uint32_t)_mm_cvtsi128_si32( nbe );
+			const uint32_t b = (uint32_t)_mm_extract_epi32( nbe, 1 );
+			const uint32_t e = (uint32_t)_mm_extract_epi32( nbe, 2 );
+			assert( e > b );
+
+			FacetRecursionFrame& f = stack.emplace_back();
+			f.storeIndices( nbe );
+			f.d = 0.0;
+		}
+
+		while( !stack.empty() )
+		{
+			FacetRecursionFrame& f = stack.back();
+			const uint32_t n = f.n;
+			const uint32_t b = f.b;
+			const uint32_t e = f.e;
+			assert( e > b );
+
+			// If node is a leaf: compute point-facet distance and replace current if nearer
+			if( b + 1 == e )
+			{
+				vec3 cur_nearest_point;
+				double cur_sq_dist;
+				get_point_facet_nearest_point( mesh_, p, b, cur_nearest_point, cur_sq_dist );
+				if( cur_sq_dist < sqDist )
+				{
+					nearestFacet = b;
+					nearestPoint = cur_nearest_point;
+					sqDist = cur_sq_dist;
+					if( cur_sq_dist <= sqEpsilon )
+					{
+						// This alone saves non-trivial amount of overhead compared to recursive version
+						// Clearing the complete std::vector only takes a few instructions
+						stack.clear();
+						return;
+					}
+				}
+
+				// Pop the top stack entry
+				stack.pop_back();
+				continue;
+			}
+
+			if( f.d >= sqDist || f.d > sqEpsilon )
+			{
+				// The original version would have skipped this frame with "if( d < sq_dist && d <= sq_epsilon )"
+				stack.pop_back();
+				continue;
+			}
+
+			const uint32_t m = b + ( e - b ) / 2;
+			const uint32_t childl = 2 * n;
+			const uint32_t childr = 2 * n + 1;
+
+			// The original code suffers from the unpredictable "if( dl < dr )" branch
+			// To workaround, we using vector blends as conditional moves to figure out which way to go first.
+			const __m128d dl = pointBoxSignedSquaredDistance2( p, bboxes_[ childl ] );
+			const __m128d dr = pointBoxSignedSquaredDistance2( p, bboxes_[ childr ] );
+
+			// Compare for dl < dr
+			// Because pointBoxSignedSquaredDistance2 returns vectors with both lanes equal, the result is either zero or a vector of UINT_MAX
+			const __m128i lt = _mm_castpd_si128( _mm_cmplt_pd( dl, dr ) );
+
+			// Create left/right index vectors
+			const __m128i recLeft = _mm_setr_epi32( (int)childl, (int)b, (int)m, 0 );
+			const __m128i recRight = _mm_setr_epi32( (int)childr, (int)m, (int)e, 0 );
+
+			// Replace the current frame with the SECOND recursive call of the original version
+			__m128i rec = _mm_blendv_epi8( recLeft, recRight, lt );
+			f.storeIndices( rec );
+			f.d = _mm_cvtsd_f64( _mm_max_sd( dr, dl ) );
+
+			// Push a new frame with the FIRST recursive call of the original version
+			FacetRecursionFrame& newFrame = stack.emplace_back();
+			rec = _mm_blendv_epi8( recRight, recLeft, lt );
+			newFrame.storeIndices( rec );
+			newFrame.d = _mm_cvtsd_f64( _mm_min_sd( dr, dl ) );
+		}
+	}
+
+	void MeshFacetsAABBWithEps::facetInEnvelopeCompare(
+	  __m256d p, double sqEpsilon, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDist, __m128i nbe ) const
+	{
+		const uint32_t nfInput = nearestFacet;
+		const vec3 npInput = nearestPoint;
+		const double sqDistInput = sqDist;
+
+		uint32_t nf1 = nfInput;
+		vec3 np1 = npInput;
+		double sqd1 = sqDistInput;
+		facetInEnvelopeRecursive( p, sqEpsilon, nf1, np1, sqd1, nbe );
+
+		nearestFacet = nfInput;
+		nearestPoint = npInput;
+		sqDist = sqDistInput;
+		facetInEnvelopeStack( p, sqEpsilon, nearestFacet, nearestPoint, sqDist, nbe );
+
+		if( sqDist <= sqd1 )
+		{
+			// Despite I tried to replicate the original recursive version as close as possible, the new version sometimes finds closer points than the old one :-/
+			// I have no idea why, let's hope that's a good thing
+			return;	 
+		}
+		__debugbreak();
+	}
 }  // namespace floatTetWild

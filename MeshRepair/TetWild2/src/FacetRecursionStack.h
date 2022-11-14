@@ -4,10 +4,16 @@
 
 namespace floatTetWild
 {
-	struct FacetRecursionFrame
+	struct alignas( 32 ) FacetRecursionFrame
 	{
-		double d;
 		uint32_t n, b, e;
+		uint32_t zzPadding;
+		double d;
+
+		inline void storeIndices( __m128i nbe )
+		{
+			_mm_store_si128( (__m128i*)&n, nbe );
+		}
 	};
 
 	struct alignas( 64 ) FacetRecursionStack
