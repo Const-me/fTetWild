@@ -130,7 +130,7 @@ namespace floatTetWild
 			get_nearest_facet_hint( p, nearest_facet, nearest_point, sq_dist );
 			__m128i vec = _mm_setr_epi32( 1, 0, (int)mesh_.countTriangles(), 0 );
 			__m256d pt = AvxMath::loadDouble3( &p.x );
-			facet_in_envelope_recursive( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist, vec );
+			facetInEnvelopeRecursive( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist, vec );
 			return nearest_facet;
 		}
 
@@ -144,7 +144,7 @@ namespace floatTetWild
 				get_nearest_facet_hint( p, nearest_facet, nearest_point, sq_dist );
 			__m128i vec = _mm_setr_epi32( 1, 0, (int)mesh_.countTriangles(), 0 );
 			__m256d pt = AvxMath::loadDouble3( &p.x );
-			facet_in_envelope_recursive( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist, vec );
+			facetInEnvelopeRecursive( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist, vec );
 		}
 
 	  protected:
@@ -187,7 +187,7 @@ namespace floatTetWild
 		 * Same as before, but stops early if a point within a given distance
 		 * is found.
 		 */
-		void facet_in_envelope_recursive(
+		void facetInEnvelopeRecursive(
 		  __m256d p, double sq_epsilon, GEO2::index_t& nearest_facet, GEO2::vec3& nearest_point, double& sq_dist, __m128i nbe ) const;
 
 	  protected:

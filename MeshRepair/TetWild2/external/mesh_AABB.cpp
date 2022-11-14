@@ -499,7 +499,7 @@ namespace floatTetWild
 		}
 	}
 
-	void MeshFacetsAABBWithEps::facet_in_envelope_recursive(
+	void MeshFacetsAABBWithEps::facetInEnvelopeRecursive(
 	  __m256d p, double sq_epsilon, index_t& nearest_f, vec3& nearest_point, double& sq_dist, __m128i nbe ) const
 	{
 		const uint32_t n = (uint32_t)_mm_cvtsi128_si32( nbe );
@@ -547,14 +547,14 @@ namespace floatTetWild
 		if( d < sq_dist && d <= sq_epsilon )
 		{
 			const __m128i rec = _mm_blendv_epi8( recRight, recLeft, lt );  // ( dl < dr ) ? recLeft : recRight
-			facet_in_envelope_recursive( p, sq_epsilon, nearest_f, nearest_point, sq_dist, rec );
+			facetInEnvelopeRecursive( p, sq_epsilon, nearest_f, nearest_point, sq_dist, rec );
 		}
 
 		d = _mm_cvtsd_f64( _mm_max_sd( dr, dl ) );
 		if( d < sq_dist && d <= sq_epsilon )
 		{
 			const __m128i rec = _mm_blendv_epi8( recLeft, recRight, lt );	// ( dl < dr ) ? recRight : recLeft
-			facet_in_envelope_recursive( p, sq_epsilon, nearest_f, nearest_point, sq_dist, rec );
+			facetInEnvelopeRecursive( p, sq_epsilon, nearest_f, nearest_point, sq_dist, rec );
 		}
 	}
 
