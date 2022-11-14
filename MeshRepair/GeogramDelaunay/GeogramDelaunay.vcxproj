@@ -117,6 +117,7 @@
     <ClInclude Include="geogram\basic\assert.h" />
     <ClInclude Include="geogram\basic\counted.h" />
     <ClInclude Include="geogram\basic\environment.h" />
+    <ClInclude Include="geogram\basic\geometry.h" />
     <ClInclude Include="geogram\basic\geometry_nd.h" />
     <ClInclude Include="geogram\basic\logger.h" />
     <ClInclude Include="geogram\basic\packed_arrays.h" />

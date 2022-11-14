@@ -45,5 +45,6 @@
     <ClInclude Include="geogram\api\defs.h" />
     <ClInclude Include="Predicates\RobustPredicates.h" />
     <ClInclude Include="geogram\basic\geometry_nd.h" />
+    <ClInclude Include="geogram\basic\geometry.h" />
   </ItemGroup>
 </Project>
