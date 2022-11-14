@@ -663,7 +663,7 @@ namespace floatTetWild
 
 		if( sqDist <= sqd1 )
 		{
-			// Despite I tried to replicate the original recursive version as close as possible, the new version sometimes finds closer points than the old one :-/
+			// Despite I tried to replicate the original recursive version, the new version sometimes finds closer points than the old one
 			// I have no idea why, let's hope that's a good thing
 			return;	 
 		}
