@@ -556,6 +556,14 @@ namespace floatTetWild
 		}
 	}
 
+	inline __m128i makeUint3( uint32_t x, uint32_t y, uint32_t z )
+	{
+		__m128i v = _mm_cvtsi32_si128( (int)x );
+		v = _mm_insert_epi32( v, (int)y, 1 );
+		v = _mm_insert_epi32( v, (int)z, 2 );
+		return v;
+	}
+
 	void MeshFacetsAABBWithEps::facetInEnvelopeStack(
 	  __m256d p, double sqEpsilon, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDist, __m128i nbe ) const
 	{
@@ -628,8 +636,8 @@ namespace floatTetWild
 			const __m128i lt = _mm_castpd_si128( _mm_cmplt_pd( dl, dr ) );
 
 			// Create left/right index vectors
-			const __m128i recLeft = _mm_setr_epi32( (int)childl, (int)b, (int)m, 0 );
-			const __m128i recRight = _mm_setr_epi32( (int)childr, (int)m, (int)e, 0 );
+			const __m128i recLeft = makeUint3( childl, b, m );
+			const __m128i recRight = makeUint3( childr, m, e );
 
 			// Replace the current frame with the SECOND recursive call of the original version
 			__m128i rec = _mm_blendv_epi8( recLeft, recRight, lt );
@@ -665,7 +673,7 @@ namespace floatTetWild
 		{
 			// Despite I tried to replicate the original recursive version, the new version sometimes finds closer points than the old one
 			// I have no idea why, let's hope that's a good thing
-			return;	 
+			return;
 		}
 		__debugbreak();
 	}
