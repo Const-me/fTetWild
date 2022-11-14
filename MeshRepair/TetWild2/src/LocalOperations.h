@@ -9,6 +9,7 @@
 #include "Mesh.h"
 #include "AABBWrapper.h"
 #include "EdgesSet.h"
+#include "ElementInQueue.h"
 
 namespace floatTetWild
 {
@@ -132,43 +133,6 @@ namespace floatTetWild
 	}
 
 	void pausee( std::string msg = "" );
-
-	///////////////
-	struct ElementInQueue
-	{
-		std::array<int, 2> v_ids;
-		Scalar weight;
-
-		ElementInQueue() = default;
-		ElementInQueue( const std::array<int, 2>& ids, Scalar w )
-			: v_ids( ids )
-			, weight( w )
-		{
-		}
-		ElementInQueue( int e0, int e1, Scalar w )
-			: v_ids { e0, e1 }
-			, weight( w )
-		{
-		}
-	};
-	struct cmp_l
-	{
-		bool operator()( const ElementInQueue& e1, const ElementInQueue& e2 )
-		{
-			if( e1.weight == e2.weight )
-				return e1.v_ids > e2.v_ids;
-			return e1.weight < e2.weight;
-		}
-	};
-	struct cmp_s
-	{
-		bool operator()( const ElementInQueue& e1, const ElementInQueue& e2 )
-		{
-			if( e1.weight == e2.weight )
-				return e1.v_ids < e2.v_ids;
-			return e1.weight > e2.weight;
-		}
-	};
 
 	Scalar AMIPS_energy_aux( const std::array<Scalar, 12>& T );
 	bool is_energy_unstable( const std::array<Scalar, 12>& T, Scalar res );

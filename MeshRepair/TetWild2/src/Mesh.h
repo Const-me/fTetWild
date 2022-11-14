@@ -16,6 +16,7 @@
 #include "MeshVertex.h"
 #include "MeshTet.h"
 #include "../Utils/TimeMeasure.h"
+#include "ElementInQueue.h"
 
 namespace floatTetWild
 {
@@ -170,6 +171,7 @@ namespace floatTetWild
 			std::vector<int> tet_tss;
 			EdgesSet new_edges;
 			std::vector<std::array<int, 2>> tmp_inf_es;
+			std::priority_queue<ElementInQueue, std::vector<ElementInQueue>, cmp_s> ec_queue;
 		};
 		EdgeCollapsingAuxBuffers edgeCollapsingAuxBuffers;
 

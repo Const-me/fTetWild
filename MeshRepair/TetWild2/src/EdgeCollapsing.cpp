@@ -40,9 +40,11 @@ namespace floatTetWild
 			int counter = 0;
 			int suc_counter = 0;
 			int suc_counter_env = 0;
+			Mesh::EdgeCollapsingAuxBuffers& buffers = mesh.edgeCollapsingAuxBuffers;
 
 			////init
-			std::priority_queue<ElementInQueue, std::vector<ElementInQueue>, cmp_s> ec_queue;
+			std::priority_queue<ElementInQueue, std::vector<ElementInQueue>, cmp_s>& ec_queue = buffers.ec_queue;
+
 			edges.enumerate(
 			  [ & ]( int e0, int e1 )
 			  {
@@ -58,7 +60,6 @@ namespace floatTetWild
 			////collapse
 			int ts = 0;
 
-			Mesh::EdgeCollapsingAuxBuffers& buffers = mesh.edgeCollapsingAuxBuffers;
 			std::vector<std::array<int, 2>>& inf_es = buffers.inf_es;
 			inf_es.clear();
 
