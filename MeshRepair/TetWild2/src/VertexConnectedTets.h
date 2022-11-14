@@ -1,37 +1,29 @@
 #pragma once
 
-#define CONN_TETS_SORTED_COPY 0
-
 namespace floatTetWild
 {
+	// A specialized collection for the set of tetrahedral elements
+	// Every vertex of the mesh has this collection, keeping indices of the tetra element connected to the vertex
+	// The set is assumed to be unordered; various setIntersection() functions sort elements of the container, for performance reason
 	class VertexConnectedTets
 	{
-		std::vector<int> vec;
+		mutable std::vector<int> vec;
+		mutable bool isSorted = false;
 		friend void setIntersection( const VertexConnectedTets& a, const VertexConnectedTets& b, std::vector<int>& result );
 		friend void setIntersection( const VertexConnectedTets& a, const VertexConnectedTets& b, const VertexConnectedTets& c, std::vector<int>& result );
-#if CONN_TETS_SORTED_COPY
-		mutable std::vector<int> sortedVec;
-		const std::vector<int>& makeSortedVector() const;
-		void flushSortedCopy()
-		{
-			sortedVec.clear();
-		}
-#else
-		inline void flushSortedCopy()
-		{
-		}
-#endif
+
+		void ensureSorted() const;
 
 	  public:
 		void add( int i )
 		{
 			vec.push_back( i );
-			flushSortedCopy();
+			isSorted = false;
 		}
 		void addRange( const std::vector<int>& other )
 		{
 			vec.insert( vec.end(), other.begin(), other.end() );
-			flushSortedCopy();
+			isSorted = false;
 		}
 
 		decltype( auto ) begin() const
@@ -52,25 +44,37 @@ namespace floatTetWild
 		}
 		bool remove( int idx )
 		{
-			auto it = std::find( vec.begin(), vec.end(), idx );
-			if( it != vec.end() )
+			if( isSorted )
 			{
-				vec.erase( it );
-				flushSortedCopy();
-				return true;
+				// When sorted, we can use binary search to find elements
+				// Note that when an element is found and removed, the vector remains sorted
+				auto it = std::lower_bound( vec.begin(), vec.end(), idx );
+				if( it != vec.end() && *it == idx )
+				{
+					vec.erase( it );
+					return true;
+				}
+				return false;
 			}
-			return false;
+			else
+			{
+				auto it = std::find( vec.begin(), vec.end(), idx );
+				if( it != vec.end() )
+				{
+					vec.erase( it );
+					return true;
+				}
+				return false;
+			}
 		}
 		void eraseAt( size_t idx )
 		{
 			assert( idx < vec.size() );
 			vec.erase( vec.begin() + idx );
-			flushSortedCopy();
 		}
 		void clear()
 		{
 			vec.clear();
-			flushSortedCopy();
 		}
 		int operator[]( size_t idx ) const
 		{
@@ -82,15 +86,12 @@ namespace floatTetWild
 		{
 			for( int& i : vec )
 				i = map[ i ];
-			flushSortedCopy();
+			isSorted = false;
 		}
 
 		void sort()
 		{
-			std::sort( vec.begin(), vec.end() );
-#if CONN_TETS_SORTED_COPY
-			sortedVec = vec;
-#endif
+			ensureSorted();
 		}
 	};
 

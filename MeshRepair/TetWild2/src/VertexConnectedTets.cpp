@@ -2,59 +2,25 @@
 #include "VertexConnectedTets.h"
 #include "LocalOperations.h"
 
-#define USE_ORIGINAL_VERSION 0
-#define COMPARE_VERSION 0
-
-namespace
+void floatTetWild::VertexConnectedTets::ensureSorted() const
 {
-	struct alignas( 64 ) IntersectionBuffers
-	{
-		std::vector<int> a, b, c;
-	};
-	thread_local IntersectionBuffers buffers;
-}  // namespace
-
-#if CONN_TETS_SORTED_COPY
-const std::vector<int>& floatTetWild::VertexConnectedTets::makeSortedVector() const
-{
-	if( !vec.empty() )
-	{
-		if( !sortedVec.empty() )
-			return sortedVec;
-
-		sortedVec = vec;
-		std::sort( sortedVec.begin(), sortedVec.end() );
-		return sortedVec;
-	}
-
-	sortedVec.clear();
-	return sortedVec;
+	if( isSorted )
+		return;
+	std::sort( vec.begin(), vec.end() );
+	isSorted = true;
 }
-#endif
 
 void floatTetWild::setIntersection( const VertexConnectedTets& a, const VertexConnectedTets& b, std::vector<int>& result )
 {
-#if USE_ORIGINAL_VERSION
-	set_intersection( a.vec, b.vec, result );
-#else
-#if CONN_TETS_SORTED_COPY
-	const std::vector<int>& as = a.makeSortedVector();
-	const std::vector<int>& bs = b.makeSortedVector();
-	std::set_intersection( as.begin(), as.end(), bs.begin(), bs.end(), std::back_inserter( result ) );
-#else
-	IntersectionBuffers& ib = buffers;
-	ib.a = a.vec;
-	ib.b = b.vec;
-	std::sort( ib.a.begin(), ib.a.end() );
-	std::sort( ib.b.begin(), ib.b.end() );
-	std::set_intersection( ib.a.begin(), ib.a.end(), ib.b.begin(), ib.b.end(), std::back_inserter( result ) );
-#endif
-#endif
+	a.ensureSorted();
+	b.ensureSorted();
+	std::set_intersection( a.vec.begin(), a.vec.end(), b.vec.begin(), b.vec.end(), std::back_inserter( result ) );
 }
 
 namespace
 {
-	inline void merge3_scalar( const int* a1, const int* a2, const int* b1, const int* b2, const int* c1, const int* c2, std::vector<int>& result )
+	// This scalar version is slightly faster. It's probably the latency of moving data to/from vectors.
+	static void merge3_scalar( const int* a1, const int* a2, const int* b1, const int* b2, const int* c1, const int* c2, std::vector<int>& result )
 	{
 		int a = *a1, b = *b1, c = *c1;
 		while( true )
@@ -103,7 +69,7 @@ namespace
 		return v;
 	}
 
-	inline void merge3_sse2( const int* a1, const int* a2, const int* b1, const int* b2, const int* c1, const int* c2, std::vector<int>& result )
+	static void merge3_sse2( const int* a1, const int* a2, const int* b1, const int* b2, const int* c1, const int* c2, std::vector<int>& result )
 	{
 		while( true )
 		{
@@ -162,8 +128,8 @@ namespace
 
 	inline void merge3( const std::vector<int>& a, const std::vector<int>& b, const std::vector<int>& c, std::vector<int>& result )
 	{
-		// merge3_scalar( a.data(), a.data() + a.size(), b.data(), b.data() + b.size(), c.data(), c.data() + c.size(), result );
-		merge3_sse2( a.data(), a.data() + a.size(), b.data(), b.data() + b.size(), c.data(), c.data() + c.size(), result );
+		merge3_scalar( a.data(), a.data() + a.size(), b.data(), b.data() + b.size(), c.data(), c.data() + c.size(), result );
+		// merge3_sse2( a.data(), a.data() + a.size(), b.data(), b.data() + b.size(), c.data(), c.data() + c.size(), result );
 	}
 }  // namespace
 
@@ -175,25 +141,10 @@ void floatTetWild::setIntersection( const VertexConnectedTets& a, const VertexCo
 	if( a.empty() || b.empty() || c.empty() )
 		return;
 
-#if CONN_TETS_SORTED_COPY
-	const std::vector<int>& as = a.makeSortedVector();
-	const std::vector<int>& bs = b.makeSortedVector();
-	const std::vector<int>& cs = c.makeSortedVector();
-	merge3( as, bs, cs, result );
-#else
-	IntersectionBuffers& ib = buffers;
-	ib.a = a.vec;
-	ib.b = b.vec;
-	ib.c = c.vec;
-	std::sort( ib.a.begin(), ib.a.end() );
-	std::sort( ib.b.begin(), ib.b.end() );
-	std::sort( ib.c.begin(), ib.c.end() );
-
-	// std::set_intersection( ib.a.begin(), ib.a.end(), ib.b.begin(), ib.b.end(), std::back_inserter( result ) );
-	// auto it = std::set_intersection( result.begin(), result.end(), ib.c.begin(), ib.c.end(), result.begin() );
-	// result.resize( it - result.begin() );
-	merge3( ib.a, ib.b, ib.c, result );
-#endif
+	a.ensureSorted();
+	b.ensureSorted();
+	c.ensureSorted();
+	merge3( a.vec, b.vec, c.vec, result );
 
 #if COMPARE_VERSION
 	std::vector<int> orig;
