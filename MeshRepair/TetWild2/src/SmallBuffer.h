@@ -51,5 +51,9 @@ namespace floatTetWild
 			assert( !empty() );
 			return arr.data();
 		}
+		const E& back() const
+		{
+			return arr[ length - 1 ];
+		}
 	};
 }  // namespace floatTetWild
