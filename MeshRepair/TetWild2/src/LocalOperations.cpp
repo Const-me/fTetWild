@@ -21,6 +21,7 @@
 #include <tbb/parallel_sort.h>
 #endif
 #include "LocalOperations2.h"
+#include <Utils/lowLevel.h>
 
 namespace floatTetWild
 {
@@ -455,7 +456,7 @@ namespace
 		0, 1, 2, 4	// v0, v1, v2, new_p
 	};
 	// clang-format on
-}
+}  // namespace
 
 bool floatTetWild::is_inverted( const Mesh& mesh, int t_id, int j, const Vector3& new_p )
 {
@@ -1068,6 +1069,20 @@ bool floatTetWild::is_energy_unstable( const std::array<Scalar, 12>& T, Scalar r
 	return false;
 }
 
+namespace
+{
+	inline double pow2( double x )
+	{
+		return x * x;
+	}
+
+	inline double cubicRoot( double x )
+	{
+		return floatTetWild::cbrt( x );
+	}
+}  // namespace
+
+
 Scalar floatTetWild::AMIPS_energy( const std::array<Scalar, 12>& T )
 {
 	Scalar res = AMIPS_energy_aux( T );
@@ -1113,13 +1128,12 @@ Scalar floatTetWild::AMIPS_energy( const std::array<Scalar, 12>& T )
 				 ( -twothird * r_T[ 1 + -1 ] - twothird * r_T[ 1 + 8 ] ) * r_T[ 1 + 5 ] - twothird * r_T[ 1 + -1 ] * r_T[ 1 + 8 ] +
 				 r_T[ 1 + -1 ] * r_T[ 1 + -1 ] + r_T[ 1 + 8 ] * r_T[ 1 + 8 ] + r_T[ 1 + 6 ] * r_T[ 1 + 6 ] + r_T[ 1 + 7 ] * r_T[ 1 + 7 ],
 			3 );
-		return std::cbrt( res_r.to_double() );
+		return cubicRoot( res_r.to_double() );
 	}
 	else
 		return res;
 }
 
-// TODO: manually vectorize this function, it's expensive and showed up in the profiler
 static Scalar AMIPS_energy_aux_v1( const std::array<Scalar, 12>& T )
 {
 	Scalar helper_0[ 12 ];
@@ -1168,7 +1182,7 @@ static Scalar AMIPS_energy_aux_v1( const std::array<Scalar, 12>& T )
 		 helper_5 * ( helper_19 + 0.5 * helper_3 - 1.5 * helper_5 ) + helper_7 * ( 0.5 * helper_10 + helper_20 - 1.5 * helper_7 ) +
 		 helper_8 * ( 0.5 * helper_10 + 0.5 * helper_7 - 1.5 * helper_8 + 0.5 * helper_9 ) +
 		 helper_9 * ( 0.5 * helper_10 + 0.5 * helper_7 + 0.5 * helper_8 - 1.5 * helper_9 ) ) /
-	  std::cbrt( helper_22 * helper_22 );
+	  cubicRoot( helper_22 * helper_22 );
 	return res;
 }
 
@@ -1198,14 +1212,6 @@ Scalar floatTetWild::AMIPS_energy_aux( const std::array<Scalar, 12>& T )
 	return v2;
 #endif
 }
-
-namespace
-{
-	inline double pow2( double x )
-	{
-		return x * x;
-	}
-}  // namespace
 
 void floatTetWild::AMIPS_jacobian( const std::array<Scalar, 12>& T, Vector3& result_0 )
 {
@@ -1261,7 +1267,7 @@ void floatTetWild::AMIPS_jacobian( const std::array<Scalar, 12>& T, Vector3& res
 	Scalar helper_37 = helper_22 * helper_36;
 	Scalar helper_38 = helper_4 - helper_6;
 	Scalar helper_39 = helper_23 * helper_3 - helper_24 * ( helper_32 - helper_37 ) - helper_38 * ( helper_16 * helper_36 - helper_20 * helper_31 );
-	Scalar helper_40 = pow( pow2( helper_39 ), -0.333333333333333 );
+	Scalar helper_40 = 1.0 / cubicRoot( pow2( helper_39 ) );
 	Scalar helper_41 = 0.707106781186548 * helper_10 - 0.707106781186548 * helper_12;
 	Scalar helper_42 = 0.707106781186548 * helper_26 - 0.707106781186548 * helper_28;
 	Scalar helper_43 = 0.5 * helper_21 + 0.5 * helper_5;
@@ -1359,7 +1365,7 @@ void floatTetWild::AMIPS_hessian( const std::array<Scalar, 12>& T, Matrix3& resu
 	Scalar helper_53 = helper_49 * helper_52;
 	Scalar helper_54 = helper_32 + helper_48 - helper_53;
 	Scalar helper_55 = pow2( helper_54 );
-	Scalar helper_56 = pow( helper_55, -0.333333333333333 );
+	Scalar helper_56 = 1.0 / cubicRoot( helper_55 );
 	Scalar helper_57 = 1.0 * helper_27 - 3.0 * helper_4 + 1.0 * helper_6 + 1.0 * helper_8;
 	Scalar helper_58 = 0.707106781186548 * helper_13;
 	Scalar helper_59 = 0.707106781186548 * helper_15;
@@ -1392,7 +1398,7 @@ void floatTetWild::AMIPS_hessian( const std::array<Scalar, 12>& T, Matrix3& resu
 	Scalar helper_84 = helper_66 * helper_82;
 	Scalar helper_85 = -helper_32 - helper_48 + helper_53;
 	Scalar helper_86 = 1.0 / helper_85;
-	Scalar helper_87 = helper_86 * pow( pow2( helper_85 ), -0.333333333333333 );
+	Scalar helper_87 = helper_86 / cubicRoot( pow2( helper_85 ) );
 	Scalar helper_88 = 0.707106781186548 * helper_6;
 	Scalar helper_89 = 0.707106781186548 * helper_27;
 	Scalar helper_90 = helper_88 - helper_89;

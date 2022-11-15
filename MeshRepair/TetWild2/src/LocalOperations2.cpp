@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "LocalOperations2.h"
+#include "../Utils/lowLevel.h"
 // clang-format off
 namespace
 {
@@ -107,6 +108,7 @@ double floatTetWild::AMIPS_energy_aux_v3( const std::array<double, 12>& arr )
 		a11 * ( sum2 - 4 * a11 );
 
 	mul *= -0.5;
-	const double res = mul / std::pow( tmpDiv * tmpDiv, 1.0 / 3.0 );
+	// const double res = mul / std::pow( tmpDiv * tmpDiv, 1.0 / 3.0 );
+	const double res = mul / floatTetWild::cbrt( tmpDiv * tmpDiv );
 	return res;
 }
