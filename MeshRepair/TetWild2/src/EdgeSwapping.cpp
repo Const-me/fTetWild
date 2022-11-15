@@ -43,12 +43,17 @@ void floatTetWild::edge_swapping( Mesh& mesh )
 		return true;
 	};
 
+	EdgeSwappingBuffers& buffers = mesh.edgeSwappingBuffers;
+	// Apparently, edge_swapping doesn't run in parallel with findNewPosBuffers; reusing an old buffer of the same type
 	EdgesSet& edges = mesh.findNewPosBuffers[ 0 ].edgesTemp;
 	get_all_edges( mesh, edges );
 
-	std::priority_queue<ElementInQueue, std::vector<ElementInQueue>, cmp_l> es_queue;
+	std::priority_queue<ElementInQueue, std::vector<ElementInQueue>, cmp_l>& es_queue = buffers.es_queue;
 	edges.enumerate( [ & ]( int e0, int e1 ) { es_queue.push( ElementInQueue( e0, e1, get_edge_length_2( mesh, e0, e1 ) ) ); } );
 	edges.clear();
+
+	std::vector<int>& n12_t_ids = buffers.n12_t_ids;
+	std::vector<std::array<int, 2>>& new_edges = buffers.new_edges;
 
 	while( !es_queue.empty() )
 	{
@@ -58,7 +63,7 @@ void floatTetWild::edge_swapping( Mesh& mesh )
 		if( tet_vertices[ v_ids[ 0 ] ].isFreezed() && tet_vertices[ v_ids[ 1 ] ].isFreezed() )
 			continue;
 
-		std::vector<int> n12_t_ids;
+		n12_t_ids.clear();
 		setIntersection( tet_vertices[ v_ids[ 0 ] ].connTets, tet_vertices[ v_ids[ 1 ] ].connTets, n12_t_ids );
 		if( !is_swappable( v_ids[ 0 ], v_ids[ 1 ], n12_t_ids ) )
 			continue;
@@ -72,7 +77,7 @@ void floatTetWild::edge_swapping( Mesh& mesh )
 		}
 
 		bool is_success = false;
-		std::vector<std::array<int, 2>> new_edges;
+		new_edges.clear();
 		if( n12_t_ids.size() == 3 && remove_an_edge_32( mesh, v_ids[ 0 ], v_ids[ 1 ], n12_t_ids, new_edges ) )
 		{
 			suc_counter3++;

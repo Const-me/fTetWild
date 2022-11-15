@@ -56,4 +56,12 @@ namespace floatTetWild
 	{
 		std::vector<GEO2::vec3> points;
 	};
+
+	struct EdgeSwappingBuffers
+	{
+		// EdgesSet edges;
+		std::priority_queue<ElementInQueue, std::vector<ElementInQueue>, cmp_l> es_queue;
+		std::vector<int> n12_t_ids;
+		std::vector<std::array<int, 2>> new_edges;
+	};
 }

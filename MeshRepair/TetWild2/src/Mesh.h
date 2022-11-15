@@ -157,6 +157,7 @@ namespace floatTetWild
 		FindCuttingTetsBuffers findCuttingTetsBuffers;
 		std::vector<FacetRecursionStack> facetRecursionStacks;
 		mutable IsBoundaryEdgeBuffers isBoundaryEdgeBuffers;
+		EdgeSwappingBuffers edgeSwappingBuffers;
 
 		// Some of the temporary buffers are per-thread, this method resizes them to params.num_threads length
 		void createThreadLocalBuffers();
