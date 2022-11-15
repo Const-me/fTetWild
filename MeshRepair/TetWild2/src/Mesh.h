@@ -10,14 +10,11 @@
 #include <array>
 #include <unordered_set>
 #include <cassert>
-#include <queue>
-#include "EdgesSet.h"
 #include "Random.hpp"
 #include "MeshVertex.h"
 #include "MeshTet.h"
 #include "../Utils/TimeMeasure.h"
-#include "ElementInQueue.h"
-#include "FacetRecursionStack.h"
+#include "TemporaryBuffers.h"
 
 namespace floatTetWild
 {
@@ -153,58 +150,14 @@ namespace floatTetWild
 			return avg_energy;
 		}
 
-		// Temporary data used in find_new_pos function.
-		// By the way, 64 is cache line size in bytes.
-		// We want different instances of these structures in different cache lines. Otherwise, the performance gonna be ruined by cache coherency protocol.
-		struct alignas( 64 ) FindNewPosBuffers
-		{
-			std::vector<int> js;
-			std::vector<std::array<double, 12>> Ts;
-			EdgesSet edgesTemp;
-		};
 		std::vector<FindNewPosBuffers> findNewPosBuffers;
-
-		// Temporary buffers used by edge_collapsing_aux function
-		struct EdgeCollapsingAuxBuffers
-		{
-			std::vector<std::array<int, 2>> inf_es;
-			std::vector<int> inf_e_tss;
-			std::vector<int> tet_tss;
-			EdgesSet new_edges;
-			std::vector<std::array<int, 2>> tmp_inf_es;
-			std::priority_queue<ElementInQueue, std::vector<ElementInQueue>, cmp_s> ec_queue;
-		};
 		EdgeCollapsingAuxBuffers edgeCollapsingAuxBuffers;
-
-		// Temporary buffers used by collapse_an_edge function
-		struct CollapseEdgeBuffers
-		{
-			std::vector<int> n12_t_ids;
-			std::vector<int> n1_t_ids;
-			std::vector<int> js_n1_t_ids;
-			std::vector<Scalar> new_qs;
-			std::vector<int> n1_v_ids;
-			std::vector<int> pair;
-		};
 		CollapseEdgeBuffers collapseEdgeBuffers;
-
-		// Temporary buffers used by edge_collapsing function
-		struct EdgeCollapsingBuffers
-		{
-			EdgesSet edges;
-		};
 		EdgeCollapsingBuffers edgeCollapsingBuffers;
-
-		struct FindCuttingTetsBuffers
-		{
-			std::vector<bool> is_visited;
-			std::queue<int> queue_t_ids;
-			std::vector<int> n_t_ids;
-		};
 		FindCuttingTetsBuffers findCuttingTetsBuffers;
-
 		std::vector<FacetRecursionStack> facetRecursionStacks;
 
+		// Some of the temporary buffers are per-thread, this method resizes them to params.num_threads length
 		void createThreadLocalBuffers();
 
 		TimeMeasures times;

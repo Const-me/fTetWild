@@ -40,7 +40,7 @@ namespace floatTetWild
 			int counter = 0;
 			int suc_counter = 0;
 			int suc_counter_env = 0;
-			Mesh::EdgeCollapsingAuxBuffers& buffers = mesh.edgeCollapsingAuxBuffers;
+			EdgeCollapsingAuxBuffers& buffers = mesh.edgeCollapsingAuxBuffers;
 
 			////init
 			std::priority_queue<ElementInQueue, std::vector<ElementInQueue>, cmp_s>& ec_queue = buffers.ec_queue;
@@ -230,7 +230,7 @@ int floatTetWild::collapse_an_edge(
 	if( tet_vertices[ v1_id ].isSurface() && is_point_out_envelope( mesh, tet_vertices[ v2_id ].pos, tree ) )
 		return EC_FAIL_ENVELOPE1;
 
-	Mesh::CollapseEdgeBuffers& buffers = mesh.collapseEdgeBuffers;
+	CollapseEdgeBuffers& buffers = mesh.collapseEdgeBuffers;
 	////check tets
 	std::vector<int>& n12_t_ids = buffers.n12_t_ids;
 	n12_t_ids.clear();

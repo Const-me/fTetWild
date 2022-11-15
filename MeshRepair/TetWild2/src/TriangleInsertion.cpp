@@ -764,7 +764,7 @@ namespace
 void floatTetWild::find_cutting_tets( int f_id, const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces,
   const std::array<Vector3, 3>& vs, Mesh& mesh, std::vector<int>& cut_t_ids, bool is_again )
 {
-	Mesh::FindCuttingTetsBuffers& buffers = mesh.findCuttingTetsBuffers;
+	FindCuttingTetsBuffers& buffers = mesh.findCuttingTetsBuffers;
 
 	std::vector<bool>& is_visited = buffers.is_visited;
 	is_visited.clear();

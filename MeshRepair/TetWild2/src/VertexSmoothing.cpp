@@ -160,7 +160,7 @@ bool floatTetWild::find_new_pos( Mesh& mesh, const int v_id, Vector3& x )
 	auto& tets = mesh.tets;
 	auto& tet_vertices = mesh.tet_vertices;
 
-	Mesh::FindNewPosBuffers& fnpb = mesh.findNewPosBuffers[ omp_get_thread_num() ];
+	FindNewPosBuffers& fnpb = mesh.findNewPosBuffers[ omp_get_thread_num() ];
 	std::vector<int>& js = fnpb.js;
 	js.clear();
 	js.reserve( tet_vertices[ v_id ].connTets.size() );

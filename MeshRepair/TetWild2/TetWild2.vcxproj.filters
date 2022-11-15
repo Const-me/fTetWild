@@ -126,6 +126,7 @@
     <ClInclude Include="src\FacetRecursionStack.h" />
     <ClInclude Include="Utils\lowLevel.h" />
     <ClInclude Include="Utils\Cbrt\cbrt.h" />
+    <ClInclude Include="src\TemporaryBuffers.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp" />
