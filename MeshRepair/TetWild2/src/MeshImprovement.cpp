@@ -1263,7 +1263,7 @@ void floatTetWild::smooth_open_boundary_aux( Mesh& mesh, const AABBWrapper& tree
 			Vector3 p;
 			for( int n = 0; n < N; n++ )
 			{
-				p = tet_vertices[ v_id ].pos + dis / pow( 2, n ) * v;
+				p = tet_vertices[ v_id ].pos + dis / ( 1 << n ) * v;
 				bool is_valid = true;
 				//                std::vector<double> new_qs;
 				for( int t_id : tet_vertices[ v_id ].connTets )
