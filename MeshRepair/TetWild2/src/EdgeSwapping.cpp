@@ -500,6 +500,19 @@ bool floatTetWild::remove_an_edge_44( Mesh& mesh, int v1_id, int v2_id, const st
 
 #include <unordered_map>
 
+namespace
+{
+	// Compute maximum of 6 FP64 values in memory
+	inline double computeMaximum( const std::array<double, 6>& arr )
+	{
+		__m128d v = _mm_loadu_pd( &arr[ 0 ] );
+		v = _mm_max_pd( v, _mm_loadu_pd( &arr[ 2 ] ) );
+		v = _mm_max_pd( v, _mm_loadu_pd( &arr[ 4 ] ) );
+		v = _mm_max_sd( v, _mm_unpackhi_pd( v, v ) );
+		return _mm_cvtsd_f64( v );
+	}
+}
+
 // Requires 5 elements in old_t_ids
 bool floatTetWild::remove_an_edge_56( Mesh& mesh, int v1_id, int v2_id, const std::vector<int>& old_t_ids, std::vector<std::array<int, 2>>& new_edges )
 {
@@ -575,8 +588,7 @@ bool floatTetWild::remove_an_edge_56( Mesh& mesh, int v1_id, int v2_id, const st
 		if( !is_v_valid.hasAnyBit( nextPrevMask ) )
 			continue;
 
-		std::vector<Vector4i> new_ts;
-		new_ts.reserve( 6 );
+		std::array<Vector4i, 2> new_ts;
 		auto t = tets[ n12_t_ids[ i ] ];
 		int it = t.find( v1_id );
 		t[ it ] = n12_v_ids[ iPrev ];
@@ -585,7 +597,7 @@ bool floatTetWild::remove_an_edge_56( Mesh& mesh, int v1_id, int v2_id, const st
 			is_v_valid.clearBits( nextPrevMask );
 			continue;
 		}
-		new_ts.push_back( t.indices );
+		new_ts[ 0 ] = t.indices;
 
 		t = tets[ n12_t_ids[ i ] ];
 		it = t.find( v2_id );
@@ -595,15 +607,13 @@ bool floatTetWild::remove_an_edge_56( Mesh& mesh, int v1_id, int v2_id, const st
 			is_v_valid.clearBits( nextPrevMask );
 			continue;
 		}
-		new_ts.push_back( t.indices );
-		new_tets[ i ] = std::array<Vector4i, 2>( { { new_ts[ 0 ], new_ts[ 1 ] } } );
+		new_ts[ 1 ] = t.indices;
 
-		std::vector<Scalar> qs;
-		for( auto& t : new_ts )
-		{
-			qs.emplace_back( getQuality( tet_vertices, t ) );
-		}
-		tet_qs[ i ] = std::array<Scalar, 2>( { { qs[ 0 ], qs[ 1 ] } } );
+		new_tets[ i ] = new_ts;
+		std::array<double, 2>& qs = tet_qs[ i ];
+
+		for( size_t j = 0; j < 2; j++ )
+			qs[ j ] = getQuality( tet_vertices, new_ts[ j ] );
 	}
 	if( is_v_valid.empty() )
 		return false;
@@ -614,47 +624,41 @@ bool floatTetWild::remove_an_edge_56( Mesh& mesh, int v1_id, int v2_id, const st
 		if( !is_v_valid[ i ] )
 			continue;
 
-		std::vector<Vector4i> new_ts;
-		new_ts.reserve( 6 );
+		std::array<Vector4i, 2> new_ts;
 		auto t = tets[ n12_t_ids[ ( i + 2 ) % 5 ] ];
 		int it = t.find( v1_id );
 		t[ it ] = n12_v_ids[ i ];
 		if( isInverted( tet_vertices, t.indices ) )
 			continue;
-		new_ts.push_back( t.indices );
+		new_ts[ 0 ] = t.indices;
 		t = tets[ n12_t_ids[ ( i + 2 ) % 5 ] ];
 		it = t.find( v2_id );
 		t[ it ] = n12_v_ids[ i ];
 		if( isInverted( tet_vertices, t.indices ) )
 			continue;
-		new_ts.push_back( t.indices );
+		new_ts[ 1 ] = t.indices;
 
-		std::vector<Scalar> qs;
-		for( auto& t : new_ts )
-			qs.push_back( getQuality( tet_vertices, t ) );
+		std::array<double, 6> qs;
+		qs[ 0 ] = getQuality( tet_vertices, new_ts[ 0 ] );
+		qs[ 1 ] = getQuality( tet_vertices, new_ts[ 1 ] );
 
-		for( int j = 0; j < 2; j++ )
 		{
-			qs.push_back( tet_qs[ ( i + 1 ) % 5 ][ j ] );
-			qs.push_back( tet_qs[ ( i - 1 + 5 ) % 5 ][ j ] );
+			const std::array<double, 2>& a0 = tet_qs[ ( i + 1 ) % 5 ];
+			const std::array<double, 2>& a1 = tet_qs[ ( i - 1 + 5 ) % 5 ];
+			qs[ 2 ] = a0[ 0 ];
+			qs[ 3 ] = a1[ 0 ];
+			qs[ 4 ] = a0[ 1 ];
+			qs[ 5 ] = a1[ 1 ];
 		}
-		if( qs.size() != 6 )
-		{
-			assert( "qs.size() != 6" );
-		}
-		for( auto& q : qs )
-		{
-			if( q > new_max_quality )
-				new_max_quality = q;
-		}
+		new_max_quality = std::max( new_max_quality, computeMaximum( qs ) );
 		if( new_max_quality >= old_max_quality )
 			continue;
 
 		old_max_quality = new_max_quality;
 		selected_id = i;
+
 		tet_qs[ i + 5 ] = std::array<Scalar, 2>( { { qs[ 0 ], qs[ 1 ] } } );
-		//        new_tets[i + 5] = std::array<MeshTet, 2>({{new_ts[0], new_ts[1]}});
-		new_tets[ i + 5 ] = std::array<Vector4i, 2>( { { new_ts[ 0 ], new_ts[ 1 ] } } );
+		new_tets[ i + 5 ] = new_ts;
 	}
 	if( selected_id < 0 )
 		return false;
