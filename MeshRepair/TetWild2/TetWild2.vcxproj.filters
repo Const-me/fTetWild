@@ -128,6 +128,7 @@
     <ClInclude Include="Utils\Cbrt\cbrt.h" />
     <ClInclude Include="src\TemporaryBuffers.h" />
     <ClInclude Include="src\SmallBuffer.h" />
+    <ClInclude Include="src\Bitset32.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp" />

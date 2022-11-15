@@ -10,6 +10,7 @@
 #include "LocalOperations.h"
 #include "MeshImprovement.h"
 #include "SmallBuffer.h"
+#include "Bitset32.h"
 
 namespace floatTetWild
 {
@@ -118,7 +119,7 @@ namespace
 	}
 }  // namespace
 
-// Requires 3 elements in old_t_ids, on success produces exactly 12 new edges
+// Requires 3 elements in old_t_ids, on success produces up to 12 new edges
 bool floatTetWild::remove_an_edge_32( Mesh& mesh, int v1_id, int v2_id, const std::vector<int>& old_t_ids, std::vector<std::array<int, 2>>& new_edges )
 {
 	if( old_t_ids.size() != 3 )
@@ -281,9 +282,10 @@ bool floatTetWild::remove_an_edge_32( Mesh& mesh, int v1_id, int v2_id, const st
 	return true;
 }
 
+// Requires 4 elements in old_t_ids
 bool floatTetWild::remove_an_edge_44( Mesh& mesh, int v1_id, int v2_id, const std::vector<int>& old_t_ids, std::vector<std::array<int, 2>>& new_edges )
 {
-	const int N = 4;
+	constexpr int N = 4;
 	if( old_t_ids.size() != N )
 		return false;
 
@@ -291,42 +293,40 @@ bool floatTetWild::remove_an_edge_44( Mesh& mesh, int v1_id, int v2_id, const st
 	auto& tets = mesh.tets;
 
 	////construct
-	std::vector<std::array<int, 3>> n12_es;
-	n12_es.reserve( old_t_ids.size() );
-	for( int i = 0; i < old_t_ids.size(); i++ )
+	std::array<std::array<int, 3>, N> n12_es;
+	for( int i = 0; i < N; i++ )
 	{
-		std::array<int, 3> e;
+		std::array<int, 3>& e = n12_es[ i ];
+
 		int cnt = 0;
 		for( int j = 0; j < 4; j++ )
 			if( tets[ old_t_ids[ i ] ][ j ] != v1_id && tets[ old_t_ids[ i ] ][ j ] != v2_id )
-			{
 				e[ cnt++ ] = tets[ old_t_ids[ i ] ][ j ];
-			}
-		e[ cnt ] = old_t_ids[ i ];
-		n12_es.push_back( e );
+
+		assert( cnt == 2 );
+		e[ 2 ] = old_t_ids[ i ];
 	}
 
-	std::vector<int> n12_v_ids;
-	std::vector<int> n12_t_ids;
+	SmallBuffer<int, 5> n12_v_ids;
+	SmallBuffer<int, 5> n12_t_ids;
 	n12_v_ids.push_back( n12_es[ 0 ][ 0 ] );
 	n12_v_ids.push_back( n12_es[ 0 ][ 1 ] );
 	n12_t_ids.push_back( n12_es[ 0 ][ 2 ] );
-	std::vector<bool> is_visited( N, false );
-	is_visited[ 0 ] = true;
-	for( int i = 0; i < N - 2; i++ )
+	Bitset32<N> is_visited( 1 );
+	for( int i = 0; i < N - 2; i++ )	// 2 iterations
 	{
-		for( int j = 0; j < N; j++ )
+		for( int j = 0; j < N; j++ )	// 4 iterations
 		{
 			if( !is_visited[ j ] )
 			{
 				if( n12_es[ j ][ 0 ] == n12_v_ids.back() )
 				{
-					is_visited[ j ] = true;
+					is_visited.set( j );
 					n12_v_ids.push_back( n12_es[ j ][ 1 ] );
 				}
 				else if( n12_es[ j ][ 1 ] == n12_v_ids.back() )
 				{  // else if!!!!!!!!!!
-					is_visited[ j ] = true;
+					is_visited.set( j );
 					n12_v_ids.push_back( n12_es[ j ][ 0 ] );
 				}
 				if( is_visited[ j ] )
@@ -337,31 +337,28 @@ bool floatTetWild::remove_an_edge_44( Mesh& mesh, int v1_id, int v2_id, const st
 			}
 		}
 	}
-	n12_t_ids.push_back( n12_es[ std::find( is_visited.begin(), is_visited.end(), false ) - is_visited.begin() ][ 2 ] );
+	n12_t_ids.push_back( n12_es[ is_visited.firstFalseIndex() ][ 2 ] );
 
 	////check
 	bool is_valid = false;
-	std::vector<Vector4i> new_tets;
-	new_tets.reserve( 4 );
-	std::vector<int> tags;
+	std::array<Vector4i, 4> new_tets;
+	std::array<int, 4> tags;
 	std::array<int, 2> v_ids;
-	std::vector<Scalar> new_qs;
-	Scalar old_max_quality = 0;
-	Scalar new_max_quality = 0;
+	std::array<double, 4> new_qs;
+	double old_max_quality = 0;
+	double new_max_quality = 0;
 	for( int t_id : old_t_ids )
-	{
 		if( tets[ t_id ].quality > old_max_quality )
 			old_max_quality = tets[ t_id ].quality;
-	}
+
 	for( int i = 0; i < 2; i++ )
 	{
-		//        std::vector<MeshTet> tmp_new_tets;
-		std::vector<Vector4i> tmp_new_tets;
-		std::vector<int> tmp_tags;
+		std::array<Vector4i, 4> tmp_new_tets;
+		std::array<int, 4> tmp_tags;
 		std::array<int, 2> tmp_v_ids;
 		tmp_v_ids = { { n12_v_ids[ 0 + i ], n12_v_ids[ 2 + i ] } };
 		bool is_break = false;
-		for( int j = 0; j < old_t_ids.size(); j++ )
+		for( int j = 0; j < N; j++ )
 		{
 			auto t = tets[ old_t_ids[ j ] ];
 			int ii = t.find( tmp_v_ids[ 0 ] );
@@ -369,28 +366,28 @@ bool floatTetWild::remove_an_edge_44( Mesh& mesh, int v1_id, int v2_id, const st
 			{
 				int jt = t.find( v2_id );
 				t[ jt ] = tmp_v_ids[ 1 ];
-				tmp_tags.push_back( 1 );
+				tmp_tags[ j ] = 1;
 			}
 			else
 			{
 				int jt = t.find( v1_id );
 				t[ jt ] = tmp_v_ids[ 0 ];
-				tmp_tags.push_back( 0 );
+				tmp_tags[ j ] = 0;
 			}
 			if( isInverted( tet_vertices, t.indices ) )
 			{
 				is_break = true;
 				break;
 			}
-			tmp_new_tets.push_back( t.indices );
+			tmp_new_tets[ j ] = t.indices;
 		}
 		if( is_break )
 			continue;
 
-		std::vector<Scalar> tmp_new_qs;
-		for( auto& t : tmp_new_tets )
+		std::array<double, 4> tmp_new_qs;
+		for( int j = 0; j < N; j++ )
 		{
-			Scalar q = getQuality( tet_vertices, t );
+			double q = getQuality( tet_vertices, tmp_new_tets[ j ] );
 			if( q >= old_max_quality )
 			{
 				is_break = true;
@@ -398,7 +395,7 @@ bool floatTetWild::remove_an_edge_44( Mesh& mesh, int v1_id, int v2_id, const st
 			}
 			if( q > new_max_quality )
 				new_max_quality = q;
-			tmp_new_qs.push_back( q );
+			tmp_new_qs[ j ] = q;
 		}
 		if( is_break )
 			continue;
@@ -413,24 +410,33 @@ bool floatTetWild::remove_an_edge_44( Mesh& mesh, int v1_id, int v2_id, const st
 	if( !is_valid )
 		return false;
 
-	////real update
-	std::vector<std::array<int, 3>> fs;
-	std::vector<int> is_sf_fs;
-	std::vector<int> sf_tags;
-	std::vector<int> is_bx_fs;
+	// ==== real update ====
+	constexpr size_t maxLength = 4 * 4;
+	size_t tempItems = 0;
+	std::array<std::array<int, 3>, maxLength> fs;
+	std::array<int8_t, maxLength> is_sf_fs;
+	std::array<int8_t, maxLength> sf_tags;
+	std::array<int8_t, maxLength> is_bx_fs;
+
 	for( int i = 0; i < old_t_ids.size(); i++ )
 	{
 		for( int j = 0; j < 4; j++ )
 		{
 			if( tets[ old_t_ids[ i ] ][ j ] == v1_id || tets[ old_t_ids[ i ] ][ j ] == v2_id )
 			{
-				std::array<int, 3> tmp = {
-				  { tets[ old_t_ids[ i ] ][ mod4( j + 1 ) ], tets[ old_t_ids[ i ] ][ mod4( j + 2 ) ], tets[ old_t_ids[ i ] ][ mod4( j + 3 ) ] } };
+				const auto& oldTet = tets[ old_t_ids[ i ] ];
+
+				std::array<int, 3>& tmp = fs[ tempItems ];
+				tmp[ 0 ] = oldTet.indices[ mod4( j + 1 ) ];
+				tmp[ 1 ] = oldTet.indices[ mod4( j + 2 ) ];
+				tmp[ 2 ] = oldTet.indices[ mod4( j + 3 ) ];
 				std::sort( tmp.begin(), tmp.end() );
-				fs.push_back( tmp );
-				is_sf_fs.push_back( tets[ old_t_ids[ i ] ].is_surface_fs[ j ] );
-				sf_tags.push_back( tets[ old_t_ids[ i ] ].surface_tags[ j ] );
-				is_bx_fs.push_back( tets[ old_t_ids[ i ] ].is_bbox_fs[ j ] );
+
+				is_sf_fs[ tempItems ] = oldTet.is_surface_fs[ j ];
+				sf_tags[ tempItems ] = oldTet.surface_tags[ j ];
+				is_bx_fs[ tempItems ] = oldTet.is_bbox_fs[ j ];
+
+				tempItems++;
 			}
 		}
 	}
@@ -463,7 +469,7 @@ bool floatTetWild::remove_an_edge_44( Mesh& mesh, int v1_id, int v2_id, const st
 				std::array<int, 3> tmp = {
 				  { tets[ old_t_ids[ i ] ][ mod4( j + 1 ) ], tets[ old_t_ids[ i ] ][ mod4( j + 2 ) ], tets[ old_t_ids[ i ] ][ mod4( j + 3 ) ] } };
 				std::sort( tmp.begin(), tmp.end() );
-				auto it = std::find( fs.begin(), fs.end(), tmp );
+				auto it = std::find( fs.begin(), fs.begin() + tempItems, tmp );
 				tets[ old_t_ids[ i ] ].is_surface_fs[ j ] = is_sf_fs[ it - fs.begin() ];
 				tets[ old_t_ids[ i ] ].surface_tags[ j ] = sf_tags[ it - fs.begin() ];
 				tets[ old_t_ids[ i ] ].is_bbox_fs[ j ] = is_bx_fs[ it - fs.begin() ];
