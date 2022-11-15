@@ -282,7 +282,7 @@ bool floatTetWild::remove_an_edge_32( Mesh& mesh, int v1_id, int v2_id, const st
 	return true;
 }
 
-// Requires 4 elements in old_t_ids
+// Requires 4 elements in old_t_ids, on success produces up to 24 new edges
 bool floatTetWild::remove_an_edge_44( Mesh& mesh, int v1_id, int v2_id, const std::vector<int>& old_t_ids, std::vector<std::array<int, 2>>& new_edges )
 {
 	constexpr int N = 4;
@@ -499,6 +499,8 @@ bool floatTetWild::remove_an_edge_44( Mesh& mesh, int v1_id, int v2_id, const st
 }
 
 #include <unordered_map>
+
+// Requires 5 elements in old_t_ids
 bool floatTetWild::remove_an_edge_56( Mesh& mesh, int v1_id, int v2_id, const std::vector<int>& old_t_ids, std::vector<std::array<int, 2>>& new_edges )
 {
 	if( old_t_ids.size() != 5 )
@@ -508,45 +510,42 @@ bool floatTetWild::remove_an_edge_56( Mesh& mesh, int v1_id, int v2_id, const st
 	auto& tets = mesh.tets;
 
 	////construct
-	std::vector<std::array<int, 3>> n12_es;
-	n12_es.reserve( old_t_ids.size() );
-	for( int i = 0; i < old_t_ids.size(); i++ )
+	std::array<std::array<int, 3>, 5> n12_es;
+	for( int i = 0; i < 5; i++ )
 	{
-		std::array<int, 3> e;
+		std::array<int, 3>& e = n12_es[ i ];
 		int cnt = 0;
 		for( int j = 0; j < 4; j++ )
 			if( tets[ old_t_ids[ i ] ][ j ] != v1_id && tets[ old_t_ids[ i ] ][ j ] != v2_id )
-			{
 				e[ cnt++ ] = tets[ old_t_ids[ i ] ][ j ];
-			}
-		e[ cnt ] = old_t_ids[ i ];
-		n12_es.push_back( e );
+		assert( cnt == 2 );
+		e[ 2 ] = old_t_ids[ i ];
 	}
 
-	std::vector<int> n12_v_ids;
-	std::vector<int> n12_t_ids;
+	SmallBuffer<int, 6> n12_v_ids;
+	SmallBuffer<int, 6> n12_t_ids;
 	n12_v_ids.push_back( n12_es[ 0 ][ 0 ] );
 	n12_v_ids.push_back( n12_es[ 0 ][ 1 ] );
 	n12_t_ids.push_back( n12_es[ 0 ][ 2 ] );
-	uint32_t is_visited = 1;
+
+	Bitset32<5> is_visited( 1 );
 	for( int i = 0; i < 3; i++ )
 	{
 		for( int j = 0; j < 5; j++ )
 		{
-			const uint32_t visitedBit = 1u << j;
-			if( 0 == ( is_visited & visitedBit ) )
+			if( !is_visited[ j ] )
 			{
 				if( n12_es[ j ][ 0 ] == n12_v_ids.back() )
 				{
-					is_visited |= visitedBit;
+					is_visited.set( j );
 					n12_v_ids.push_back( n12_es[ j ][ 1 ] );
 				}
 				else if( n12_es[ j ][ 1 ] == n12_v_ids.back() )
 				{  // else if!!!!!!!!!!
-					is_visited |= visitedBit;
+					is_visited.set( j );
 					n12_v_ids.push_back( n12_es[ j ][ 0 ] );
 				}
-				if( 0 != ( is_visited & visitedBit ) )
+				if( is_visited[ j ] )
 				{
 					n12_t_ids.push_back( n12_es[ j ][ 2 ] );
 					break;
@@ -554,49 +553,46 @@ bool floatTetWild::remove_an_edge_56( Mesh& mesh, int v1_id, int v2_id, const st
 			}
 		}
 	}
-
-	unsigned long firstUnvisited;
-	_BitScanForward( &firstUnvisited, ~is_visited );
-	n12_t_ids.push_back( n12_es[ firstUnvisited ][ 2 ] );
+	n12_t_ids.push_back( n12_es[ is_visited.firstFalseIndex() ][ 2 ] );
 
 	////check
-	Scalar old_max_quality = 0;
-	Scalar new_max_quality = 0;
+	double old_max_quality = 0;
+	double new_max_quality = 0;
 	for( int t_id : old_t_ids )
-	{
-		if( tets[ t_id ].quality > old_max_quality )
-			old_max_quality = tets[ t_id ].quality;
-	}
+		old_max_quality = std::max( old_max_quality, tets[ t_id ].quality );
 
 	std::unordered_map<int, std::array<Scalar, 2>> tet_qs;
 	std::unordered_map<int, std::array<Vector4i, 2>> new_tets;
-	std::vector<bool> is_v_valid( 5, true );
+
+	Bitset32<5> is_v_valid( 0b11111 );
 	for( int i = 0; i < n12_v_ids.size(); i++ )
 	{
-		if( !is_v_valid[ ( i + 1 ) % 5 ] && !is_v_valid[ ( i - 1 + 5 ) % 5 ] )
+		const int iNext = ( i + 1 ) % 5;
+		const int iPrev = ( i - 1 + 5 ) % 5;
+		const uint32_t nextPrevMask = ( 1u << iNext ) | ( 1u << iPrev );
+
+		// Old version: if( !is_v_valid[ ( i + 1 ) % 5 ] && !is_v_valid[ ( i - 1 + 5 ) % 5 ] )
+		if( !is_v_valid.hasAnyBit( nextPrevMask ) )
 			continue;
 
 		std::vector<Vector4i> new_ts;
 		new_ts.reserve( 6 );
 		auto t = tets[ n12_t_ids[ i ] ];
 		int it = t.find( v1_id );
-		t[ it ] = n12_v_ids[ ( i - 1 + 5 ) % 5 ];
+		t[ it ] = n12_v_ids[ iPrev ];
 		if( isInverted( tet_vertices, t.indices ) )
 		{
-			is_v_valid[ ( i + 1 ) % 5 ] = false;
-			is_v_valid[ ( i - 1 + 5 ) % 5 ] = false;
+			is_v_valid.clearBits( nextPrevMask );
 			continue;
 		}
-		//        new_ts.push_back(t);
 		new_ts.push_back( t.indices );
 
 		t = tets[ n12_t_ids[ i ] ];
 		it = t.find( v2_id );
-		t[ it ] = n12_v_ids[ ( i - 1 + 5 ) % 5 ];
+		t[ it ] = n12_v_ids[ iPrev ];
 		if( isInverted( tet_vertices, t.indices ) )
 		{
-			is_v_valid[ ( i + 1 ) % 5 ] = false;
-			is_v_valid[ ( i - 1 + 5 ) % 5 ] = false;
+			is_v_valid.clearBits( nextPrevMask );
 			continue;
 		}
 		new_ts.push_back( t.indices );
@@ -609,11 +605,11 @@ bool floatTetWild::remove_an_edge_56( Mesh& mesh, int v1_id, int v2_id, const st
 		}
 		tet_qs[ i ] = std::array<Scalar, 2>( { { qs[ 0 ], qs[ 1 ] } } );
 	}
-	if( std::count( is_v_valid.begin(), is_v_valid.end(), true ) == 0 )
+	if( is_v_valid.empty() )
 		return false;
 
 	int selected_id = -1;
-	for( int i = 0; i < is_v_valid.size(); i++ )
+	for( int i = 0; i < 5; i++ )
 	{
 		if( !is_v_valid[ i ] )
 			continue;
