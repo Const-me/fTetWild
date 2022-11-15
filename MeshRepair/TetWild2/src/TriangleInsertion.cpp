@@ -1016,7 +1016,7 @@ bool floatTetWild::subdivide_tets( int insert_f_id, Mesh& mesh, CutMesh& cut_mes
 		SmallBuffer<Vector2i, 4> my_diags;
 		for( int j = 0; j < 4; j++ )
 		{
-			SmallBuffer<int, 4> le_ids;
+			SmallBuffer<int, 3> le_ids;
 			for( int k = 0; k < 3; k++ )
 			{
 				if( on_edge_p_ids[ t_f_es[ j ][ k ] ].first < 0 )
@@ -1181,7 +1181,7 @@ bool floatTetWild::subdivide_tets( int insert_f_id, Mesh& mesh, CutMesh& cut_mes
 			std::vector<std::vector<std::pair<int, Vector3>>> all_centroids( all_diags.size() );
 			for( int i = 0; i < all_diags.size(); i++ )
 			{
-				if( !all_diags[ i ].equal( my_diags.beginPointer(), my_diags.endPointer() ) )
+				if( !all_diags[ i ].equal( my_diags.data(), my_diags.data() + my_diags.size() ) )
 				{
 					min_qualities[ i ] = std::make_pair( i, -1 );
 					continue;

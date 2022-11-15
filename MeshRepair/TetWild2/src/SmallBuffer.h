@@ -17,7 +17,7 @@ namespace floatTetWild
 		}
 		bool empty() const
 		{
-			return length != 0;
+			return length == 0;
 		}
 		void push_back( const E& element )
 		{
@@ -46,14 +46,10 @@ namespace floatTetWild
 			return arr.begin() + length;
 		}
 
-		const E* beginPointer() const
+		const E* data() const
 		{
+			assert( !empty() );
 			return arr.data();
-		}
-
-		const E* endPointer() const
-		{
-			return arr.data() + length;
 		}
 	};
 }  // namespace floatTetWild
