@@ -170,7 +170,7 @@ namespace
 		using namespace AvxMath;
 		// Load the box into 2 vectors
 		const __m256d boxMin = _mm256_loadu_pd( &B.xyz_min[ 0 ] );
-		const __m256d boxMax = loadDouble3( &B.xyz_max[ 0 ] );
+		const __m256d boxMax = _mm256_loadu_pd( &B.xyz_max[ 0 ] );
 
 		// When inside, both numbers are positive
 		const __m256d dmin = _mm256_sub_pd( pos, boxMin );
@@ -354,6 +354,8 @@ namespace floatTetWild
 		, recursionStacks( stacks )
 	{
 		const size_t boxesCount = max_node_index( 1, 0, mesh_.countTriangles() ) + 1;	//< this is because size == max_index + 1
+		// Reserving one extra box so we can use full-vector unaligned loads to load coordinates from boxes, and not crash with access violations
+		bboxes_.reserve( boxesCount + 1 );
 		bboxes_.resize( boxesCount );
 		init_bboxes_recursive( mesh_, bboxes_, 1, 0, mesh_.countTriangles(), get_facet_bbox );
 	}
