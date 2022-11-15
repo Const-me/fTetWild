@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "TriangleMesh.h"
 #include "reorderUtils.h"
 #include <numeric>
@@ -152,18 +151,18 @@ namespace
 
 		void sortInParallel()
 		{
+#pragma omp parallel for schedule( dynamic, 1 )
 			// computes m2, m6 in parallel
-#pragma omp parallel for
 			for( int i = 0; i < 2; i++ )
 				threadProc( i );
 
-				// computes m1,m3,m5,m7 in parallel
-#pragma omp parallel for
+#pragma omp parallel for schedule( dynamic, 1 )
+			// computes m1,m3,m5,m7 in parallel
 			for( int i = 10; i < 14; i++ )
 				threadProc( i );
 
-				// sorts the 8 subsets in parallel
-#pragma omp parallel for
+#pragma omp parallel for schedule( dynamic, 1 )
+			// sorts the 8 subsets in parallel
 			for( int i = 20; i < 28; i++ )
 				threadProc( i );
 		}
@@ -179,7 +178,7 @@ namespace
 				return;
 
 			// If the sequence is smaller than 1024, use sequential sorting
-			if( ( e - b ) < 1024 )
+			if( ( e - b ) < 1024 || omp_get_max_threads() < 1 )
 				sort<0, false, false, false>( M_, b, e );
 			else
 			{
