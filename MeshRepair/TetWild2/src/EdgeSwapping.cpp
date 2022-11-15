@@ -499,8 +499,6 @@ bool floatTetWild::remove_an_edge_44( Mesh& mesh, int v1_id, int v2_id, const st
 	return true;
 }
 
-#include <unordered_map>
-
 namespace
 {
 	// Compute maximum of 6 FP64 values in memory
@@ -575,8 +573,8 @@ bool floatTetWild::remove_an_edge_56( Mesh& mesh, int v1_id, int v2_id, const st
 	for( int t_id : old_t_ids )
 		old_max_quality = std::max( old_max_quality, tets[ t_id ].quality );
 
-	std::unordered_map<int, std::array<Scalar, 2>> tet_qs;
-	std::unordered_map<int, std::array<Vector4i, 2>> new_tets;
+	std::array<std::array<Scalar, 2>, 10> tet_qs;
+	std::array<std::array<Vector4i, 2>, 10> new_tets;
 
 	Bitset32<5> is_v_valid( 0b11111 );
 	for( int i = 0; i < n12_v_ids.size(); i++ )
