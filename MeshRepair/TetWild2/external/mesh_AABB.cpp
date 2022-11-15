@@ -353,19 +353,8 @@ namespace floatTetWild
 		: mesh_( M )
 		, recursionStacks( stacks )
 	{
-		// if(!M.facets.are_simplices()) {
-		//     mesh_repair(
-		//         M,
-		//         MeshRepairMode(
-		//             MESH_REPAIR_TRIANGULATE | MESH_REPAIR_QUIET
-		//          )
-		//     );
-		// }
-		// if(reorder) {
-		//     mesh_reorder(mesh_, MESH_ORDER_MORTON);
-		// }
-		bboxes_.resize( max_node_index( 1, 0, mesh_.countTriangles() ) + 1	// <-- this is because size == max_index + 1 !!!
-		);
+		const size_t boxesCount = max_node_index( 1, 0, mesh_.countTriangles() ) + 1;	//< this is because size == max_index + 1
+		bboxes_.resize( boxesCount );
 		init_bboxes_recursive( mesh_, bboxes_, 1, 0, mesh_.countTriangles(), get_facet_bbox );
 	}
 
