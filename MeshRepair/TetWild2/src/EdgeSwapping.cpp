@@ -9,6 +9,7 @@
 #include "EdgeSwapping.h"
 #include "LocalOperations.h"
 #include "MeshImprovement.h"
+#include "SmallBuffer.h"
 
 namespace floatTetWild
 {
@@ -117,6 +118,7 @@ namespace
 	}
 }  // namespace
 
+// Requires 3 elements in old_t_ids, on success produces exactly 12 new edges
 bool floatTetWild::remove_an_edge_32( Mesh& mesh, int v1_id, int v2_id, const std::vector<int>& old_t_ids, std::vector<std::array<int, 2>>& new_edges )
 {
 	if( old_t_ids.size() != 3 )
@@ -127,27 +129,25 @@ bool floatTetWild::remove_an_edge_32( Mesh& mesh, int v1_id, int v2_id, const st
 
 	////construct
 	std::array<int, 2> v_ids;
-	std::vector<MeshTet> new_tets;
+	std::array<MeshTet, 2> new_tets;
 	std::array<int, 2> t_ids;
 	int cnt = 0;
 	for( int i = 0; i < 4; i++ )
 	{
 		if( tets[ old_t_ids[ 0 ] ][ i ] != v1_id && tets[ old_t_ids[ 0 ] ][ i ] != v2_id )
-		{
 			v_ids[ cnt++ ] = tets[ old_t_ids[ 0 ] ][ i ];
-		}
 	}
 	int i = tets[ old_t_ids[ 1 ] ].find( v_ids[ 0 ] );
 	if( i >= 0 )
 	{
-		new_tets.push_back( tets[ old_t_ids[ 1 ] ] );
-		new_tets.push_back( tets[ old_t_ids[ 2 ] ] );
+		new_tets[ 0 ] = tets[ old_t_ids[ 1 ] ];
+		new_tets[ 1 ] = tets[ old_t_ids[ 2 ] ];
 		t_ids = { { old_t_ids[ 1 ], old_t_ids[ 2 ] } };
 	}
 	else
 	{
-		new_tets.push_back( tets[ old_t_ids[ 2 ] ] );
-		new_tets.push_back( tets[ old_t_ids[ 1 ] ] );
+		new_tets[ 0 ] = tets[ old_t_ids[ 2 ] ];
+		new_tets[ 1 ] = tets[ old_t_ids[ 1 ] ];
 		t_ids = { { old_t_ids[ 2 ], old_t_ids[ 1 ] } };
 	}
 	i = new_tets[ 0 ].find( v1_id );
@@ -157,43 +157,52 @@ bool floatTetWild::remove_an_edge_32( Mesh& mesh, int v1_id, int v2_id, const st
 
 	////check
 	for( auto& t : new_tets )
-	{
 		if( isInverted( tet_vertices, t.indices ) )
 			return false;
-	}
-	std::vector<Scalar> new_qs;
-	Scalar old_max_quality = 0;
+
+	std::array<double, 2> new_qs;
+	double old_max_quality = 0;
 	for( int t_id : old_t_ids )
 	{
 		if( tets[ t_id ].quality > old_max_quality )
 			old_max_quality = tets[ t_id ].quality;
 	}
-	for( auto& t : new_tets )
+	for( size_t i = 0; i < 2; i++ )
 	{
-		double q = getQuality( tet_vertices, t.indices );
+		double q = getQuality( tet_vertices, new_tets[ i ].indices );
 		if( q >= old_max_quality )	// or use > ???
 			return false;
-		new_qs.push_back( q );
+		new_qs[ i ] = q;
 	}
 
-	////real update
-	std::vector<std::array<int, 3>> fs;
-	std::vector<int> is_sf_fs;
-	std::vector<int> sf_tags;
-	std::vector<int> is_bx_fs;
+	// ==== real update ====
+	constexpr size_t maxLength = 3 * 4;
+	size_t tempItems = 0;
+	std::array<std::array<int, 3>, maxLength> fs;
+	std::array<int8_t, maxLength> is_sf_fs;
+	std::array<int8_t, maxLength> sf_tags;
+	std::array<int8_t, maxLength> is_bx_fs;
+
 	for( int i = 0; i < old_t_ids.size(); i++ )
 	{
 		for( int j = 0; j < 4; j++ )
 		{
 			if( tets[ old_t_ids[ i ] ][ j ] == v1_id || tets[ old_t_ids[ i ] ][ j ] == v2_id )
 			{
-				std::array<int, 3> tmp = {
-				  { tets[ old_t_ids[ i ] ][ mod4( j + 1 ) ], tets[ old_t_ids[ i ] ][ mod4( j + 2 ) ], tets[ old_t_ids[ i ] ][ mod4( j + 3 ) ] } };
+				assert( tempItems < maxLength );
+
+				std::array<int, 3>& tmp = fs[ tempItems ];
+				const auto& oldTet = tets[ old_t_ids[ i ] ];
+				tmp[ 0 ] = oldTet.indices[ mod4( j + 1 ) ];
+				tmp[ 1 ] = oldTet.indices[ mod4( j + 2 ) ];
+				tmp[ 2 ] = oldTet.indices[ mod4( j + 3 ) ];
 				std::sort( tmp.begin(), tmp.end() );
-				fs.push_back( tmp );
-				is_sf_fs.push_back( tets[ old_t_ids[ i ] ].is_surface_fs[ j ] );
-				sf_tags.push_back( tets[ old_t_ids[ i ] ].surface_tags[ j ] );
-				is_bx_fs.push_back( tets[ old_t_ids[ i ] ].is_bbox_fs[ j ] );
+
+				is_sf_fs[ tempItems ] = oldTet.is_surface_fs[ j ];
+				sf_tags[ tempItems ] = oldTet.surface_tags[ j ];
+				is_bx_fs[ tempItems ] = oldTet.is_bbox_fs[ j ];
+
+				tempItems++;
 			}
 		}
 	}
@@ -211,7 +220,7 @@ bool floatTetWild::remove_an_edge_32( Mesh& mesh, int v1_id, int v2_id, const st
 		{
 			std::array<int, 3> tmp = { { tets[ t_ids[ 0 ] ][ mod4( i + 1 ) ], tets[ t_ids[ 0 ] ][ mod4( i + 2 ) ], tets[ t_ids[ 0 ] ][ mod4( i + 3 ) ] } };
 			std::sort( tmp.begin(), tmp.end() );
-			auto it = std::find( fs.begin(), fs.end(), tmp );
+			auto it = std::find( fs.begin(), fs.begin() + tempItems, tmp );
 			tets[ t_ids[ 0 ] ].is_surface_fs[ i ] = is_sf_fs[ it - fs.begin() ];
 			tets[ t_ids[ 0 ] ].surface_tags[ i ] = sf_tags[ it - fs.begin() ];
 			tets[ t_ids[ 0 ] ].is_bbox_fs[ i ] = is_bx_fs[ it - fs.begin() ];
@@ -227,7 +236,7 @@ bool floatTetWild::remove_an_edge_32( Mesh& mesh, int v1_id, int v2_id, const st
 		{
 			std::array<int, 3> tmp = { { tets[ t_ids[ 1 ] ][ mod4( i + 1 ) ], tets[ t_ids[ 1 ] ][ mod4( i + 2 ) ], tets[ t_ids[ 1 ] ][ mod4( i + 3 ) ] } };
 			std::sort( tmp.begin(), tmp.end() );
-			auto it = std::find( fs.begin(), fs.end(), tmp );
+			auto it = std::find( fs.begin(), fs.begin() + tempItems, tmp );
 			tets[ t_ids[ 1 ] ].is_surface_fs[ i ] = is_sf_fs[ it - fs.begin() ];
 			tets[ t_ids[ 1 ] ].surface_tags[ i ] = sf_tags[ it - fs.begin() ];
 			tets[ t_ids[ 1 ] ].is_bbox_fs[ i ] = is_bx_fs[ it - fs.begin() ];
@@ -240,18 +249,6 @@ bool floatTetWild::remove_an_edge_32( Mesh& mesh, int v1_id, int v2_id, const st
 		}
 	}
 
-	//    tet_vertices[v_ids[0]].conn_tets.erase(old_t_ids[0]);
-	//    tet_vertices[v_ids[1]].conn_tets.erase(old_t_ids[0]);
-	//
-	//    tet_vertices[v_ids[0]].conn_tets.insert(t_ids[1]);
-	//    tet_vertices[v_ids[1]].conn_tets.insert(t_ids[0]);
-	//
-	//    tet_vertices[v1_id].conn_tets.erase(old_t_ids[0]);
-	//    tet_vertices[v2_id].conn_tets.erase(old_t_ids[0]);
-	//
-	//    tet_vertices[v1_id].conn_tets.erase(t_ids[0]);
-	//    tet_vertices[v2_id].conn_tets.erase(t_ids[1]);
-
 	tet_vertices[ v_ids[ 0 ] ].connTets.remove( old_t_ids[ 0 ] );
 	tet_vertices[ v_ids[ 1 ] ].connTets.remove( old_t_ids[ 0 ] );
 
@@ -263,15 +260,6 @@ bool floatTetWild::remove_an_edge_32( Mesh& mesh, int v1_id, int v2_id, const st
 
 	tet_vertices[ v1_id ].connTets.remove( t_ids[ 0 ] );
 	tet_vertices[ v2_id ].connTets.remove( t_ids[ 1 ] );
-
-	////re-push
-	//    std::unordered_set<int> n12_v_ids;
-	//    for(int i=0;i<new_tets.size();i++){
-	//        for(int j=0;j<4;j++){
-	//            if(new_tets[i][j]!=v1_id && new_tets[i][j]!=v2_id)
-	//                n12_v_ids.insert(new_tets[i][j]);
-	//        }
-	//    }
 
 	new_edges.reserve( new_tets.size() * 6 );
 	for( int i = 0; i < new_tets.size(); i++ )
