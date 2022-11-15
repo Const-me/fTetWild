@@ -102,6 +102,21 @@ void floatTetWild::edge_swapping( Mesh& mesh )
 	mesh.logger().logDebug( "success = %i ( %i )", suc_counter3 + suc_counter4 + suc_counter5, counter );
 }
 
+namespace
+{
+	using namespace floatTetWild;
+
+	inline bool isInverted( const std::vector<MeshVertex>& vertices, const Vector4i& tetra )
+	{
+		return is_inverted( vertices[ tetra[ 0 ] ], vertices[ tetra[ 1 ] ], vertices[ tetra[ 2 ] ], vertices[ tetra[ 3 ] ] );
+	}
+
+	inline double getQuality( const std::vector<MeshVertex>& vertices, const Vector4i& tetra )
+	{
+		return get_quality( vertices[ tetra[ 0 ] ], vertices[ tetra[ 1 ] ], vertices[ tetra[ 2 ] ], vertices[ tetra[ 3 ] ] );
+	}
+}  // namespace
+
 bool floatTetWild::remove_an_edge_32( Mesh& mesh, int v1_id, int v2_id, const std::vector<int>& old_t_ids, std::vector<std::array<int, 2>>& new_edges )
 {
 	if( old_t_ids.size() != 3 )
@@ -143,7 +158,7 @@ bool floatTetWild::remove_an_edge_32( Mesh& mesh, int v1_id, int v2_id, const st
 	////check
 	for( auto& t : new_tets )
 	{
-		if( is_inverted( tet_vertices[ t[ 0 ] ], tet_vertices[ t[ 1 ] ], tet_vertices[ t[ 2 ] ], tet_vertices[ t[ 3 ] ] ) )
+		if( isInverted( tet_vertices, t.indices ) )
 			return false;
 	}
 	std::vector<Scalar> new_qs;
@@ -155,7 +170,7 @@ bool floatTetWild::remove_an_edge_32( Mesh& mesh, int v1_id, int v2_id, const st
 	}
 	for( auto& t : new_tets )
 	{
-		Scalar q = get_quality( tet_vertices[ t[ 0 ] ], tet_vertices[ t[ 1 ] ], tet_vertices[ t[ 2 ] ], tet_vertices[ t[ 3 ] ] );
+		double q = getQuality( tet_vertices, t.indices );
 		if( q >= old_max_quality )	// or use > ???
 			return false;
 		new_qs.push_back( q );
@@ -381,7 +396,7 @@ bool floatTetWild::remove_an_edge_44( Mesh& mesh, int v1_id, int v2_id, const st
 				t[ jt ] = tmp_v_ids[ 0 ];
 				tmp_tags.push_back( 0 );
 			}
-			if( is_inverted( tet_vertices[ t[ 0 ] ], tet_vertices[ t[ 1 ] ], tet_vertices[ t[ 2 ] ], tet_vertices[ t[ 3 ] ] ) )
+			if( isInverted( tet_vertices, t.indices ) )
 			{
 				is_break = true;
 				break;
@@ -395,7 +410,7 @@ bool floatTetWild::remove_an_edge_44( Mesh& mesh, int v1_id, int v2_id, const st
 		std::vector<Scalar> tmp_new_qs;
 		for( auto& t : tmp_new_tets )
 		{
-			Scalar q = get_quality( tet_vertices[ t[ 0 ] ], tet_vertices[ t[ 1 ] ], tet_vertices[ t[ 2 ] ], tet_vertices[ t[ 3 ] ] );
+			Scalar q = getQuality( tet_vertices, t );
 			if( q >= old_max_quality )
 			{
 				is_break = true;
@@ -588,7 +603,7 @@ bool floatTetWild::remove_an_edge_56( Mesh& mesh, int v1_id, int v2_id, const st
 		auto t = tets[ n12_t_ids[ i ] ];
 		int it = t.find( v1_id );
 		t[ it ] = n12_v_ids[ ( i - 1 + 5 ) % 5 ];
-		if( is_inverted( tet_vertices[ t[ 0 ] ], tet_vertices[ t[ 1 ] ], tet_vertices[ t[ 2 ] ], tet_vertices[ t[ 3 ] ] ) )
+		if( isInverted( tet_vertices, t.indices ) )
 		{
 			is_v_valid[ ( i + 1 ) % 5 ] = false;
 			is_v_valid[ ( i - 1 + 5 ) % 5 ] = false;
@@ -600,7 +615,7 @@ bool floatTetWild::remove_an_edge_56( Mesh& mesh, int v1_id, int v2_id, const st
 		t = tets[ n12_t_ids[ i ] ];
 		it = t.find( v2_id );
 		t[ it ] = n12_v_ids[ ( i - 1 + 5 ) % 5 ];
-		if( is_inverted( tet_vertices[ t[ 0 ] ], tet_vertices[ t[ 1 ] ], tet_vertices[ t[ 2 ] ], tet_vertices[ t[ 3 ] ] ) )
+		if( isInverted( tet_vertices, t.indices ) )
 		{
 			is_v_valid[ ( i + 1 ) % 5 ] = false;
 			is_v_valid[ ( i - 1 + 5 ) % 5 ] = false;
@@ -614,7 +629,7 @@ bool floatTetWild::remove_an_edge_56( Mesh& mesh, int v1_id, int v2_id, const st
 		std::vector<Scalar> qs;
 		for( auto& t : new_ts )
 		{
-			qs.emplace_back( get_quality( tet_vertices[ t[ 0 ] ], tet_vertices[ t[ 1 ] ], tet_vertices[ t[ 2 ] ], tet_vertices[ t[ 3 ] ] ) );
+			qs.emplace_back( getQuality( tet_vertices, t ) );
 		}
 		tet_qs[ i ] = std::array<Scalar, 2>( { { qs[ 0 ], qs[ 1 ] } } );
 	}
@@ -633,23 +648,20 @@ bool floatTetWild::remove_an_edge_56( Mesh& mesh, int v1_id, int v2_id, const st
 		auto t = tets[ n12_t_ids[ ( i + 2 ) % 5 ] ];
 		int it = t.find( v1_id );
 		t[ it ] = n12_v_ids[ i ];
-		if( is_inverted( tet_vertices[ t[ 0 ] ], tet_vertices[ t[ 1 ] ], tet_vertices[ t[ 2 ] ], tet_vertices[ t[ 3 ] ] ) )
+		if( isInverted( tet_vertices, t.indices ) )
 			continue;
-		//        new_ts.push_back(t);
 		new_ts.push_back( t.indices );
 		t = tets[ n12_t_ids[ ( i + 2 ) % 5 ] ];
 		it = t.find( v2_id );
 		t[ it ] = n12_v_ids[ i ];
-		if( is_inverted( tet_vertices[ t[ 0 ] ], tet_vertices[ t[ 1 ] ], tet_vertices[ t[ 2 ] ], tet_vertices[ t[ 3 ] ] ) )
+		if( isInverted( tet_vertices, t.indices ) )
 			continue;
-		//        new_ts.push_back(t);
 		new_ts.push_back( t.indices );
 
 		std::vector<Scalar> qs;
 		for( auto& t : new_ts )
-		{
-			qs.push_back( get_quality( tet_vertices[ t[ 0 ] ], tet_vertices[ t[ 1 ] ], tet_vertices[ t[ 2 ] ], tet_vertices[ t[ 3 ] ] ) );
-		}
+			qs.push_back( getQuality( tet_vertices, t ) );
+
 		for( int j = 0; j < 2; j++ )
 		{
 			qs.push_back( tet_qs[ ( i + 1 ) % 5 ][ j ] );
