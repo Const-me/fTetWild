@@ -131,16 +131,16 @@ namespace floatTetWild
 		return g_faceIdConfigs[ (size_t)idx ];
 	}
 
-	bool operator==( const std::vector<Vector2i>& a, const CutTable2 ::Vec2Buffer& b )
+	bool CutTable2::Vec2Buffer::equal( const Vector2i* beginPtr, const Vector2i* endPtr ) const
 	{
-		const size_t length = a.size();
-		if( length != b.size() )
+		const size_t length = endPtr - beginPtr;
+		if( length != size() )
 			return false;
 		if( 0 == length )
 			return true;
 
-		const uint16_t* p1 = b.begin().getPointer();
-		const Vector2i* p2 = a.data();
+		const uint16_t* p1 = begin().getPointer();
+		const Vector2i* p2 = beginPtr;
 		const uint16_t* const p1End = p1 + length;
 		const uint16_t* const p1EndAligned = p1 + ( length / 2 ) * 2;
 

@@ -88,6 +88,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\SmallBuffer.h" />
     <ClInclude Include="src\TemporaryBuffers.h" />
     <ClInclude Include="Utils\Cbrt\cbrt.h" />
     <ClInclude Include="Utils\lowLevel.h" />

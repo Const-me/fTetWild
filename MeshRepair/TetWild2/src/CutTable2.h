@@ -103,6 +103,8 @@ namespace floatTetWild
 				const uint8_t* p = (const uint8_t*)rsi;
 				return Vector2i { p[ 0 ], p[ 1 ] };
 			}
+
+			bool equal( const Vector2i* beginPtr, const Vector2i* endPtr ) const;
 		};
 
 		class Bool4Buffer : public BufferViewBase<uint8_t, std::array<bool, 4>, Bool4Buffer>
@@ -175,12 +177,5 @@ namespace floatTetWild
 		}
 	};
 
-	bool operator==( const std::vector<Vector2i>& a, const CutTable2 ::Vec2Buffer& b );
-	inline bool operator!=( const std::vector<Vector2i>& a, const CutTable2 ::Vec2Buffer& b )
-	{
-		return !( a == b );
-	}
-
 	using CutTable = CutTable2;
-
 }  // namespace floatTetWild

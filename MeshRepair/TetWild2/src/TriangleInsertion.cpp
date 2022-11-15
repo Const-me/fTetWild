@@ -31,6 +31,7 @@
 #include <bitset>
 #include <numeric>
 #include <unordered_map>
+#include "SmallBuffer.h"
 
 #define III -1
 
@@ -1012,10 +1013,10 @@ bool floatTetWild::subdivide_tets( int insert_f_id, Mesh& mesh, CutMesh& cut_mes
 			continue;
 
 		/////
-		std::vector<Vector2i> my_diags;
+		SmallBuffer<Vector2i, 4> my_diags;
 		for( int j = 0; j < 4; j++ )
 		{
-			std::vector<int> le_ids;
+			SmallBuffer<int, 4> le_ids;
 			for( int k = 0; k < 3; k++ )
 			{
 				if( on_edge_p_ids[ t_f_es[ j ][ k ] ].first < 0 )
@@ -1025,16 +1026,12 @@ bool floatTetWild::subdivide_tets( int insert_f_id, Mesh& mesh, CutMesh& cut_mes
 			if( le_ids.size() != 2 )  // no ambiguity
 				continue;
 
-			my_diags.emplace_back();
-			auto& diag = my_diags.back();
+			auto& diag = my_diags.emplace_back();
 			if( on_edge_p_ids[ t_f_es[ j ][ le_ids[ 0 ] ] ].second > on_edge_p_ids[ t_f_es[ j ][ le_ids[ 1 ] ] ].second )
-			{
 				diag << on_edge_p_ids[ t_f_es[ j ][ le_ids[ 0 ] ] ].first, t_f_vs[ j ][ le_ids[ 0 ] ];
-			}
 			else
-			{
 				diag << on_edge_p_ids[ t_f_es[ j ][ le_ids[ 1 ] ] ].first, t_f_vs[ j ][ le_ids[ 1 ] ];
-			}
+
 			if( diag[ 0 ] > diag[ 1 ] )
 				std::swap( diag[ 0 ], diag[ 1 ] );
 		}
@@ -1184,7 +1181,7 @@ bool floatTetWild::subdivide_tets( int insert_f_id, Mesh& mesh, CutMesh& cut_mes
 			std::vector<std::vector<std::pair<int, Vector3>>> all_centroids( all_diags.size() );
 			for( int i = 0; i < all_diags.size(); i++ )
 			{
-				if( my_diags != all_diags[ i ] )
+				if( !all_diags[ i ].equal( my_diags.beginPointer(), my_diags.endPointer() ) )
 				{
 					min_qualities[ i ] = std::make_pair( i, -1 );
 					continue;
