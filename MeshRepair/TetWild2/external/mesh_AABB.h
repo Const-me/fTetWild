@@ -91,7 +91,10 @@ namespace floatTetWild
 		{
 			GEO2::index_t nearest_facet = GEO2::NO_FACET;
 			sq_dist = DBL_MAX;
-			nearestFacetRecursive( p, nearest_facet, nearest_point, sq_dist, 1, 0, mesh_.countTriangles() );
+			if constexpr( dbgCompareVersions )
+				nearestFacetCompare( p, nearest_facet, nearest_point, sq_dist );
+			else
+				nearestFacetStack( p, nearest_facet, nearest_point, sq_dist );
 			return nearest_facet;
 		}
 
@@ -118,7 +121,11 @@ namespace floatTetWild
 		{
 			if( nearest_facet == GEO2::NO_FACET )
 				sq_dist = DBL_MAX;
-			nearestFacetRecursive( p, nearest_facet, nearest_point, sq_dist, 1, 0, mesh_.countTriangles() );
+
+			if constexpr( dbgCompareVersions )
+				nearestFacetCompare( p, nearest_facet, nearest_point, sq_dist );
+			else
+				nearestFacetStack( p, nearest_facet, nearest_point, sq_dist );
 		}
 
 		/*
@@ -175,6 +182,11 @@ namespace floatTetWild
 		 */
 		void nearestFacetRecursive( const GEO2::vec3& p, GEO2::index_t& nearest_facet, GEO2::vec3& nearest_point, double& sq_dist, GEO2::index_t n,
 		  GEO2::index_t b, GEO2::index_t e ) const;
+
+		// Same as above without recursion
+		void nearestFacetStack( const GEO2::vec3& point, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDistResult ) const;
+
+		void nearestFacetCompare( const GEO2::vec3& point, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDistResult ) const;
 
 		/*
 		 * Same as before, but stops early if a point within a given distance

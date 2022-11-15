@@ -362,7 +362,7 @@ namespace floatTetWild
 		: mesh_( M )
 		, recursionStacks( stacks )
 	{
-		const size_t boxesCount = max_node_index( 1, 0, mesh_.countTriangles() ) + 1;	//< this is because size == max_index + 1
+		const size_t boxesCount = max_node_index( 1, 0, mesh_.countTriangles() ) + 1;  //< this is because size == max_index + 1
 		// Reserving one extra box so we can use full-vector unaligned loads to load coordinates from boxes, and not crash with access violations
 		bboxes_.reserve( boxesCount + 1 );
 		bboxes_.resize( boxesCount );
@@ -496,6 +496,93 @@ namespace floatTetWild
 		z = (uint32_t)_mm_extract_epi32( vec, 2 );
 	}
 
+	void MeshFacetsAABBWithEps::nearestFacetStack( const vec3& point, index_t& nearestFacet, vec3& nearestPoint, double& sqDistResult ) const
+	{
+		std::vector<FacetRecursionFrame>& stack = recursionStacks[ omp_get_thread_num() ].stack;
+		const __m256d p = AvxMath::loadDouble3( &point.x );
+
+		// Copy that value from memory to a register, saves quite a few loads/stores in the loop below
+		double sqDist = sqDistResult;
+
+		// Setup the initial state
+		uint32_t n = 1;
+		uint32_t b = 0;
+		uint32_t e = (uint32_t)mesh_.countTriangles();
+		double d = 0.0;
+
+#define POP_FROM_THE_STACK()                     \
+	if( stack.empty() )                          \
+		break;                                   \
+	const FacetRecursionFrame& f = stack.back(); \
+	n = f.n;                                     \
+	b = f.b;                                     \
+	e = f.e;                                     \
+	d = f.d;                                     \
+	stack.pop_back()
+
+				// Run the "recursion" using an std::vector instead of the stack
+		while( true )
+		{
+			assert( e > b );
+
+			if( d >= sqDist )
+			{
+				// The original version would have skipped this frame with "if( d < sq_dist )"
+				POP_FROM_THE_STACK();
+				continue;
+			}
+
+			if( b + 1 == e )
+			{
+				// If node is a leaf: compute point-facet distance and replace current if nearer
+				vec3 cur_nearest_point;
+				double cur_sq_dist;
+				get_point_facet_nearest_point( mesh_, p, b, cur_nearest_point, cur_sq_dist );
+				if( cur_sq_dist < sqDist )
+				{
+					nearestFacet = b;
+					nearestPoint = cur_nearest_point;
+					sqDist = cur_sq_dist;
+				}
+				POP_FROM_THE_STACK();
+				continue;
+			}
+
+			const uint32_t m = b + ( e - b ) / 2;
+			const uint32_t childl = 2 * n;
+			const uint32_t childr = 2 * n + 1;
+
+			// The original code suffers from the unpredictable "if( dl < dr )" branch
+			// To workaround, we using vector blends as conditional moves to figure out which way to go first.
+			const __m128d dl = pointBoxSignedSquaredDistance2( p, bboxes_[ childl ] );
+			const __m128d dr = pointBoxSignedSquaredDistance2( p, bboxes_[ childr ] );
+
+			// Compare for dl < dr
+			// Because pointBoxSignedSquaredDistance2 returns vectors with both lanes equal, the result is either zero or a vector of UINT_MAX
+			const __m128i lt = _mm_castpd_si128( _mm_cmplt_pd( dl, dr ) );
+
+			// Create left/right index vectors
+			const __m128i recLeft = makeUInt3( childl, b, m );
+			const __m128i recRight = makeUInt3( childr, m, e );
+
+			// Push the SECOND recursive call of the original version to the stack
+			__m128i rec = _mm_blendv_epi8( recLeft, recRight, lt );
+			FacetRecursionFrame& newFrame = stack.emplace_back();
+			newFrame.storeIndices( rec );
+			newFrame.d = _mm_cvtsd_f64( _mm_max_sd( dr, dl ) );
+
+			// Replace the local variables with the FIRST recursive call of the original version
+			rec = _mm_blendv_epi8( recRight, recLeft, lt );
+			unpackUInt3( rec, n, b, e );
+			d = _mm_cvtsd_f64( _mm_min_sd( dr, dl ) );
+		}
+#undef POP_FROM_THE_STACK
+
+		assert( stack.empty() );
+		// Store the result back to memory
+		sqDistResult = sqDist;
+	}
+
 	void MeshFacetsAABBWithEps::facetInEnvelopeStack(
 	  __m256d p, double sqEpsilon, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDistResult ) const
 	{
@@ -614,6 +701,28 @@ namespace floatTetWild
 			return;
 		}
 
+		__debugbreak();
+	}
+
+	void MeshFacetsAABBWithEps::nearestFacetCompare(
+	  const GEO2::vec3& p, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDist ) const
+	{
+		const uint32_t nfInput = nearestFacet;
+		const vec3 npInput = nearestPoint;
+		const double sqDistInput = sqDist;
+
+		uint32_t nf1 = nfInput;
+		vec3 np1 = npInput;
+		double sqd1 = sqDistInput;
+		nearestFacetRecursive( p, nf1, np1, sqd1, 1, 0, mesh_.countTriangles() );
+
+		nearestFacet = nfInput;
+		nearestPoint = npInput;
+		sqDist = sqDistInput;
+		nearestFacetStack( p, nearestFacet, nearestPoint, sqDist );
+
+		if( sqDist == sqd1 )
+			return;
 		__debugbreak();
 	}
 }  // namespace floatTetWild
