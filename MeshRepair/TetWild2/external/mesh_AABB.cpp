@@ -179,10 +179,13 @@ namespace
 		// When outside, one of the vectors was negative another one positive, min will return the negative one, which is the distance we're after
 		__m256d dist = _mm256_min_pd( dmin, dmax );
 
-		if( 0 == ( _mm256_movemask_pd( dist ) & 0b111 ) )
+		// Compute vector mask of negative lanes, these are the lanes which were outside the box
+		const __m256d zero = _mm256_setzero_pd();
+		const __m256d outsideMaskVector = _mm256_cmp_pd( dist, zero, _CMP_LT_OQ );
+
+		__m128d resIn, resOut;
 		{
-			// The XYZ lanes of the dist are all non-negative, which means the point is inside the box
-			// Compute horizontal minimum of the dist.xyz vector
+			// Compute negative distance for the inside case
 			__m128d xy = low2( dist );
 			__m128d z = high2( dist );
 			xy = _mm_min_sd( xy, _mm_unpackhi_pd( xy, xy ) );
@@ -192,17 +195,23 @@ namespace
 			// Duplicate the low lane
 			xy = _mm_movedup_pd( xy );
 			// Negate the vector
-			return _mm_sub_pd( _mm_setzero_pd(), xy );
+			resIn = _mm_sub_pd( _mm256_castpd256_pd128( zero ), xy );
 		}
-		else
+
 		{
-			// Compute vector mask of negative lanes, these are the lanes which were outside the box
-			__m256d outsideMaskVector = _mm256_cmp_pd( dist, _mm256_setzero_pd(), _CMP_LT_OQ );
-			// Zero out the lanes for coordinates which were inside the box
-			dist = _mm256_and_pd( dist, outsideMaskVector );
-			// The squared distance to the box is the squared length of that vector
-			return vector3Dot2( dist, dist );
+			// Compute positive distance for the outside case
+			__m256d distOut = _mm256_and_pd( dist, outsideMaskVector );
+			resOut = vector3Dot2( distOut, distOut );
 		}
+
+		// Compute bitwise OR of first 3 lanes in the outsideMaskVector, broadcasted to 2 lanes of the SSE vector
+		__m128d maskHigh = _mm256_extractf128_pd( outsideMaskVector, 1 );
+		__m128d maskLow = _mm256_castpd256_pd128( outsideMaskVector );
+		maskLow = _mm_or_pd( maskLow, _mm_permute_pd( maskLow, _MM_SHUFFLE2( 0, 1 ) ) );
+		maskLow = _mm_or_pd( maskLow, _mm_movedup_pd( maskHigh ) );
+
+		// Select one of the output vectors
+		return _mm_blendv_pd( resIn, resOut, maskLow );
 	}
 
 	static double pointBoxSignedSquaredDistance( const __m256d pos, const Box& B )
