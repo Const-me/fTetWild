@@ -91,7 +91,7 @@ namespace floatTetWild
 		{
 			GEO2::index_t nearest_facet = GEO2::NO_FACET;
 			sq_dist = DBL_MAX;
-			nearest_facet_recursive( p, nearest_facet, nearest_point, sq_dist, 1, 0, mesh_.countTriangles() );
+			nearestFacetRecursive( p, nearest_facet, nearest_point, sq_dist, 1, 0, mesh_.countTriangles() );
 			return nearest_facet;
 		}
 
@@ -118,7 +118,7 @@ namespace floatTetWild
 		{
 			if( nearest_facet == GEO2::NO_FACET )
 				sq_dist = DBL_MAX;
-			nearest_facet_recursive( p, nearest_facet, nearest_point, sq_dist, 1, 0, mesh_.countTriangles() );
+			nearestFacetRecursive( p, nearest_facet, nearest_point, sq_dist, 1, 0, mesh_.countTriangles() );
 		}
 
 		/*
@@ -155,7 +155,7 @@ namespace floatTetWild
 				facetInEnvelopeStack( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist );
 		}
 
-	  protected:
+	  private:
 		/**
 		 * \brief The recursive function used by the implementation
 		 *  of nearest_facet().
@@ -173,7 +173,7 @@ namespace floatTetWild
 		 * \param[in] e one position past the index of the last facet in the
 		 *  subtree under node \p n
 		 */
-		void nearest_facet_recursive( const GEO2::vec3& p, GEO2::index_t& nearest_facet, GEO2::vec3& nearest_point, double& sq_dist, GEO2::index_t n,
+		void nearestFacetRecursive( const GEO2::vec3& p, GEO2::index_t& nearest_facet, GEO2::vec3& nearest_point, double& sq_dist, GEO2::index_t n,
 		  GEO2::index_t b, GEO2::index_t e ) const;
 
 		/*
@@ -187,7 +187,6 @@ namespace floatTetWild
 
 		void facetInEnvelopeCompare( __m256d p, double sqEpsilon, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDist, __m128i nbe ) const;
 
-	  protected:
 		std::vector<GEO2::Box> bboxes_;
 		const GEO2::Mesh& mesh_;
 		FacetRecursionStacks& recursionStacks;

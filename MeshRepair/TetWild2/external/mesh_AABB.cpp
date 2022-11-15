@@ -369,7 +369,7 @@ namespace floatTetWild
 		init_bboxes_recursive( mesh_, bboxes_, 1, 0, mesh_.countTriangles(), get_facet_bbox );
 	}
 
-	void MeshFacetsAABBWithEps::nearest_facet_recursive(
+	void MeshFacetsAABBWithEps::nearestFacetRecursive(
 	  const vec3& p, index_t& nearest_f, vec3& nearest_point, double& sq_dist, index_t n, index_t b, index_t e ) const
 	{
 		assert( e > b );
@@ -402,22 +402,22 @@ namespace floatTetWild
 		{
 			if( dl < sq_dist )
 			{
-				nearest_facet_recursive( p, nearest_f, nearest_point, sq_dist, childl, b, m );
+				nearestFacetRecursive( p, nearest_f, nearest_point, sq_dist, childl, b, m );
 			}
 			if( dr < sq_dist )
 			{
-				nearest_facet_recursive( p, nearest_f, nearest_point, sq_dist, childr, m, e );
+				nearestFacetRecursive( p, nearest_f, nearest_point, sq_dist, childr, m, e );
 			}
 		}
 		else
 		{
 			if( dr < sq_dist )
 			{
-				nearest_facet_recursive( p, nearest_f, nearest_point, sq_dist, childr, m, e );
+				nearestFacetRecursive( p, nearest_f, nearest_point, sq_dist, childr, m, e );
 			}
 			if( dl < sq_dist )
 			{
-				nearest_facet_recursive( p, nearest_f, nearest_point, sq_dist, childl, b, m );
+				nearestFacetRecursive( p, nearest_f, nearest_point, sq_dist, childl, b, m );
 			}
 		}
 	}
