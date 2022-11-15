@@ -26,5 +26,4 @@ namespace floatTetWild
 	void check_surface( std::vector<Vector3>& input_vertices, std::vector<Vector3i>& input_faces, const std::vector<bool>& is_f_removed,
 	  const AABBWrapper& tree, const Parameters& params );
 
-	void output_component( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const std::vector<int>& input_tags );
 }  // namespace floatTetWild
