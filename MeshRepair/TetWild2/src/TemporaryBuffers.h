@@ -3,6 +3,7 @@
 #include "FacetRecursionStack.h"
 #include "EdgesSet.h"
 #include <queue>
+#include "../Utils/Geogram2.h"
 
 namespace floatTetWild
 {
@@ -49,5 +50,10 @@ namespace floatTetWild
 		std::vector<bool> is_visited;
 		std::queue<int> queue_t_ids;
 		std::vector<int> n_t_ids;
+	};
+
+	struct IsBoundaryEdgeBuffers
+	{
+		std::vector<GEO2::vec3> points;
 	};
 }

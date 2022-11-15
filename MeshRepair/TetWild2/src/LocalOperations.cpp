@@ -245,26 +245,31 @@ bool floatTetWild::is_boundary_edge( const Mesh& mesh, int v1_id, int v2_id, con
 		return !tree.is_out_b_envelope_exact( { { mesh.tet_vertices[ v1_id ].pos, mesh.tet_vertices[ v2_id ].pos, mesh.tet_vertices[ v2_id ].pos } } );
 	}
 #else
-	std::vector<GEO2::vec3> ps;
+	std::vector<GEO2::vec3>& ps = mesh.isBoundaryEdgeBuffers.points;
+	ps.clear();
+
 	ps.push_back( GEO2::vec3( mesh.tet_vertices[ v1_id ].pos[ 0 ], mesh.tet_vertices[ v1_id ].pos[ 1 ], mesh.tet_vertices[ v1_id ].pos[ 2 ] ) );
-	int p0_id = 0;
 	Scalar l = get_edge_length( mesh, v1_id, v2_id );
-	int N = l / mesh.params.dd + 1;
+	const int N = l / mesh.params.dd + 1;
 	ps.push_back( GEO2::vec3( mesh.tet_vertices[ v2_id ][ 0 ], mesh.tet_vertices[ v2_id ][ 1 ], mesh.tet_vertices[ v2_id ][ 2 ] ) );
-	int p1_id = ps.size() - 1;
-	for( Scalar j = 1; j < N - 1; j++ )
+
+	// TODO: think about reworking this code.
+	// Possible to replace AABB tree with BVH, they are often used for ray tracing and can usually query with rays, not just points
+	// Here we query these AABB trees with a line segment, pretty much same thing as a ray.
+	const __m256d p0 = AvxMath::loadDouble3( ps[ 0 ].data() );
+	const __m256d p1 = AvxMath::loadDouble3( ps[ 1 ].data() );
+
+	for( int j = 1; j < N - 1; j++ )
 	{
-		ps.push_back( ps[ p0_id ] * ( j / N ) + ps[ p1_id ] * ( 1 - j / N ) );
+		const double inv = (double)j / (double)N;
+		const __m256d pos = AvxMath::lerpFast( p1, p0, inv );
+		AvxMath::storeDouble3( ps.emplace_back().data(), pos );
 	}
 
 	if( !mesh.is_input_all_inserted )
-	{
 		return !tree.is_out_tmp_b_envelope( ps, mesh.params.eps_2 );
-	}
 	else
-	{
 		return !tree.is_out_b_envelope( ps, mesh.params.eps_2 );
-	}
 #endif
 
 	//    if(!mesh.is_input_all_inserted)
