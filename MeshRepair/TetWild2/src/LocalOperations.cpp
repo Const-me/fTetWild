@@ -1450,3 +1450,56 @@ void floatTetWild::AMIPS_hessian( const std::array<Scalar, 12>& T, Matrix3& resu
 	result_0( 2, 1 ) = helper_87 * ( helper_118 - helper_119 * helper_91 );
 	result_0( 2, 2 ) = helper_56 * ( -helper_108 * helper_109 * helper_65 - 1.11111111111111 * pow2( helper_109 ) * helper_84 + 3.0 );
 }
+
+void floatTetWild::vector_unique( std::vector<int>& vec )
+{
+	std::sort( vec.begin(), vec.end() );
+	vec.erase( std::unique( vec.begin(), vec.end() ), vec.end() );
+}
+
+namespace
+{
+	// A faster comparison predicate to sort std::array<int, 2>
+	// Only delivers equal result to the built-in `operator <` when the integers aren't negative. Good enough for the use case.
+	struct Int2Cmp
+	{
+		inline bool operator()( uint64_t a, uint64_t b )
+		{
+			// Swap low and high 32-bit pieces, with the rotate instructions
+			a = _rotr64( a, 32 );
+			b = _rotr64( b, 32 );
+			// Now the comparison is identical to the std::lexicographical_compare of the arrays
+			return a < b;
+		}
+	};
+}
+
+void floatTetWild::vector_unique( std::vector<std::array<int, 2>>& vec )
+{
+	if( vec.empty() )
+		return;
+
+	static_assert( sizeof( std::array<int, 2> ) == sizeof( uint64_t ) );
+	// std::vector<std::array<int, 2>> cpy = vec;
+	// std::sort( cpy.begin(), cpy.end() );
+
+	// Sort the vector using that faster comparison predicate
+	uint64_t* const begin = (uint64_t*)vec.data();
+	uint64_t* const end = begin + vec.size();
+	std::sort( begin, end, Int2Cmp {} );
+
+	// if( cpy != vec ) __debugbreak();
+
+	// Run std::unique algorithm, pretending these pairs are uint64_t values
+	// The default comparison and assignment already do the right thing for these values
+	uint64_t* const unique = std::unique( begin, end );
+
+	// Finally, shrink the vector
+	vec.erase( vec.begin() + ( unique - begin ), vec.end() );
+}
+
+void floatTetWild::vector_unique( std::vector<std::array<int, 3>>& vec )
+{
+	std::sort( vec.begin(), vec.end() );
+	vec.erase( std::unique( vec.begin(), vec.end() ), vec.end() );
+}

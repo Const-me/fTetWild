@@ -77,12 +77,10 @@ namespace floatTetWild
 		return ( ( b - c ).cross( a - c ) ).norm();
 	}
 
-	template<typename T>
-	void vector_unique( std::vector<T>& v )
-	{
-		std::sort( v.begin(), v.end() );
-		v.erase( std::unique( v.begin(), v.end() ), v.end() );
-	}
+	void vector_unique( std::vector<int>& vec );
+	void vector_unique( std::vector<std::array<int, 2>>& vec );
+	void vector_unique( std::vector<std::array<int, 3>>& vec );
+
 	template<typename T>
 	bool vector_erase( std::vector<T>& v, const T& t )
 	{
