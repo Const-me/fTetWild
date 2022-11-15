@@ -124,6 +124,8 @@
     <ClInclude Include="Utils\AASort\AASortUtils.hpp" />
     <ClInclude Include="src\ElementInQueue.h" />
     <ClInclude Include="src\FacetRecursionStack.h" />
+    <ClInclude Include="Utils\lowLevel.h" />
+    <ClInclude Include="Utils\Cbrt\cbrt.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp" />
@@ -224,6 +226,11 @@
     <ClCompile Include="src\VertexConnectedTets.cpp" />
     <ClCompile Include="Utils\AASort\AASort.cpp" />
     <ClCompile Include="Utils\AASort\AASortTranspose.cpp" />
+    <ClCompile Include="Utils\lowLevel.tests.cpp" />
+    <ClCompile Include="Utils\Cbrt\cbrtBsdSse.cpp" />
+    <ClCompile Include="Utils\Cbrt\cbrtBsdOrig.cpp" />
+    <ClCompile Include="Utils\Cbrt\cbrtHalleyMetamerist.cpp" />
+    <ClCompile Include="Utils\Cbrt\cbrtCustom.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="external">

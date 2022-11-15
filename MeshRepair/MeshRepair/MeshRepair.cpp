@@ -8,6 +8,7 @@
 // #include "../TetWild2/Utils/cutTableData.h"
 #include "../GeogramDelaunay/geogram/numerics/predicates.h"
 // #include "../TetWild2/Utils/Geogram2.h"
+// #include "../TetWild2/Utils/lowLevel.h"
 
 namespace MeshRepair
 {
@@ -35,6 +36,7 @@ namespace MeshRepair
 		// printCutTableData();
 		// validateCutTableData();
 		// GEO2::dbgRunSomeTests();
+		// floatTetWild::testLowLevelRoutines();
 		return S_OK;
 	}
 
