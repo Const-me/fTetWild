@@ -560,87 +560,18 @@ bool floatTetWild::is_out_boundary_envelope( const Mesh& mesh, int v_id, const V
 		int p1_id = ps.size() - 1;
 		for( Scalar j = 1; j < N - 1; j++ )
 		{
-			//            ps.push_back(ps[0] * (j / N) + ps[1] * (1 - j / N));
 			ps.push_back( ps[ p0_id ] * ( j / N ) + ps[ p1_id ] * ( 1 - j / N ) );
 		}
 	}
-
 	return tree.is_out_tmp_b_envelope( ps, mesh.params.eps_2 / 100, prev_facet );
-
-	//    GEO2::vec3 init_point(new_pos[0], new_pos[1], new_pos[2]);
-	//    GEO2::vec3 nearest_point;
-	//    double sq_distg;
-	//    GEO2::index_t prev_facet = b_tree.nearest_facet(init_point, nearest_point, sq_distg);
-	//    Scalar sq_dist = sq_distg;
-	//    if(sq_dist > mesh.params.eps_2)
-	//        return true;
-	//
-	//    std::vector<int> tmp_b_v_ids;
-	//    for (int t_id:mesh.tet_vertices[v_id].conn_tets) {
-	//        for (int j = 0; j < 4; j++) {
-	//            if (mesh.tets[t_id][j] != v_id && mesh.tets[t_id].is_surface_fs[j] < 0) {
-	//                for(int k=0;k<3;k++){
-	//                    int b_v_id = mesh.tets[t_id][(j+1+k)%4];
-	//                    if(b_v_id != v_id && mesh.tet_vertices[b_v_id].is_on_boundary)
-	//                        tmp_b_v_ids.push_back(b_v_id);
-	//                }
-	//            }
-	//        }
-	//    }
-	//    vector_unique(tmp_b_v_ids);
-	//
-	//    std::vector<int> b_v_ids;
-	//    b_v_ids.reserve(tmp_b_v_ids.size());
-	//    for(int b_v_id:tmp_b_v_ids){
-	//        if(is_boundary_edge(mesh, v_id, b_v_id))//todo: can be improved, see meshimprovemnet init()
-	//            b_v_ids.push_back(b_v_id);
-	//    }
-	//    if(b_v_ids.empty())
-	//        return false;
-	//
-	//    std::vector<GEO2::vec3> ps;
-	//    for(int b_v_id:b_v_ids) {
-	//        Scalar l = get_edge_length(mesh, v_id, b_v_id);
-	//        int N = l / mesh.params.dd + 1;
-	////        ps.push_back(GEO2::vec3(mesh.tet_vertices[v_id][0], mesh.tet_vertices[v_id][1], mesh.tet_vertices[v_id][2]));
-	//        ps.push_back(GEO2::vec3(new_pos[0], new_pos[1], new_pos[2]));
-	//        ps.push_back(
-	//                GEO2::vec3(mesh.tet_vertices[b_v_id][0], mesh.tet_vertices[b_v_id][1], mesh.tet_vertices[b_v_id][2]));
-	//        for (Scalar j = 0; j < N - 1; j++) {
-	//            ps.push_back(ps[0] * (j / N) + ps[1] * (1 - j / N));
-	//        }
-	//    }
-	//
-	//    int cnt = 0;
-	//    const unsigned int ps_size = ps.size();
-	//    for (unsigned int i = ps_size / 2; ; i = (i + 1) % ps_size) {//check from the middle
-	//        GEO2::vec3 &current_point = ps[i];
-	//        sq_distg = current_point.distance2(nearest_point);
-	//        b_tree.nearest_facet_with_hint(current_point, prev_facet, nearest_point, sq_distg);
-	//        sq_dist = sq_distg;
-	//        if (sq_dist > mesh.params.eps_2)
-	//            return true;
-	//        cnt++;
-	//        if (cnt >= ps_size)
-	//            break;
-	//    }
-	//
-	//    return false;
 }
 
-#include <sstream>
 bool floatTetWild::is_out_envelope( Mesh& mesh, int v_id, const Vector3& new_pos, const AABBWrapper& tree )
 {
-#ifdef NEW_ENVELOPE
-	if( tree.is_out_sf_envelope_exact( new_pos ) )
-		return true;
-#else
 	GEO2::index_t prev_facet;
 	if( tree.is_out_sf_envelope( new_pos, mesh.params.eps_2, prev_facet ) )
 		return true;
-#endif
 
-	std::vector<GEO2::vec3> ps;
 	for( int t_id : mesh.tet_vertices[ v_id ].connTets )
 	{
 		for( int j = 0; j < 4; j++ )
@@ -655,48 +586,12 @@ bool floatTetWild::is_out_envelope( Mesh& mesh, int v_id, const Vector3& new_pos
 					else
 						vs[ k ] = mesh.tet_vertices[ mesh.tets[ t_id ][ mod4( j + 1 + k ) ] ].pos;
 				}
-#ifdef NEW_ENVELOPE
-				bool is_out = tree.is_out_sf_envelope_exact( vs );
-				if( !mesh.params.envelope_log.empty() )
-				{
-					if( envelope_log_csv_cnt < 1e5 )
-					{
-						std::ostringstream ss;
-						ss << std::setprecision( 17 );
-						for( const auto& v : vs )
-						{
-							ss << v[ 0 ] << ',' << v[ 1 ] << ',' << v[ 2 ] << ',';
-						}
-						ss << is_out << "\n";
-						std::string tmp = ss.str();
-						envelope_log_csv += tmp;
-						envelope_log_csv_cnt += 1;
-					}
-					else
-					{
-						std::ofstream fout( mesh.params.envelope_log );
-						fout << envelope_log_csv;
-						fout.close();
-						mesh.params.envelope_log = "";
-					}
-				}
-				if( is_out )
-					return true;
-#else
-#ifdef STORE_SAMPLE_POINTS
-				ps.clear();
-				sample_triangle( vs, ps, mesh.params.dd );
-				bool is_out = tree.is_out_sf_envelope( ps, mesh.params.eps_2, prev_facet );
-#else
 				bool is_out = sample_triangle_and_check_is_out( vs, mesh.params.dd, mesh.params.eps_2, tree, prev_facet );
-#endif
 				if( is_out )
 					return true;
-#endif
 			}
 		}
 	}
-
 	return false;
 }
 
