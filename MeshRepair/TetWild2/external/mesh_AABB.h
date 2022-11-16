@@ -54,6 +54,7 @@
 #include "../Utils/Geogram2.h"
 #include "../Utils/Mesh/TriangleMesh.h"
 #include "../src/FacetRecursionStack.h"
+#include "../Utils/Box32.h"
 
 namespace floatTetWild
 {
@@ -200,6 +201,7 @@ namespace floatTetWild
 		void facetInEnvelopeCompare( __m256d p, double sqEpsilon, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDist, __m128i nbe ) const;
 
 		std::vector<GEO2::Box> bboxes_;
+		std::vector<Box32> boxesFloat;
 		const GEO2::Mesh& mesh_;
 		FacetRecursionStacks& recursionStacks;
 	};

@@ -88,6 +88,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Utils\Box32.h" />
     <ClInclude Include="src\Bitset32.h" />
     <ClInclude Include="src\SmallBuffer.h" />
     <ClInclude Include="src\TemporaryBuffers.h" />
@@ -156,6 +157,7 @@
     <ClInclude Include="src\VertexConnectedTets.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Utils\Box32.cpp" />
     <ClCompile Include="Utils\Cbrt\cbrtBsdOrig.cpp" />
     <ClCompile Include="Utils\Cbrt\cbrtBsdSse.cpp" />
     <ClCompile Include="Utils\Cbrt\cbrtCustom.cpp" />

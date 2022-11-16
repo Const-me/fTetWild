@@ -54,6 +54,7 @@
 namespace
 {
 	using namespace GEO2;
+	using namespace floatTetWild;
 
 	/**
 	 * \brief Computes the axis-aligned bounding box of a mesh facet.
@@ -128,6 +129,40 @@ namespace
 		assert( childl < bboxes.size() );
 		assert( childr < bboxes.size() );
 		bbox_union( bboxes[ node_index ], bboxes[ childl ], bboxes[ childr ] );
+	}
+
+	inline void getFacetBox( const Mesh& mesh, Box32& box, uint32_t triangleIndex )
+	{
+		const vec3 *p1, *p2, *p3;
+		mesh.getTriangleVertices( triangleIndex, &p1, &p2, &p3 );
+
+		using namespace AvxMath;
+		__m256d a = loadDouble3( &p1->x );
+		__m256d b = loadDouble3( &p2->x );
+		__m256d c = loadDouble3( &p3->x );
+
+		box.computeTriangle( a, b, c );
+	}
+
+	static void initBoxesRecursive( const Mesh& mesh, std::vector<Box32>& bboxes, uint32_t node_index, index_t b, index_t e )
+	{
+		assert( node_index < bboxes.size() );
+		assert( b != e );
+
+		if( b + 1 == e )
+		{
+			getFacetBox( mesh, bboxes[ node_index ], b );
+			return;
+		}
+
+		uint32_t m = b + ( e - b ) / 2;
+		uint32_t childl = 2 * node_index;
+		uint32_t childr = 2 * node_index + 1;
+		assert( childl < bboxes.size() );
+		assert( childr < bboxes.size() );
+		initBoxesRecursive( mesh, bboxes, childl, b, m );
+		initBoxesRecursive( mesh, bboxes, childr, m, e );
+		bboxes[ node_index ].computeUnion( bboxes[ childl ], bboxes[ childr ] );
 	}
 
 	/**
@@ -266,11 +301,16 @@ namespace floatTetWild
 		: mesh_( M )
 		, recursionStacks( stacks )
 	{
-		const size_t boxesCount = max_node_index( 1, 0, mesh_.countTriangles() ) + 1;  //< this is because size == max_index + 1
+		const uint32_t countTriangles = mesh_.countTriangles();
+		const size_t boxesCount = max_node_index( 1, 0, countTriangles ) + 1;  //< this is because size == max_index + 1
 		// Reserving one extra box so we can use full-vector unaligned loads to load coordinates from boxes, and not crash with access violations
 		bboxes_.reserve( boxesCount + 1 );
 		bboxes_.resize( boxesCount );
-		init_bboxes_recursive( mesh_, bboxes_, 1, 0, mesh_.countTriangles(), get_facet_bbox );
+		init_bboxes_recursive( mesh_, bboxes_, 1, 0, countTriangles, get_facet_bbox );
+
+		boxesFloat.reserve( boxesCount + 1 );
+		boxesFloat.resize( boxesCount );
+		initBoxesRecursive( M, boxesFloat, 1, 0, countTriangles );
 	}
 
 	void MeshFacetsAABBWithEps::nearestFacetRecursive(
