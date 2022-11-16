@@ -65,6 +65,7 @@ namespace floatTetWild
 	 */
 	class MeshFacetsAABBWithEps
 	{
+		static constexpr bool useFp32Boxes = true;
 		static constexpr bool dbgCompareVersions = false;
 
 	  public:
@@ -94,6 +95,8 @@ namespace floatTetWild
 			sq_dist = DBL_MAX;
 			if constexpr( dbgCompareVersions )
 				nearestFacetCompare( p, nearest_facet, nearest_point, sq_dist );
+			else if constexpr( useFp32Boxes )
+				nearestFacetStack32( p, nearest_facet, nearest_point, sq_dist );
 			else
 				nearestFacetStack( p, nearest_facet, nearest_point, sq_dist );
 			return nearest_facet;
@@ -125,6 +128,8 @@ namespace floatTetWild
 
 			if constexpr( dbgCompareVersions )
 				nearestFacetCompare( p, nearest_facet, nearest_point, sq_dist );
+			else if constexpr( useFp32Boxes )
+				nearestFacetStack32( p, nearest_facet, nearest_point, sq_dist );
 			else
 				nearestFacetStack( p, nearest_facet, nearest_point, sq_dist );
 		}
@@ -141,6 +146,8 @@ namespace floatTetWild
 			__m256d pt = AvxMath::loadDouble3( &p.x );
 			if constexpr( dbgCompareVersions )
 				facetInEnvelopeCompare( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist, vec );
+			else if constexpr( useFp32Boxes )
+				facetInEnvelopeStack32( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist );
 			else
 				facetInEnvelopeStack( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist );
 			return nearest_facet;
@@ -159,6 +166,8 @@ namespace floatTetWild
 			__m256d pt = AvxMath::loadDouble3( &p.x );
 			if constexpr( dbgCompareVersions )
 				facetInEnvelopeCompare( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist, vec );
+			else if constexpr( useFp32Boxes )
+				facetInEnvelopeStack32( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist );
 			else
 				facetInEnvelopeStack( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist );
 		}
@@ -187,6 +196,9 @@ namespace floatTetWild
 		// Same as above without recursion
 		void nearestFacetStack( const GEO2::vec3& point, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDistResult ) const;
 
+		// Same as above without recursion
+		void nearestFacetStack32( const GEO2::vec3& point, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDistResult ) const;
+
 		void nearestFacetCompare( const GEO2::vec3& point, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDistResult ) const;
 
 		/*
@@ -197,6 +209,7 @@ namespace floatTetWild
 		  __m256d p, double sq_epsilon, GEO2::index_t& nearest_facet, GEO2::vec3& nearest_point, double& sq_dist, __m128i nbe ) const;
 
 		void facetInEnvelopeStack( __m256d p, double sqEpsilon, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDist ) const;
+		void facetInEnvelopeStack32( __m256d p, double sqEpsilon, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDist ) const;
 
 		void facetInEnvelopeCompare( __m256d p, double sqEpsilon, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDist, __m128i nbe ) const;
 
