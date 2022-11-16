@@ -10,16 +10,7 @@
 #include "LocalOperations.h"
 #include "../external/Predicates.h"
 #include "../external/Rational.h"
-
 #include <igl/Timer.h>
-
-#ifdef FLOAT_TETWILD_USE_TBB
-#include <tbb/task_scheduler_init.h>
-#include <tbb/parallel_for.h>
-#include <tbb/atomic.h>
-#include <tbb/concurrent_vector.h>
-#include <tbb/parallel_sort.h>
-#endif
 #include "LocalOperations2.h"
 #include <Utils/lowLevel.h>
 
@@ -27,74 +18,7 @@ namespace floatTetWild
 {
 	const bool use_old_energy = false;
 }  // namespace floatTetWild
-
 using floatTetWild::Scalar;
-
-// void floatTetWild::init_b_tree(const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces,
-//         GEO2::Mesh& b_mesh) {
-// //    std::vector<std::array<int, 2>> edges;
-// //    for(int i=0;i<sf_mesh.facets.nb();i++){
-// //        for(int j=0;j<3;j++) {
-// //            if(sf_mesh.facets.adjacent(i, j)==GEO2::NO_FACET){
-// //                edges.push_back({{}})
-// //            }
-// //        }
-// //    }
-
-//     std::vector<std::vector<int>> conn_tris(input_vertices.size());
-//     std::vector<std::array<int, 2>> all_edges;
-//     all_edges.reserve(input_faces.size() * 3);
-//     for (int i = 0; i < input_faces.size(); i++) {
-//         for (int j = 0; j < 3; j++) {
-//             conn_tris[input_faces[i][j]].push_back(i);
-//             if (input_faces[i][j] < input_faces[i][(j + 1) % 3])
-//                 all_edges.push_back({{input_faces[i][j], input_faces[i][(j + 1) % 3]}});
-//             else
-//                 all_edges.push_back({{input_faces[i][(j + 1) % 3], input_faces[i][j]}});
-//         }
-//     }
-//     vector_unique(all_edges);
-
-//     std::vector<std::array<int, 2>> b_edges;
-//     for (auto &e:all_edges) {
-//         std::vector<int> tmp;
-//         std::set_intersection(conn_tris[e[0]].begin(), conn_tris[e[0]].end(),
-//                               conn_tris[e[1]].begin(), conn_tris[e[1]].end(), std::back_inserter(tmp));
-//         if (tmp.size() == 1) {
-//             b_edges.push_back(e);
-//         }
-//     }
-
-//     if (b_edges.empty()) {
-//         b_mesh.vertices.clear();
-//         b_mesh.vertices.create_vertices(1);
-//         b_mesh.vertices.point(0) = GEO2::vec3(0, 0, 0);
-//         b_mesh.facets.clear();
-//         b_mesh.facets.create_triangles(1);
-//         b_mesh.facets.set_vertex(0, 0, 0);
-//         b_mesh.facets.set_vertex(0, 1, 0);
-//         b_mesh.facets.set_vertex(0, 2, 0);
-//     } else {
-//         b_mesh.vertices.clear();
-//         b_mesh.vertices.create_vertices((int) b_edges.size() * 2);
-//         int cnt = 0;
-//         for (auto &e:b_edges) {
-//             for (int j = 0; j < 2; j++) {
-//                 GEO2::vec3 &p = b_mesh.vertices.point(cnt++);
-//                 p[0] = input_vertices[e[j]][0];
-//                 p[1] = input_vertices[e[j]][1];
-//                 p[2] = input_vertices[e[j]][2];
-//             }
-//         }
-//         b_mesh.facets.clear();
-//         b_mesh.facets.create_triangles((int) b_edges.size());
-//         for (int i = 0; i < b_edges.size(); i++) {
-//             b_mesh.facets.set_vertex(i, 0, i * 2);
-//             b_mesh.facets.set_vertex(i, 1, i * 2);
-//             b_mesh.facets.set_vertex(i, 2, i * 2 + 1);
-//         }
-//     }
-// }
 
 int floatTetWild::get_opp_t_id( const Mesh& mesh, int t_id, int j )
 {
@@ -109,25 +33,15 @@ int floatTetWild::get_opp_t_id( const Mesh& mesh, int t_id, int j )
 void floatTetWild::set_opp_t_id( Mesh& mesh, int t_id, int j )
 {
 	auto& t = mesh.tets[ t_id ];
-	//    static double time = 0;
 	const int jp1 = mod4( j + 1 );
 	const int jp2 = mod4( j + 2 );
 	const int jp3 = mod4( j + 3 );
 	assert( ( j + 1 ) % 4 == jp1 );
 	assert( ( j + 2 ) % 4 == jp2 );
 	assert( ( j + 3 ) % 4 == jp3 );
-	//    igl::Timer timer;
-	//    timer.start();
-	//    std::unordered_set<int> tmp;
-	//    set_intersection(mesh.tet_vertices[t[(j + 1) % 4]].conn_tets,
-	//                     mesh.tet_vertices[t[(j + 2) % 4]].conn_tets, tmp);
 	static std::vector<int> pair;
 	pair.clear();
-	//    set_intersection(mesh.tet_vertices[t[(j + 3) % 4]].conn_tets, tmp, pair);
 	setIntersection( mesh.tet_vertices[ t[ jp1 ] ].connTets, mesh.tet_vertices[ t[ jp2 ] ].connTets, mesh.tet_vertices[ t[ jp3 ] ].connTets, pair );
-	//    timer.stop();
-	//    time+=timer.getElapsedTimeInSec();
-	//    std::cout<<"set_opp_t_id "<<time<<std::endl;
 	if( pair.size() == 2 )
 	{
 		int opp_t_id = pair[ 0 ] == t_id ? pair[ 1 ] : pair[ 0 ];
@@ -247,16 +161,6 @@ bool floatTetWild::is_boundary_edge( const Mesh& mesh, int v1_id, int v2_id, con
 	if( !mesh.tet_vertices[ v1_id ].isBoundary() || !mesh.tet_vertices[ v2_id ].isBoundary() )
 		return false;
 
-#ifdef NEW_ENVELOPE
-	if( !mesh.is_input_all_inserted )
-	{
-		return !tree.is_out_tmp_b_envelope_exact( { { mesh.tet_vertices[ v1_id ].pos, mesh.tet_vertices[ v2_id ].pos, mesh.tet_vertices[ v2_id ].pos } } );
-	}
-	else
-	{
-		return !tree.is_out_b_envelope_exact( { { mesh.tet_vertices[ v1_id ].pos, mesh.tet_vertices[ v2_id ].pos, mesh.tet_vertices[ v2_id ].pos } } );
-	}
-#else
 	std::vector<GEO2::vec3>& ps = mesh.isBoundaryEdgeBuffers.points;
 	ps.clear();
 
@@ -282,46 +186,12 @@ bool floatTetWild::is_boundary_edge( const Mesh& mesh, int v1_id, int v2_id, con
 		return !tree.is_out_tmp_b_envelope( ps, mesh.params.eps_2 );
 	else
 		return !tree.is_out_b_envelope( ps, mesh.params.eps_2 );
-#endif
-
-	//    if(!mesh.is_input_all_inserted)
-	//        return true;
-	//
-	//    int cnt = 0;
-	//    for (int t_id: mesh.tet_vertices[v1_id].conn_tets) {
-	//        std::array<int, 4> opp_js;
-	//        int ii = 0;
-	//        for (int j = 0; j < 4; j++) {
-	//            if (mesh.tets[t_id][j] == v1_id || mesh.tets[t_id][j] == v2_id)
-	//                continue;
-	//            opp_js[ii++] = j;
-	//        }
-	//        if (ii == 2) {
-	//            if (mesh.tets[t_id].is_surface_fs[opp_js[0]] != NOT_SURFACE)
-	//                cnt++;
-	//            if (mesh.tets[t_id].is_surface_fs[opp_js[1]] != NOT_SURFACE)
-	//                cnt++;
-	//            if (cnt > 2)
-	//                return false;
-	//        }
-	//    }
-	//    if (cnt == 2)
-	//        return true;
-	//    return false;
 }
 
 bool floatTetWild::is_valid_edge( const Mesh& mesh, int v1_id, int v2_id )
 {
 	if( mesh.tet_vertices[ v1_id ].isRemoved() || mesh.tet_vertices[ v2_id ].isRemoved() )
 		return false;
-	//    std::vector<int> tmp;
-	//    set_intersection(mesh.tet_vertices[v1_id].conn_tets, mesh.tet_vertices[v2_id].conn_tets, tmp);
-	//    if (tmp.empty()) {
-	//        cout<<"happen"<<endl;
-	//        //pausee();
-	//        return false;
-	//    }
-
 	return true;
 }
 
@@ -331,7 +201,6 @@ bool floatTetWild::is_valid_edge( const Mesh& mesh, int v1_id, int v2_id, const 
 		return false;
 	if( n12_t_ids.empty() )
 		return false;
-
 	return true;
 }
 
@@ -351,12 +220,8 @@ bool floatTetWild::is_isolate_surface_point( const Mesh& mesh, int v_id )
 
 bool floatTetWild::is_point_out_envelope( const Mesh& mesh, const Vector3& p, const AABBWrapper& tree )
 {
-#ifdef NEW_ENVELOPE
-	return tree.is_out_sf_envelope_exact( p );
-#else
 	GEO2::index_t prev_facet;
 	return tree.is_out_sf_envelope( p, mesh.params.eps_2, prev_facet );
-#endif
 }
 
 bool floatTetWild::is_point_out_boundary_envelope( const Mesh& mesh, const Vector3& p, const AABBWrapper& tree )
@@ -378,11 +243,6 @@ Scalar floatTetWild::get_quality( const Mesh& mesh, const MeshTet& t )
 	}
 
 	return AMIPS_energy( T );
-	//    Scalar q = AMIPS_energy(T);
-	//    if (q > 1e8)
-	//        return MAX_ENERGY;
-	//    else
-	//        return q;
 }
 
 Scalar floatTetWild::get_quality( const Mesh& mesh, int t_id )
@@ -394,11 +254,6 @@ Scalar floatTetWild::get_quality( const Mesh& mesh, int t_id )
 			T[ i * 3 + j ] = mesh.tet_vertices[ mesh.tets[ t_id ][ i ] ].pos[ j ];
 	}
 	return AMIPS_energy( T );
-	//    Scalar q = AMIPS_energy(T);
-	//    if (q > 1e8)
-	//        return MAX_ENERGY;
-	//    else
-	//        return q;
 }
 
 Scalar floatTetWild::get_quality( const MeshVertex& v0, const MeshVertex& v1, const MeshVertex& v2, const MeshVertex& v3 )
@@ -406,22 +261,12 @@ Scalar floatTetWild::get_quality( const MeshVertex& v0, const MeshVertex& v1, co
 	std::array<Scalar, 12> T = { { v0.pos[ 0 ], v0.pos[ 1 ], v0.pos[ 2 ], v1.pos[ 0 ], v1.pos[ 1 ], v1.pos[ 2 ], v2.pos[ 0 ], v2.pos[ 1 ], v2.pos[ 2 ],
 	  v3.pos[ 0 ], v3.pos[ 1 ], v3.pos[ 2 ] } };
 	return AMIPS_energy( T );
-	//    Scalar q = AMIPS_energy(T);
-	//    if (q > 1e8)
-	//        return MAX_ENERGY;
-	//    else
-	//        return q;
 }
 
 Scalar floatTetWild::get_quality( const Vector3& v0, const Vector3& v1, const Vector3& v2, const Vector3& v3 )
 {
 	std::array<Scalar, 12> T = { { v0[ 0 ], v0[ 1 ], v0[ 2 ], v1[ 0 ], v1[ 1 ], v1[ 2 ], v2[ 0 ], v2[ 1 ], v2[ 2 ], v3[ 0 ], v3[ 1 ], v3[ 2 ] } };
 	return AMIPS_energy( T );
-	//    Scalar q = AMIPS_energy(T);
-	//    if (q > 1e8)
-	//        return MAX_ENERGY;
-	//    else
-	//        return q;
 }
 
 void floatTetWild::get_max_avg_energy( const Mesh& mesh, Scalar& max_energy, Scalar& avg_energy )
@@ -716,11 +561,9 @@ bool floatTetWild::sample_triangle_and_check_is_out(
 	{
 		for( int i = 0; i < 3; i++ )
 		{
-			//            ps.push_back(GEO2::vec3(vs[i][0], vs[i][1], vs[i][2]));
 			if( tree.is_out_sf_envelope( vs[ i ], eps_2, prev_facet, sq_dist, nearest_point ) )
 				return true;
 		}
-		//        return;
 		return false;
 	}
 	if( N == int( N ) )
@@ -733,22 +576,16 @@ bool floatTetWild::sample_triangle_and_check_is_out(
 	GEO2::vec3 n_v0v1 = GEO2::normalize( v1 - v0 );
 	for( int n = 0; n <= N; n++ )
 	{
-		//        ps.push_back(v0 + n_v0v1 * sampling_dist * n);
 		if( tree.is_out_sf_envelope( v0 + n_v0v1 * sampling_dist * n, eps_2, prev_facet, sq_dist, nearest_point ) )
 			return true;
 	}
-	//    ps.push_back(v1);
 	if( tree.is_out_sf_envelope( v1, eps_2, prev_facet, sq_dist, nearest_point ) )
 		return true;
 
 	Scalar h = GEO2::distance( GEO2::dot( ( v2 - v0 ), ( v1 - v0 ) ) * ( v1 - v0 ) / ls[ max_i ] + v0, v2 );
 	int M = h / ( sqrt3_2 * sampling_dist );
 	if( M < 1 )
-	{
-		//        ps.push_back(v2);
-		//        return;
 		return tree.is_out_sf_envelope( v2, eps_2, prev_facet, sq_dist, nearest_point );
-	}
 
 	GEO2::vec3 n_v0v2 = GEO2::normalize( v2 - v0 );
 	GEO2::vec3 n_v1v2 = GEO2::normalize( v2 - v1 );
@@ -763,9 +600,8 @@ bool floatTetWild::sample_triangle_and_check_is_out(
 		int n = sqrt3_2 / tan_v0 * m + 0.5;
 		int n1 = sqrt3_2 / tan_v0 * m;
 		if( m % 2 == 0 && n == n1 )
-		{
-			n += 1;
-		}
+			n++;
+
 		GEO2::vec3 v0_m = v0 + m * sqrt3_2 * sampling_dist / sin_v0 * n_v0v2;
 		GEO2::vec3 v1_m = v1 + m * sqrt3_2 * sampling_dist / sin_v1 * n_v1v2;
 		if( GEO2::distance( v0_m, v1_m ) <= sampling_dist )
@@ -776,12 +612,11 @@ bool floatTetWild::sample_triangle_and_check_is_out(
 		int N1 = GEO2::distance( v, v1_m ) / sampling_dist;
 		for( int i = 0; i <= N1; i++ )
 		{
-			//            ps.push_back(v + i * n_v0v1 * sampling_dist);
 			if( tree.is_out_sf_envelope( v + i * n_v0v1 * sampling_dist, eps_2, prev_facet, sq_dist, nearest_point ) )
 				return true;
 		}
 	}
-	//    ps.push_back(v2);
+
 	if( tree.is_out_sf_envelope( v2, eps_2, prev_facet, sq_dist, nearest_point ) )
 		return true;
 
@@ -794,7 +629,6 @@ bool floatTetWild::sample_triangle_and_check_is_out(
 		GEO2::vec3 n_v1v2 = GEO2::normalize( v2 - v1 );
 		for( int n = 1; n <= N; n++ )
 		{
-			//            ps.push_back(v1 + n_v1v2 * sampling_dist * n);
 			if( tree.is_out_sf_envelope( v1 + n_v1v2 * sampling_dist * n, eps_2, prev_facet, sq_dist, nearest_point ) )
 				return true;
 		}
@@ -808,7 +642,6 @@ bool floatTetWild::sample_triangle_and_check_is_out(
 		GEO2::vec3 n_v2v0 = GEO2::normalize( v0 - v2 );
 		for( int n = 1; n <= N; n++ )
 		{
-			//            ps.push_back(v2 + n_v2v0 * sampling_dist * n);
 			if( tree.is_out_sf_envelope( v2 + n_v2v0 * sampling_dist * n, eps_2, prev_facet, sq_dist, nearest_point ) )
 				return true;
 		}
@@ -858,7 +691,6 @@ void floatTetWild::set_intersection( const std::unordered_set<int>& s1, const st
 			v.push_back( x );
 		}
 	}
-	//    std::sort(v.begin(), v.end());
 }
 
 void floatTetWild::set_intersection( const std::unordered_set<int>& s1, const std::unordered_set<int>& s2, std::unordered_set<int>& v )
@@ -942,13 +774,6 @@ void floatTetWild::set_intersection_sorted( const std::vector<int>& s1, const st
 void floatTetWild::pausee( std::string msg )
 {
 	return;
-	// if (!msg.empty())
-	//     cout << msg << endl;
-	// cout << "Is pausing... (Enter '0' to exit and other characters to continue.)" << endl;
-	// char c = ' ';
-	// std::cin >> c;
-	// if (c == '0')
-	//     exit(0);
 }
 
 bool floatTetWild::is_energy_unstable( const std::array<Scalar, 12>& T, Scalar res )
@@ -974,7 +799,6 @@ bool floatTetWild::is_energy_unstable( const std::array<Scalar, 12>& T, Scalar r
 			continue;
 		if( res0 == 0 )
 			res0 = res1;
-		//        if (res1 - res0 > 10)
 		if( abs( res1 - res0 ) / res0 > 0.01 )
 			return true;
 	}
