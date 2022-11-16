@@ -13,9 +13,7 @@
 
 namespace floatTetWild
 {
-	extern bool use_old_energy;
-	extern std::string envelope_log_csv;
-	extern int envelope_log_csv_cnt;
+	extern const bool use_old_energy;
 
 	int get_opp_t_id( const Mesh& mesh, int t_id, int j );
 	void set_opp_t_id( Mesh& mesh, int t_id, int j );

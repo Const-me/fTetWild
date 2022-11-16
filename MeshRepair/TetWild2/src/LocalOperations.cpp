@@ -25,9 +25,7 @@
 
 namespace floatTetWild
 {
-	bool use_old_energy = false;
-	std::string envelope_log_csv = "";
-	int envelope_log_csv_cnt = 0;
+	const bool use_old_energy = false;
 }  // namespace floatTetWild
 
 using floatTetWild::Scalar;
