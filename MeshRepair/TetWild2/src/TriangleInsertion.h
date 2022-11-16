@@ -28,9 +28,6 @@ namespace floatTetWild
 	void insert_triangles_aux( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const std::vector<int>& input_tags,
 	  Mesh& mesh, std::vector<bool>& is_face_inserted, AABBWrapper& tree, bool is_again );
 
-	void optimize_non_surface( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const std::vector<int>& input_tags,
-	  std::vector<bool>& is_face_inserted, const std::vector<std::array<std::vector<int>, 4>>& track_surface_fs, Mesh& mesh, AABBWrapper& tree, bool is_again );
-
 	void sort_input_faces(
 	  const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const Mesh& mesh, std::vector<int>& sorted_f_ids );
 
@@ -39,11 +36,6 @@ namespace floatTetWild
 
 	void simplify_subdivision_result(
 	  int insert_f_id, int input_v_size, Mesh& mesh, AABBWrapper& tree, std::vector<std::array<std::vector<int>, 4>>& track_surface_fs );
-
-	/// face
-	bool insert_multi_triangles( int f_id, const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces,
-	  const std::vector<int>& input_tags, const std::vector<std::vector<int>>& conn_fs, const std::vector<Vector3>& ns, std::vector<bool>& is_visited,
-	  std::vector<int>& f_ids, Mesh& mesh, std::vector<std::array<std::vector<int>, 4>>& track_surface_fs, AABBWrapper& tree, bool is_again );
 
 	bool insert_one_triangle( int f_id, const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces,
 	  const std::vector<int>& input_tags, Mesh& mesh, std::vector<std::array<std::vector<int>, 4>>& track_surface_fs, AABBWrapper& tree, bool is_again );
