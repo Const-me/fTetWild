@@ -887,55 +887,7 @@ bool floatTetWild::subdivide_tets( int insert_f_id, Mesh& mesh, CutMesh& cut_mes
 					}
 				}
 
-				Scalar volume = Predicates::orient_3d_volume( vs[ 0 ], vs[ 1 ], vs[ 2 ], vs[ 3 ] );
-
-				//                //fortest
-				//                if(volume==0) {
-				//                    cout<<std::setprecision(16)<<endl;
-				//                    cout << "volume = " << volume << ",ori = " << Predicates::orient_3d(vs[0], vs[1], vs[2], vs[3]) << endl;
-				//                    cout << "centroids.size = " << centroids.size() << endl;
-				//                    cout << "config_id = " << config_id << endl;
-				//
-				//                    cout<<"vertices"<<endl;
-				//                    for(int k=0;k<4;k++){
-				//                        cout<<"v"<<mesh.tets[t_id][k]<<": "<<mesh.tet_vertices[mesh.tets[t_id][k]].pos.transpose()<<endl;
-				//                    }
-				//                    cout<<"intersecting points"<<endl;
-				//                    for (int i = 0; i < t_es.size(); i++) {
-				//                        const auto &le = t_es[i];
-				//                        std::array<int, 2> e = {{mesh.tets[t_id][le[0]], mesh.tets[t_id][le[1]]}};
-				//                        if (e[0] > e[1])
-				//                            std::swap(e[0], e[1]);
-				//                        if (map_edge_to_intersecting_point.find(e) != map_edge_to_intersecting_point.end()) {
-				//                            cout << e[0] << " " << e[1] << ": p" << map_edge_to_intersecting_point[e] << " "
-				//                                 << points[map_edge_to_intersecting_point[e]].transpose() << endl;
-				//                            cout<<"is_mark_sf = "<<is_mark_sf<<endl;
-				//                            if(cut_mesh.map_v_ids.find(e[0])!=cut_mesh.map_v_ids.end()) {
-				//                                cout << "e[0] to_plane_dists = " << cut_mesh.to_plane_dists[cut_mesh.map_v_ids[e[0]]]
-				//                                     << endl;
-				//                                cout << "e[0] is_snapped = " << cut_mesh.is_snapped[cut_mesh.map_v_ids[e[0]]]
-				//                                     << endl;
-				//                            }
-				//                            if(cut_mesh.map_v_ids.find(e[1])!=cut_mesh.map_v_ids.end()) {
-				//                                cout << "e[1] to_plane_dists = " << cut_mesh.to_plane_dists[cut_mesh.map_v_ids[e[1]]]
-				//                                     << endl;
-				//                                cout << "e[1] is_snapped = " << cut_mesh.is_snapped[cut_mesh.map_v_ids[e[1]]]
-				//                                     << endl;
-				//                            }
-				//
-				////                            Vector3 p;
-				////                            Scalar _;
-				////                            seg_plane_intersection(mesh.tet_vertices[e[0]].pos, mesh.tet_vertices[e[1]].pos,
-				////                                                   cut_mesh.p_vs[0], cut_mesh.p_n, p, _);
-				////                            cout << "new p:" << p.transpose() << endl;
-				////                            cout << (p - mesh.tet_vertices[e[1]].pos).squaredNorm() << " " << SCALAR_ZERO_2 << endl;
-				//                        }
-				//                    }
-				//
-				//                    pausee();
-				//                }
-				//                //fortest
-
+				const double volume = Predicates::orient_3d_volume( vs[ 0 ], vs[ 1 ], vs[ 2 ], vs[ 3 ] );
 				if( cnt == 0 )
 					min_q = volume;
 				else if( volume < min_q )
@@ -1004,10 +956,6 @@ bool floatTetWild::subdivide_tets( int insert_f_id, Mesh& mesh, CutMesh& cut_mes
 		{
 			const auto& t = config[ i ];
 			new_tets.push_back( MeshTet( map_lv_to_v_id[ t[ 0 ] ], map_lv_to_v_id[ t[ 1 ] ], map_lv_to_v_id[ t[ 2 ] ], map_lv_to_v_id[ t[ 3 ] ] ) );
-
-			// fortest
-			//            cout << map_lv_to_v_id[t[0]] << " " << map_lv_to_v_id[t[1]] << " " << map_lv_to_v_id[t[2]] << " "
-			//                 << map_lv_to_v_id[t[3]] << endl;
 
 			new_track_surface_fs.emplace_back();
 			for( int j = 0; j < 4; j++ )
