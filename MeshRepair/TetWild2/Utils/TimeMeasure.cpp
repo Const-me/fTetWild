@@ -50,7 +50,7 @@ namespace
 		const double mul = (double)(int64_t)elapsedQpc / ( (double)(int64_t)qpcFreq * (double)(int64_t)elapsedTsc );
 
 		const double GHz = 1E-9 / mul;
-		log.logInfo( "Computed CPU base frequency: %g GHz", GHz );
+		log.logDebug( "Computed CPU base frequency: %g GHz", GHz );
 		return mul;
 	}
 
