@@ -47,6 +47,7 @@
 #include <stdafx.h>
 #include "kd_tree.h"
 #include "../Geogram2.h"
+#include "../../parallelThreadsCount.h"
 
 namespace
 {
@@ -425,7 +426,7 @@ namespace GEO2
 
 		// If there are more than 16*MAX_LEAF_SIZE (=256) points,
 		// create the tree in parallel
-		if( nb_points() >= ( 16 * MAX_LEAF_SIZE ) )
+		if( nb_points() >= ( 16 * MAX_LEAF_SIZE ) && MeshRepair::shouldUseOpenMP() )
 			build_tree_omp();
 		else
 			create_kd_tree_recursive( 1, 0, nb_points() );

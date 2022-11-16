@@ -4,9 +4,11 @@
 #pragma once
 #include "igl_inline.h"
 #include <functional>
+#include "parallelThreadsCount.h"
 
 namespace igl
 {
+
 	// PARALLEL_FOR Functional implementation of a basic, open-mp style, parallel
 	// for loop. If the inner block of a for-loop can be rewritten/encapsulated in
 	// a single (anonymous/lambda) function call `func` so that the serial code
@@ -97,7 +99,7 @@ inline bool igl::parallel_for(
 #ifdef IGL_PARALLEL_FOR_FORCE_SERIAL
 	const size_t nthreads = 1;
 #else
-	const size_t nthreads = (size_t)omp_get_max_threads();
+	const size_t nthreads = MeshRepair::getThreadsCount();
 #endif
 	if( loop_size < min_parallel || nthreads <= 1 )
 	{

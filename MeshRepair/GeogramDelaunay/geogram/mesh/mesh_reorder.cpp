@@ -1,6 +1,7 @@
 #include "mesh_reorder.h"
 #include <random>
 #include <assert.h>
+#include "../TetWild2/parallelThreadsCount.h"
 
 namespace GEO
 {
@@ -182,7 +183,7 @@ namespace GEO
 				return;
 
 			// If the sequence is smaller than 1024, use sequential sorting
-			if( ( e - b ) < 1024 )
+			if( ( e - b ) < 1024 || !MeshRepair::shouldUseOpenMP() )
 				sort<0, false, false, false>( M_, b, e );
 			else
 			{

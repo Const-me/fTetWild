@@ -1,6 +1,7 @@
 #include "TriangleMesh.h"
 #include "reorderUtils.h"
 #include <numeric>
+#include "../../parallelThreadsCount.h"
 
 // The implementation was copy-pasted from there:
 // https://github.com/BrunoLevy/geogram/blob/main/src/lib/geogram/mesh/mesh_reorder.cpp
@@ -178,7 +179,7 @@ namespace
 				return;
 
 			// If the sequence is smaller than 1024, use sequential sorting
-			if( ( e - b ) < 1024 || omp_get_max_threads() < 1 )
+			if( ( e - b ) < 1024 || MeshRepair::getThreadsCount() <= 1 )
 				sort<0, false, false, false>( M_, b, e );
 			else
 			{

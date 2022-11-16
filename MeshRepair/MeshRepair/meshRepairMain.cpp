@@ -1,10 +1,6 @@
 #include "stdafx.h"
 #include "meshRepairMain.h"
 #include "convertParameters.h"
-#ifdef FLOAT_TETWILD_USE_TBB
-#include <tbb/task_scheduler_init.h>
-#include <thread>
-#endif
 #include "../TetWild2/src/AABBWrapper.h"
 #include "../TetWild2/src/Simplification.h"
 #include "../TetWild2/src/FloatTetDelaunay.h"
@@ -18,6 +14,29 @@ using namespace floatTetWild;
 namespace
 {
 	constexpr bool skip_simplify = false;
+
+	thread_local uint32_t ts_threadsCount = 0;
+
+	struct SetThreadsCountRaii
+	{
+		SetThreadsCountRaii( uint32_t count )
+		{
+			ts_threadsCount = count;
+		}
+		~SetThreadsCountRaii()
+		{
+			ts_threadsCount = 0;
+		}
+	};
+}  // namespace
+
+// Implement that global function used in random places to check OPM support
+namespace MeshRepair
+{
+	uint32_t getThreadsCount()
+	{
+		return ts_threadsCount;
+	}
 }
 
 HRESULT meshRepairMain(
@@ -30,6 +49,7 @@ HRESULT meshRepairMain(
 	{
 		Parameters& params = mesh.params;
 		CHECK( convertParameters( params, parameters ) );
+		SetThreadsCountRaii iglThreadCountSet { params.num_threads };
 		mesh.createThreadLocalBuffers();
 
 		AABBWrapper tree( rsi.mesh, mesh.facetRecursionStacks );

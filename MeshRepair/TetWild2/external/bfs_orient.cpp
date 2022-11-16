@@ -9,6 +9,7 @@
 #include <igl/orientable_patches.h>
 #include <Eigen/Sparse>
 #include <queue>
+#include <parallelThreadsCount.h>
 
 void floatTetWild::bfs_orient( const Eigen::Matrix<int, Eigen::Dynamic, 3>& F, Eigen::Matrix<int, Eigen::Dynamic, 3>& FF, Eigen::VectorXi& C )
 {
@@ -27,9 +28,8 @@ void floatTetWild::bfs_orient( const Eigen::Matrix<int, Eigen::Dynamic, 3>& F, E
 	if( ( (void*)&FF ) != ( (void*)&F ) )
 		FF = F;
 
-		// loop over patches
-#pragma omp parallel for
-	for( int c = 0; c < num_cc; c++ )
+	// loop over patches
+	auto lambda = [ & ]( int c )
 	{
 		std::queue<int> Q;
 		// find first member of patch c
@@ -45,7 +45,7 @@ void floatTetWild::bfs_orient( const Eigen::Matrix<int, Eigen::Dynamic, 3>& F, E
 			}
 		}
 		if( cnt < 5 )
-			continue;
+			return;
 
 		int cnt_inverted = 0;
 		assert( !Q.empty() );
@@ -90,12 +90,24 @@ void floatTetWild::bfs_orient( const Eigen::Matrix<int, Eigen::Dynamic, 3>& F, E
 			}
 		}
 		if( cnt_inverted < cnt / 2 )
-			continue;
+			return;
 
 		for( int f = 0; f < FF.rows(); f++ )
 		{
 			if( C( f ) == c )
 				FF.row( f ) = FF.row( f ).reverse().eval();
 		}
+	};
+
+	if( MeshRepair::shouldUseOpenMP() )
+	{
+#pragma omp parallel for schedule( dynamic )
+		for( int c = 0; c < num_cc; c++ )
+			lambda( c );
+	}
+	else
+	{
+		for( int c = 0; c < num_cc; c++ )
+			lambda( c );
 	}
 }
