@@ -116,6 +116,8 @@ namespace
 void floatTetWild::insert_triangles_aux( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces,
   const std::vector<int>& input_tags, Mesh& mesh, std::vector<bool>& is_face_inserted, AABBWrapper& tree, bool is_again )
 {
+	auto tm = mesh.times.insertTrianglesAux.measure();
+
 	std::vector<bool> old_is_face_inserted = is_face_inserted;	/// is_face_inserted has been initialized in main
 
 	mesh.logger().logInfo( "triangle insertion start, #f = %zu, #v = %zu, #t = %zu", input_faces.size(), mesh.tet_vertices.size(), mesh.tets.size() );
@@ -226,6 +228,8 @@ void floatTetWild::insert_triangles_aux( const std::vector<Vector3>& input_verti
 bool floatTetWild::insert_one_triangle( int insert_f_id, const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces,
   const std::vector<int>& input_tags, Mesh& mesh, std::vector<std::array<std::vector<int>, 4>>& track_surface_fs, AABBWrapper& tree, bool is_again )
 {
+	auto tm = mesh.times.insertOneTriangle.measure();
+
 	std::array<Vector3, 3> vs = { { input_vertices[ input_faces[ insert_f_id ][ 0 ] ], input_vertices[ input_faces[ insert_f_id ][ 1 ] ],
 	  input_vertices[ input_faces[ insert_f_id ][ 2 ] ] } };
 	Vector3 n = ( vs[ 1 ] - vs[ 0 ] ).cross( vs[ 2 ] - vs[ 0 ] );
@@ -528,6 +532,8 @@ namespace
 void floatTetWild::find_cutting_tets( int f_id, const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces,
   const std::array<Vector3, 3>& vs, Mesh& mesh, std::vector<int>& cut_t_ids, bool is_again )
 {
+	auto tm = mesh.times.findCuttingTets.measure();
+
 	FindCuttingTetsBuffers& buffers = mesh.findCuttingTetsBuffers;
 
 	std::vector<bool>& is_visited = buffers.is_visited;

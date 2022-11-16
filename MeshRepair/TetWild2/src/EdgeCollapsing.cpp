@@ -34,6 +34,7 @@ namespace floatTetWild
 	{
 		void edge_collapsing_aux( Mesh& mesh, const AABBWrapper& tree, EdgesSet& edges )
 		{
+			auto tm = mesh.times.edgeCollapsingAux.measure();
 			auto& tets = mesh.tets;
 			auto& tet_vertices = mesh.tet_vertices;
 

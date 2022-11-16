@@ -40,5 +40,14 @@ class TimeMeasures
 	// Print collected counters to the log
 	void logInfo( const Logger& log ) const;
 
+	// edge_collapsing_aux
+	TimeMeasure edgeCollapsingAux; 
+	// collapse_an_edge
 	TimeMeasure collapseAnEdge;
+	// insert_triangles_aux
+	TimeMeasure insertTrianglesAux;
+	// insert_one_triangle
+	TimeMeasure insertOneTriangle;
+	// find_cutting_tets
+	TimeMeasure findCuttingTets;
 };

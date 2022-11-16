@@ -107,5 +107,9 @@ void TimeMeasures::logInfo( const Logger& log ) const
 
 #define LOG_ENTRY( F ) F.logInfo( log, mul, #F )
 
+	LOG_ENTRY( edgeCollapsingAux );
 	LOG_ENTRY( collapseAnEdge );
+	LOG_ENTRY( insertTrianglesAux );
+	LOG_ENTRY( insertOneTriangle );
+	LOG_ENTRY( findCuttingTets );
 }
