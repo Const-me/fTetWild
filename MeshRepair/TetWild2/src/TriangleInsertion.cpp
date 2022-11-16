@@ -460,8 +460,8 @@ void floatTetWild::simplify_subdivision_result(
 		for( int t_id : v1_conn_tets )
 			mesh.tets[ t_id ].quality = get_quality( mesh, t_id );
 
-		int result = collapse_an_edge( mesh, v_ids[ 0 ], v_ids[ 1 ], tree, new_edges, _ts, _tet_tss, is_check_quality, is_update_tss );
-		if( result > 0 )
+		const eCollapseStatus result = collapse_an_edge( mesh, v_ids[ 0 ], v_ids[ 1 ], tree, new_edges, _ts, _tet_tss, is_check_quality, is_update_tss );
+		if( isSuccessStatus( result ) )
 		{
 			new_edges.enumerate(
 			  [ & ]( int e0, int e1 )

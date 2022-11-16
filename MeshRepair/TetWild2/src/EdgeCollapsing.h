@@ -14,8 +14,11 @@
 namespace floatTetWild
 {
 	void edge_collapsing( Mesh& mesh, const AABBWrapper& tree );
-	int collapse_an_edge( Mesh& mesh, int v1_id, int v2_id, const AABBWrapper& tree, EdgesSet& new_edges, int ts,
-	  std::vector<int>& tet_tss, bool is_check_quality = true, bool is_update_tss = true );
+
+	enum struct eCollapseStatus : int;
+	bool isSuccessStatus( eCollapseStatus cs );
+	eCollapseStatus collapse_an_edge( Mesh& mesh, int v1_id, int v2_id, const AABBWrapper& tree, EdgesSet& new_edges, int ts, std::vector<int>& tet_tss,
+	  bool is_check_quality = true, bool is_update_tss = true );
 
 	bool is_edge_freezed( Mesh& mesh, int v1_id, int v2_id );
 	bool is_collapsable_bbox( Mesh& mesh, int v1_id, int v2_id );

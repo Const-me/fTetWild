@@ -9,27 +9,29 @@
 #include "stdafx.h"
 #include "EdgeCollapsing.h"
 #include "LocalOperations.h"
-#include "MeshImprovement.h"  //todo: tmp
+#include "MeshImprovement.h"
 #include "EdgesSet.h"
-#ifdef FLOAT_TETWILD_USE_TBB
-#include <tbb/task_scheduler_init.h>
-#include <tbb/parallel_for.h>
-#include <tbb/atomic.h>
-#endif
-
-#define EC_FAIL_INVERSION -1
-#define EC_FAIL_QUALITY -2
-#define EC_FAIL_ENVELOPE0 -3
-#define EC_FAIL_ENVELOPE1 -4
-#define EC_FAIL_ENVELOPE2 -5
-#define EC_FAIL_ENVELOPE3 -6
-#define EC_SUCCESS 1
-#define EC_SUCCESS_ENVELOPE 2
-
 #define EC_POSTPROCESS true
 
 namespace floatTetWild
 {
+	enum struct eCollapseStatus : int
+	{
+		FailInversion = -1,
+		FailQuality = -2,
+		FailEnvelope0 = -3,
+		failEnvelope1 = -4,
+		failEnvelope2 = -5,
+		failEnvelope3 = -6,
+		Success = 1,
+		SuccessEnvelope = 2,
+	};
+
+	bool isSuccessStatus( eCollapseStatus cs )
+	{
+		return (int)cs > 0;
+	}
+
 	namespace
 	{
 		void edge_collapsing_aux( Mesh& mesh, const AABBWrapper& tree, EdgesSet& edges )
@@ -110,10 +112,10 @@ namespace floatTetWild
 					EdgesSet& new_edges = buffers.new_edges;
 					new_edges.clear();
 
-					int result = collapse_an_edge( mesh, v_ids[ 0 ], v_ids[ 1 ], tree, new_edges, ts, tet_tss );
-					if( result == EC_SUCCESS || result == EC_SUCCESS_ENVELOPE )
+					const eCollapseStatus result = collapse_an_edge( mesh, v_ids[ 0 ], v_ids[ 1 ], tree, new_edges, ts, tet_tss );
+					if( isSuccessStatus( result ) )
 					{
-						if( result == EC_SUCCESS_ENVELOPE )
+						if( result == eCollapseStatus::SuccessEnvelope )
 							suc_counter_env++;
 						suc_counter++;
 
@@ -209,7 +211,7 @@ void floatTetWild::edge_collapsing( Mesh& mesh, const AABBWrapper& tree )
 	edge_collapsing_aux( mesh, tree, edges );
 }
 
-int floatTetWild::collapse_an_edge(
+floatTetWild::eCollapseStatus floatTetWild::collapse_an_edge(
   Mesh& mesh, int v1_id, int v2_id, const AABBWrapper& tree, EdgesSet& new_edges, int ts, std::vector<int>& tet_tss, bool is_check_quality, bool is_update_tss )
 {
 	auto tm = mesh.times.collapseAnEdge.measure();
@@ -225,9 +227,9 @@ int floatTetWild::collapse_an_edge(
 	// check boundary/surface
 	if( tet_vertices[ v1_id ].isBoundary() &&
 		is_point_out_boundary_envelope( mesh, tet_vertices[ v2_id ].pos, tree ) )  // todo: you should check/unmark is_on_boundary around here
-		return EC_FAIL_ENVELOPE0;
+		return eCollapseStatus::FailEnvelope0;
 	if( tet_vertices[ v1_id ].isSurface() && is_point_out_envelope( mesh, tet_vertices[ v2_id ].pos, tree ) )
-		return EC_FAIL_ENVELOPE1;
+		return eCollapseStatus::failEnvelope1;
 
 	CollapseEdgeBuffers& buffers = mesh.collapseEdgeBuffers;
 	////check tets
@@ -236,10 +238,8 @@ int floatTetWild::collapse_an_edge(
 
 	setIntersection( tet_vertices[ v1_id ].connTets, tet_vertices[ v2_id ].connTets, n12_t_ids );
 	if( n12_t_ids.empty() )
-		return EC_FAIL_INVERSION;
-	//    std::unordered_set<int> n1_t_ids = tet_vertices[v1_id].conn_tets;//v1.conn_tets - n12_t_ids
-	//    for (int t_id:n12_t_ids)
-	//        n1_t_ids.erase(t_id);
+		return eCollapseStatus::FailInversion;
+
 	std::vector<int>& n1_t_ids = buffers.n1_t_ids;	// v1.conn_tets - n12_t_ids
 	n1_t_ids.clear();
 
@@ -258,7 +258,7 @@ int floatTetWild::collapse_an_edge(
 		js_n1_t_ids.push_back( j );
 		assert( j < 4 );
 		if( is_inverted( mesh, t_id, j, tet_vertices[ v2_id ].pos ) )
-			return EC_FAIL_INVERSION;
+			return eCollapseStatus::FailInversion;
 	}
 
 	// quality
@@ -286,7 +286,7 @@ int floatTetWild::collapse_an_edge(
 		Scalar new_q = get_quality( tet_vertices[ v2_id ], tet_vertices[ tets[ t_id ][ mod4( j + 1 ) ] ], tet_vertices[ tets[ t_id ][ mod4( j + 2 ) ] ],
 		  tet_vertices[ tets[ t_id ][ mod4( j + 3 ) ] ] );
 		if( is_check_quality && new_q > old_max_quality )
-			return EC_FAIL_QUALITY;
+			return eCollapseStatus::FailQuality;
 		new_qs.push_back( new_q );
 	}
 
@@ -297,12 +297,12 @@ int floatTetWild::collapse_an_edge(
 		if( tet_vertices[ v1_id ].isBoundary() )
 		{
 			if( is_out_boundary_envelope( mesh, v1_id, tet_vertices[ v2_id ].pos, tree ) )
-				return EC_FAIL_ENVELOPE2;
+				return eCollapseStatus::failEnvelope2;
 		}
 		if( tet_vertices[ v1_id ].isSurface() )
 		{
 			if( is_out_envelope( mesh, v1_id, tet_vertices[ v2_id ].pos, tree ) )
-				return EC_FAIL_ENVELOPE3;
+				return eCollapseStatus::failEnvelope3;
 		}
 	}
 
@@ -428,21 +428,6 @@ int floatTetWild::collapse_an_edge(
 			setIntersection( tet_vertices[ tets[ t_id ][ mod4( j12[ mod2( i + 1 ) ] + 1 ) ] ].connTets,
 			  tet_vertices[ tets[ t_id ][ mod4( j12[ mod2( i + 1 ) ] + 2 ) ] ].connTets,
 			  tet_vertices[ tets[ t_id ][ mod4( j12[ mod2( i + 1 ) ] + 3 ) ] ].connTets, pair );
-			//            if(!(pair.size() == 1 || pair.size() == 2)) {
-			//                cout << "!(pair.size() == 1 || pair.size() == 2)" << endl;
-			//                cout << "******"<<mod4(j12[mod2(i + 1)] + 1) << endl;
-			//                vector_print(tet_vertices[tets[t_id][mod4(j12[mod2(i + 1)] + 1)]].conn_tets, " ");
-			//                cout << endl;
-			//                cout << "******"<<mod4(j12[mod2(i + 1)] + 2) << endl;
-			//                vector_print(tet_vertices[tets[t_id][mod4(j12[mod2(i + 1)] + 2)]].conn_tets, " ");
-			//                cout << endl;
-			//                cout << "******"<<mod4(j12[mod2(i + 1)] + 3) << endl;
-			//                vector_print(tet_vertices[tets[t_id][mod4(j12[mod2(i + 1)] + 3)]].conn_tets, " ");
-			//                cout << endl;
-			//                cout << "******" << endl;
-			//                vector_print(pair, " ");
-			//                //pausee();
-			//            }
 			if( pair.size() > 1 )
 			{
 				int opp_t_id = pair[ 0 ] == t_id ? pair[ 1 ] : pair[ 0 ];
@@ -495,8 +480,8 @@ int floatTetWild::collapse_an_edge(
 	//    }
 
 	if( tet_vertices[ v1_id ].isSurface() )
-		return EC_SUCCESS_ENVELOPE;
-	return EC_SUCCESS;
+		return eCollapseStatus::SuccessEnvelope;
+	return eCollapseStatus::Success;
 }
 
 bool floatTetWild::is_edge_freezed( Mesh& mesh, int v1_id, int v2_id )
