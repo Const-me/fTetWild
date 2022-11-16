@@ -7,10 +7,10 @@ namespace floatTetWild
 	constexpr int8_t KNOWN_NOT_SURFACE = -63;
 	constexpr int8_t KNOWN_SURFACE = 63;
 
-#define NO_SURFACE_TAG 0
-#define NOT_BBOX -1
-#define OPP_T_ID_UNKNOWN -2
-#define OPP_T_ID_BOUNDARY -1
+	constexpr int8_t NO_SURFACE_TAG = 0;
+	constexpr int8_t NOT_BBOX = -1;
+	constexpr int OPP_T_ID_UNKNOWN = -2;
+	constexpr int OPP_T_ID_BOUNDARY = -1;
 
 	struct MeshTet
 	{
@@ -66,16 +66,21 @@ namespace floatTetWild
 			// Compare vector elements for ( e == ele )
 			const __m128i vec = _mm_loadu_si128( (const __m128i*)indices.data() );
 			const __m128i needle = _mm_set1_epi32( ele );
-			const __m128i eq = _mm_cmpeq_epi32( vec, needle );
+			const __m128i eq = _mm_cmpeq_epi32( needle, vec );
 
 			// Move into bitmap in a scalar register, 0 = not equal, 1 = equal
 			const uint32_t bmp = (uint32_t)_mm_movemask_ps( _mm_castsi128_ps( eq ) );
 
-			// Scan for the lowest set bit in the bitmap
+#ifdef __AVX__
+			if( 0 != bmp )
+				return (int)_tzcnt_u32( bmp );
+			return -1;
+#else
 			unsigned long bitIndex;
 			if( _BitScanForward( &bitIndex, bmp ) )
 				return (int)bitIndex;
 			return -1;
+#endif
 		}
 
 		// Find first index not equal to either of the arguments
@@ -99,10 +104,16 @@ namespace floatTetWild
 			bmp ^= 0b1111;
 
 			// Scan for the lowest set bit in the bitmap
+#ifdef __AVX__
+			if( 0 != bmp )
+				return (int)_tzcnt_u32( bmp );
+			return -1;
+#else
 			unsigned long bitIndex;
 			if( _BitScanForward( &bitIndex, bmp ) )
 				return (int)bitIndex;
 			return -1;
+#endif
 		}
 
 		inline void print( const Logger& log, int id ) const
@@ -111,13 +122,13 @@ namespace floatTetWild
 		}
 
 		std::array<int8_t, 4> is_surface_fs = { { NOT_SURFACE, NOT_SURFACE, NOT_SURFACE, NOT_SURFACE } };
-		std::array<char, 4> is_bbox_fs = { { NOT_BBOX, NOT_BBOX, NOT_BBOX, NOT_BBOX } };
-		std::array<int, 4> opp_t_ids = { { OPP_T_ID_UNKNOWN, OPP_T_ID_UNKNOWN, OPP_T_ID_UNKNOWN, OPP_T_ID_UNKNOWN } };
-		std::array<char, 4> surface_tags = { { 0, 0, 0, 0 } };
-
-		Scalar quality = 0;
-		Scalar scalar = 0;
+		std::array<int8_t, 4> is_bbox_fs = { { NOT_BBOX, NOT_BBOX, NOT_BBOX, NOT_BBOX } };
+		std::array<int8_t, 4> surface_tags = { { 0, 0, 0, 0 } };
 		bool is_removed = false;
 		bool is_outside = false;
+		uint8_t scalar = 0;
+		std::array<int, 4> opp_t_ids = { { OPP_T_ID_UNKNOWN, OPP_T_ID_UNKNOWN, OPP_T_ID_UNKNOWN, OPP_T_ID_UNKNOWN } };
+
+		double quality = 0;
 	};
 }

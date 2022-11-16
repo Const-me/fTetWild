@@ -98,7 +98,7 @@ namespace floatTetWild
 				for( int i = 0; i < cnts.size(); i++ )
 				{
 					if( cnts[ i ] == 3 )
-						return i;
+						return (int8_t)i;
 				}
 				return NOT_BBOX;
 			};

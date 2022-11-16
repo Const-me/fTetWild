@@ -10,7 +10,7 @@
 #include "LocalOperations.h"
 #include "MeshImprovement.h"
 
-#define TET_MODIFIED 100
+constexpr uint8_t TET_MODIFIED = 100;
 
 void floatTetWild::edge_splitting( Mesh& mesh, const AABBWrapper& tree )
 {
@@ -38,9 +38,6 @@ void floatTetWild::edge_splitting( Mesh& mesh, const AABBWrapper& tree )
 			  es_queue.push( ElementInQueue( e0, e1, l_2 ) );
 	  } );
 	edges.clear();
-
-	//    if(budget > 0)
-	//        is_cal_quality_end = true;
 
 	////split
 	int budget = -1;  // input
@@ -162,36 +159,11 @@ bool floatTetWild::split_an_edge(
 		{
 			if( tets[ t_id ][ j ] == v1_id || tets[ t_id ][ j ] == v2_id )
 			{
-				//                if (is_inverted(new_v, tet_vertices[tets[t_id][(j + 1) % 4]], tet_vertices[tets[t_id][(j + 2) % 4]],
-				//                                tet_vertices[tets[t_id][(j + 1) % 4]]))
 				if( is_inverted( mesh, t_id, j, new_v.pos ) )
 				{
 					for( int t_id1 : old_t_ids )
 						is_splittable[ t_id1 ] = false;
 					tet_vertices[ v_id ].setFlag( eVertexFlags::Removed );
-
-					//                    //fortest
-					//                    cout<<"fail "<<v1_id<<" "<<v2_id<<endl;
-					//                    cout<<"is_surface_edge = "<<is_surface_edge(mesh, v1_id, v2_id, old_t_ids)<<endl;
-					//                    cout<<tet_vertices[v1_id].is_on_surface<<" "<<tet_vertices[v2_id].is_on_surface<<endl;
-					//                    if(vector_contains(old_t_ids, 1260))
-					//                        cout<<"contains 1260"<<endl;
-					//                    for(int t_id: old_t_ids) {
-					//                        cout << "t" << t_id << ": " << mesh.tets[t_id].quality << endl;
-					//                        mesh.tets[t_id].print();
-					//                        auto& t = tets[t_id];
-					//                        for(int j=0;j<4;j++) {
-					//                            cout << mesh.tet_vertices[mesh.tets[t_id][j]].pos.transpose() << endl;
-					//                            cout << (int)mesh.tets[t_id].is_surface_fs[j] << endl;
-					//                            cout<<get_area(tet_vertices[t[(j+1)%4]].pos, tet_vertices[t[(j+2)%4]].pos,
-					//                            tet_vertices[t[(j+3)%4]].pos)<<endl;
-					//                        }
-					//                    }
-					//                    cout<<"v "<<tet_vertices[v1_id].pos.transpose()<<endl;
-					//                    cout<<"v "<<tet_vertices[v2_id].pos.transpose()<<endl;
-					//                    cout<<"l 1 2"<<endl;
-					//                    pausee();
-					//                    //fortest
 					return false;
 				}
 			}
@@ -241,22 +213,9 @@ bool floatTetWild::split_an_edge(
 	// update quality
 	for( int i = 0; i < old_t_ids.size(); i++ )
 	{
-		//        tets[old_t_ids[i]].quality = get_quality(mesh, old_t_ids[i]);
-		//        tets[new_t_ids[i]].quality = get_quality(mesh, new_t_ids[i]);
 		tets[ old_t_ids[ i ] ].scalar = TET_MODIFIED;
 		tets[ new_t_ids[ i ] ].scalar = TET_MODIFIED;
 	}
-	// update conectivity
-	//    tet_vertices[v_id].conn_tets.insert(old_t_ids.begin(), old_t_ids.end());
-	//    tet_vertices[v_id].conn_tets.insert(new_t_ids.begin(), new_t_ids.end());
-	//    for (int i = 0; i < old_t_ids.size(); i++) {
-	//        for (int j = 0; j < 4; j++) {
-	//            if (tets[old_t_ids[i]][j] != v_id && tets[old_t_ids[i]][j] != v2_id)
-	//                tet_vertices[tets[old_t_ids[i]][j]].conn_tets.insert(new_t_ids[i]);
-	//        }
-	//        tet_vertices[v1_id].conn_tets.erase(old_t_ids[i]);
-	//        tet_vertices[v1_id].conn_tets.insert(new_t_ids[i]);
-	//    }
 
 	tet_vertices[ v_id ].connTets.addRange( old_t_ids );
 	tet_vertices[ v_id ].connTets.addRange( new_t_ids );
@@ -289,12 +248,7 @@ bool floatTetWild::split_an_edge(
 	vector_unique( n_v_ids );
 
 	for( int n_v_id : n_v_ids )
-	{
 		new_edges.push_back( { { v_id, n_v_id } } );
-	}
-
-	//    cout<<v1_id<<" "<<v2_id<<endl;
-	//    output_info(mesh);
 
 	return true;
 }

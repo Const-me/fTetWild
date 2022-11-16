@@ -262,7 +262,7 @@ floatTetWild::eCollapseStatus floatTetWild::collapse_an_edge(
 	}
 
 	// quality
-	Scalar old_max_quality = 0;
+	double old_max_quality = 0;
 	if( mesh.is_coarsening )
 		old_max_quality = mesh.params.stop_energy;
 	else
@@ -321,24 +321,6 @@ floatTetWild::eCollapseStatus floatTetWild::collapse_an_edge(
 	for( int t_id : n1_t_ids )
 		tets[ t_id ].quality = new_qs[ i++ ];
 
-	// n_v_id for repush
-	//    std::vector<int> n12_v_ids;
-	//    std::vector<int> n1_v_ids;
-	//    n12_v_ids.reserve(n12_t_ids.size() * 4);
-	//    for (int t_id:n12_t_ids) {
-	//        for (int j = 0; j < 4; j++)
-	//            n12_v_ids.push_back(tets[t_id][j]);
-	//    }
-	//    n1_v_ids.reserve(n1_t_ids.size() * 4);
-	//    for (int t_id:n1_t_ids) {
-	//        for (int j = 0; j < 4; j++)
-	//            n1_v_ids.push_back(tets[t_id][j]);
-	//    }
-	//    vector_unique(n12_v_ids);
-	//    vector_unique(n1_v_ids);
-	//    std::vector<int> n_v_ids;
-	//    std::set_difference(n1_v_ids.begin(), n1_v_ids.end(), n12_v_ids.begin(), n12_v_ids.end(),
-	//                        std::inserter(n_v_ids, n_v_ids.begin()));
 	std::vector<int>& n1_v_ids = buffers.n1_v_ids;
 	n1_v_ids.clear();
 	n1_v_ids.reserve( n1_t_ids.size() * 4 );
@@ -350,14 +332,10 @@ floatTetWild::eCollapseStatus floatTetWild::collapse_an_edge(
 	vector_unique( n1_v_ids );
 
 	// update tags
-	//    cout<<"n12_t_ids = ";
-	//    vector_print(n12_t_ids, " ");
-
 	for( int t_id : n12_t_ids )
 	{
-		//        cout<<"t_id = "<<t_id<<endl;
-		int sf_facing_v1 = NOT_SURFACE;
-		int sf_facing_v2 = NOT_SURFACE;
+		int8_t sf_facing_v1 = NOT_SURFACE;
+		int8_t sf_facing_v2 = NOT_SURFACE;
 		int tag_facing_v1 = NO_SURFACE_TAG;
 		int tag_facing_v2 = NO_SURFACE_TAG;
 		int bbox_facing_v1 = NOT_BBOX;
@@ -474,10 +452,6 @@ floatTetWild::eCollapseStatus floatTetWild::collapse_an_edge(
 	for( int v_id : n1_v_ids )
 		if( v_id != v1_id )
 			new_edges.add( v2_id, v_id );
-
-	//    for (int v_id:n_v_ids) {
-	//        new_edges.push_back({{v2_id, v_id}});
-	//    }
 
 	if( tet_vertices[ v1_id ].isSurface() )
 		return eCollapseStatus::SuccessEnvelope;
