@@ -19,23 +19,34 @@ namespace MeshRepair
 		UseGeneralWN = 0x20,
 		// Use input surface for winding number
 		UseInputForWN = 0x40,
+		// The idealEdgeLength and epsilon fields are absolute numbers; by default, they're relative to the bounding box diagonal
+		LengthsAreAbsolute = 0x80,
 
 		// Use OpenMP, if enabled
-		UseOpenMP = 0x80,
+		UseOpenMP = 0x100,
 	};
 
 	struct Parameters
 	{
-		// Ideal length of edges, relative to the bounding box diagonal
-		double idealEdgeLengthRel = 0.05;
+		// Ideal length of edges
+		// Without LengthsAreAbsolute flag, the value is a multiplier for the diagonal of the bounding box of the input mesh
+		// With that flag, the value is absolute number
+		double idealEdgeLength = 0.05;
 
-		// epsilon presents the tolerance permitted, relative to the bounding box diagonal
-		double epsilonRel = 1e-3;
+		// Allowed tolerance between input mesh and output mesh
+		// Without LengthsAreAbsolute flag, the value is a multiplier for the diagonal of the bounding box of the input mesh
+		// With that flag, the value is absolute number
+		double epsilon = 1e-3;
 
 		// Stop optimization when max energy is lower than this
 		double stopEnergy = 10;
 
 		// See eRepairFlags for the values
 		uint32_t flags = 0;
+
+		bool hasFlag( eRepairFlags f ) const
+		{
+			return 0 != ( flags & f );
+		}
 	};
 }  // namespace MeshRepair

@@ -33,7 +33,14 @@ HRESULT meshRepairMain(
 		mesh.createThreadLocalBuffers();
 
 		AABBWrapper tree( rsi.mesh, mesh.facetRecursionStacks );
-		if( !params.init( tree.get_sf_diag() ) )
+		const double boxDiagonal = tree.get_sf_diag();
+		if( parameters.hasFlag( MeshRepair::eRepairFlags::LengthsAreAbsolute ) )
+		{
+			params.ideal_edge_length /= boxDiagonal;
+			params.eps_rel /= boxDiagonal;
+		}
+
+		if( !params.init( boxDiagonal ) )
 			return E_INVALIDARG;
 
 		// preprocessing

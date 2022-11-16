@@ -12,8 +12,8 @@ namespace
 
 HRESULT convertParameters( floatTetWild::Parameters& rdi, const MeshRepair::Parameters& rsi )
 {
-	rdi.ideal_edge_length = rsi.idealEdgeLengthRel;
-	rdi.eps_rel = rsi.epsilonRel;
+	rdi.ideal_edge_length = rsi.idealEdgeLength;
+	rdi.eps_rel = rsi.epsilon;
 	rdi.stop_energy = rsi.stopEnergy;
 
 	using namespace MeshRepair;
