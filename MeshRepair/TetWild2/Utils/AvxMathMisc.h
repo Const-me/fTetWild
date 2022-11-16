@@ -33,11 +33,29 @@ namespace AvxMath
 		return _mm_movedup_pd( xy );
 	}
 
+	// Horizontal sum of the 3D vector, return an SSE vector
+	inline __m128d vector3HorizontalSum1( __m256d v )
+	{
+		__m128d xy = low2( v );
+		__m128d z = high2( v );
+		xy = _mm_add_sd( xy, _mm_unpackhi_pd( xy, xy ) );
+		xy = _mm_add_sd( xy, z );
+		return xy;
+	}
+
 	// Compute dot product of two 3D vectors, return a scalar
 	inline double vector3DotScalar( __m256d a, __m256d b )
 	{
 		const __m256d prod = _mm256_mul_pd( a, b );
 		return vector3HorizontalSum( prod );
+	}
+
+	inline double vector3Length( __m256d v )
+	{
+		__m256d prod = _mm256_mul_pd( v, v );
+		__m128d hs = vector3HorizontalSum1( prod );
+		__m128d res = _mm_sqrt_sd( hs, hs );
+		return _mm_cvtsd_f64( res );
 	}
 
 	// Dot product of 3D vectors, broadcast to both lanes of SSE vector

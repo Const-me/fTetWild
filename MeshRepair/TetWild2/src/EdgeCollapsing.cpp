@@ -185,9 +185,7 @@ namespace floatTetWild
 					else
 						tmp_inf_es.push_back( inf_es_i );
 				}
-
-				std::sort( tmp_inf_es.begin(), tmp_inf_es.end() );
-				tmp_inf_es.erase( std::unique( tmp_inf_es.begin(), tmp_inf_es.end() ), tmp_inf_es.end() );	// it's better
+				vector_unique( tmp_inf_es );
 				inf_es = tmp_inf_es;
 
 				ts++;

@@ -188,12 +188,26 @@ void floatTetWild::get_all_edges( const Mesh& mesh, const std::vector<int>& t_id
 
 Scalar floatTetWild::get_edge_length( const Mesh& mesh, int v1_id, int v2_id )
 {
-	return ( mesh.tet_vertices[ v1_id ].pos - mesh.tet_vertices[ v2_id ].pos ).norm();
+	const double* const p1 = mesh.tet_vertices[ v1_id ].pos.data();
+	const double* const p2 = mesh.tet_vertices[ v2_id ].pos.data();
+	// The MeshVertex structure has more fields after the positions, can use unaligned full-vector loads
+	const __m256d v1 = _mm256_loadu_pd( p1 );
+	const __m256d v2 = _mm256_loadu_pd( p2 );
+
+	const __m256d dist = _mm256_sub_pd( v1, v2 );
+	return AvxMath::vector3Length( dist );
 }
 
 Scalar floatTetWild::get_edge_length_2( const Mesh& mesh, int v1_id, int v2_id )
 {
-	return ( mesh.tet_vertices[ v1_id ].pos - mesh.tet_vertices[ v2_id ].pos ).squaredNorm();
+	const double* const p1 = mesh.tet_vertices[ v1_id ].pos.data();
+	const double* const p2 = mesh.tet_vertices[ v2_id ].pos.data();
+	// The MeshVertex structure has more fields after the positions, can use unaligned full-vector loads
+	const __m256d v1 = _mm256_loadu_pd( p1 );
+	const __m256d v2 = _mm256_loadu_pd( p2 );
+
+	const __m256d dist = _mm256_sub_pd( v1, v2 );
+	return AvxMath::vector3DotScalar( dist, dist );
 }
 
 bool floatTetWild::is_bbox_edge( const Mesh& mesh, int v1_id, int v2_id, const std::vector<int>& n12_t_ids )
