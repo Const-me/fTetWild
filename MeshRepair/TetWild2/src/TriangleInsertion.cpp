@@ -18,16 +18,6 @@
 #include "MeshImprovement.h"  //fortest
 #include <igl/Timer.h>
 #include <Utils/randomShuffle.h>
-
-#ifdef FLOAT_TETWILD_USE_TBB
-#include <tbb/task_scheduler_init.h>
-#include <tbb/parallel_for.h>
-#include <tbb/atomic.h>
-//#include <floattetwild/FloatTetCuttingParallel.h>
-#include <tbb/concurrent_queue.h>
-#include <tbb/concurrent_vector.h>
-#endif
-
 #include <bitset>
 #include <numeric>
 #include <unordered_map>
@@ -105,30 +95,12 @@ void floatTetWild::match_surface_fs( const Mesh& mesh, const std::vector<Vector3
 
 void floatTetWild::sort_input_faces(
   const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const Mesh& mesh, std::vector<int>& sorted_f_ids )
-{  /// use 38416, 232368 as example //todo: think why
+{
 	std::vector<Scalar> weights( input_faces.size() );
 	sorted_f_ids.resize( input_faces.size() );
 	for( int i = 0; i < input_faces.size(); i++ )
 	{
 		sorted_f_ids[ i ] = i;
-
-		//        //fortest
-		//        Vector3 u = input_vertices[input_faces[i][1]] - input_vertices[input_faces[i][0]];
-		//        Vector3 v = input_vertices[input_faces[i][2]] - input_vertices[input_faces[i][0]];
-		//        if(u.cross(v).norm()/2 < SCALAR_ZERO_2) {
-		//            cout << "degenerate input triangle!!" << endl;
-		//            pausee();
-		//        }
-		//        //fortest
-
-		//        for (int j = 0; j < 3; j++) {
-		//            Scalar dis =
-		//                    (input_vertices[input_faces[i][j]] - input_vertices[input_faces[i][(j + 1) % 3]]).squaredNorm();
-		//            if (j == 0)
-		//                weights[i] = dis;
-		//            else if (dis > weights[i])
-		//                weights[i] = dis;
-		//        }
 		Vector3 u = input_vertices[ input_faces[ i ][ 1 ] ] - input_vertices[ input_faces[ i ][ 0 ] ];
 		Vector3 v = input_vertices[ input_faces[ i ][ 2 ] ] - input_vertices[ input_faces[ i ][ 0 ] ];
 		weights[ i ] = u.cross( v ).squaredNorm();
@@ -138,10 +110,6 @@ void floatTetWild::sort_input_faces(
 		return;
 
 	randomShuffle( sorted_f_ids );
-	// std::random_shuffle( sorted_f_ids.begin(), sorted_f_ids.end() );
-	//    std::sort(sorted_f_ids.begin(), sorted_f_ids.end(), [&weights](int a, int b) {
-	//        return weights[a] < weights[b];
-	//    });
 }
 
 void floatTetWild::insert_triangles( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const std::vector<int>& input_tags,
@@ -153,7 +121,7 @@ void floatTetWild::insert_triangles( const std::vector<Vector3>& input_vertices,
 void floatTetWild::insert_triangles_aux( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces,
   const std::vector<int>& input_tags, Mesh& mesh, std::vector<bool>& is_face_inserted, AABBWrapper& tree, bool is_again )
 {
-	std::vector<bool> old_is_face_inserted = is_face_inserted;	/// is_face_inserted has been intialized in main
+	std::vector<bool> old_is_face_inserted = is_face_inserted;	/// is_face_inserted has been initialized in main
 
 	mesh.logger().logInfo( "triangle insertion start, #f = %zu, #v = %zu, #t = %zu", input_faces.size(), mesh.tet_vertices.size(), mesh.tets.size() );
 	/////
