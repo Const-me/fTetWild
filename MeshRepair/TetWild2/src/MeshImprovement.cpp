@@ -1763,6 +1763,7 @@ void floatTetWild::get_surface( Mesh& mesh, Eigen::MatrixXd& V, Eigen::MatrixXi&
 }
 
 #include <igl/is_vertex_manifold.h>
+
 void floatTetWild::manifold_surface( Mesh& mesh, Eigen::MatrixXd& V, Eigen::MatrixXi& F )
 {
 	auto& tets = mesh.tets;
@@ -1834,7 +1835,6 @@ void floatTetWild::manifold_surface( Mesh& mesh, Eigen::MatrixXd& V, Eigen::Matr
 		if( f_group.size() == conn_f4v[ v_id ].size() )
 			continue;
 
-		// cout << "HHHHHHHHHHHH" << endl;
 		V.conservativeResize( V.rows() + 1, V.cols() );
 		V.row( V.rows() - 1 ) = V.row( v_id );
 		for( int f_id : f_group )
@@ -1850,18 +1850,4 @@ void floatTetWild::manifold_surface( Mesh& mesh, Eigen::MatrixXd& V, Eigen::Matr
 		}
 		conn_f4v.push_back( f_group );
 	}
-/*
-	// fortest
-	Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic> B;
-	igl::is_vertex_manifold( F, B );
-	cout << B.rows() << endl;
-	int cnt = 0;
-	for( int i = 0; i < B.rows(); i++ )
-	{
-		if( !B( i, 0 ) )
-			cnt++;
-	}
-	cout << cnt << endl;
-	// fortest
-*/
 }
