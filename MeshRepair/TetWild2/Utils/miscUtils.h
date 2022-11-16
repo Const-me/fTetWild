@@ -23,3 +23,28 @@ inline double hadd_pd( __m256d vec )
 	return _mm_cvtsd_f64( v2 );
 }
 #endif
+
+// Assuming class E has 2 integers, like std::pair<int,int> or similar, conditionally swap them making sure elt[0] <= elt[1]
+// Only works correctly for non-negative integers
+template<class E>
+inline void sortInt2( E& elt )
+{
+	static_assert( sizeof( E ) >= 8 );
+	uint64_t u = *(const uint64_t*)&elt;
+	uint64_t flip = _rotr64( u, 32 );
+	u = std::max( u, flip );  //< that thing compiles into a conditional move, no branches
+	*(uint64_t*)&elt = u;
+}
+
+// Assuming class E has 2 integers, compare them for a < b
+// Only works correctly for non-negative integers
+template<class E>
+inline bool compareInt2( const E& a, const E& b )
+{
+	static_assert( sizeof( E ) >= 8 );
+	uint64_t e1 = *(const uint64_t*)&a;
+	uint64_t e2 = *(const uint64_t*)&b;
+	e1 = _rotr64( e1, 32 );
+	e2 = _rotr64( e2, 32 );
+	return e1 < e2;
+}

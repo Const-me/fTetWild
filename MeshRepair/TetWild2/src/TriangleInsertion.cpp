@@ -24,6 +24,7 @@
 #include "SmallBuffer.h"
 #define III -1
 #include "../external/Rational.h"
+#include "../Utils/miscUtils.h"
 
 floatTetWild::Vector3 floatTetWild::get_normal( const Vector3& a, const Vector3& b, const Vector3& c )
 {
@@ -732,8 +733,7 @@ bool floatTetWild::subdivide_tets( int insert_f_id, Mesh& mesh, CutMesh& cut_mes
 		{
 			const auto& le = t_es[ i ];
 			std::array<int, 2> e = { { mesh.tets[ t_id ][ le[ 0 ] ], mesh.tets[ t_id ][ le[ 1 ] ] } };
-			if( e[ 0 ] > e[ 1 ] )
-				std::swap( e[ 0 ], e[ 1 ] );
+			sortInt2( e );
 			if( map_edge_to_intersecting_point.find( e ) == map_edge_to_intersecting_point.end() )
 			{
 				on_edge_p_ids[ i ].first = -1;
@@ -808,11 +808,9 @@ bool floatTetWild::subdivide_tets( int insert_f_id, Mesh& mesh, CutMesh& cut_mes
 			else
 				diag << on_edge_p_ids[ t_f_es[ j ][ le_ids[ 1 ] ] ].first, t_f_vs[ j ][ le_ids[ 1 ] ];
 
-			if( diag[ 0 ] > diag[ 1 ] )
-				std::swap( diag[ 0 ], diag[ 1 ] );
+			sortInt2( diag );
 		}
-		std::sort( my_diags.begin(), my_diags.end(),
-		  []( const Vector2i& a, const Vector2i& b ) { return std::make_tuple( a[ 0 ], a[ 1 ] ) < std::make_tuple( b[ 0 ], b[ 1 ] ); } );
+		std::sort( my_diags.begin(), my_diags.end(), []( const Vector2i& a, const Vector2i& b ) { return compareInt2( a, b ); } );
 
 		/////
 		std::map<int, int> map_lv_to_v_id;
