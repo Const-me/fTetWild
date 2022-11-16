@@ -628,16 +628,16 @@ void floatTetWild::find_cutting_tets( int f_id, const std::vector<Vector3>& inpu
 					cnt_neg++;
 			}
 
-			int result = CUT_EMPTY;
+			eCutResult result = eCutResult::Empty;
 			auto& tp1 = mesh.tet_vertices[ mesh.tets[ t_id ][ ( j + 1 ) % 4 ] ].pos;
 			auto& tp2 = mesh.tet_vertices[ mesh.tets[ t_id ][ ( j + 2 ) % 4 ] ].pos;
 			auto& tp3 = mesh.tet_vertices[ mesh.tets[ t_id ][ ( j + 3 ) % 4 ] ].pos;
 
 			if( cnt_on == 3 )
 			{
-				if( is_tri_tri_cutted_hint( vs[ 0 ], vs[ 1 ], vs[ 2 ], tp1, tp2, tp3, CUT_COPLANAR ) == CUT_COPLANAR )
+				if( is_tri_tri_cutted_hint( vs[ 0 ], vs[ 1 ], vs[ 2 ], tp1, tp2, tp3, eCutResult::Coplanar ) == eCutResult::Coplanar )
 				{
-					result = CUT_COPLANAR;
+					result = eCutResult::Coplanar;
 					is_cutted = true;
 					is_cut_vs[ ( j + 1 ) % 4 ] = true;
 					is_cut_vs[ ( j + 2 ) % 4 ] = true;
@@ -646,9 +646,9 @@ void floatTetWild::find_cutting_tets( int f_id, const std::vector<Vector3>& inpu
 			}
 			else if( cnt_pos > 0 && cnt_neg > 0 )
 			{
-				if( is_tri_tri_cutted_hint( vs[ 0 ], vs[ 1 ], vs[ 2 ], tp1, tp2, tp3, CUT_FACE ) == CUT_FACE )
+				if( is_tri_tri_cutted_hint( vs[ 0 ], vs[ 1 ], vs[ 2 ], tp1, tp2, tp3, eCutResult::Face ) == eCutResult::Face )
 				{
-					result = CUT_FACE;
+					result = eCutResult::Face;
 					is_cutted = true;
 					is_cut_vs[ ( j + 1 ) % 4 ] = true;
 					is_cut_vs[ ( j + 2 ) % 4 ] = true;
@@ -657,27 +657,27 @@ void floatTetWild::find_cutting_tets( int f_id, const std::vector<Vector3>& inpu
 			}
 			else if( cnt_on == 2 && oris[ ( j + 1 ) % 4 ] == eOrientation::Zero && oris[ ( j + 2 ) % 4 ] == eOrientation::Zero )
 			{
-				if( is_tri_tri_cutted_hint( vs[ 0 ], vs[ 1 ], vs[ 2 ], tp1, tp2, tp3, CUT_EDGE_0 ) == CUT_EDGE_0 )
+				if( is_tri_tri_cutted_hint( vs[ 0 ], vs[ 1 ], vs[ 2 ], tp1, tp2, tp3, eCutResult::Edge0 ) == eCutResult::Edge0 )
 				{
-					result = CUT_EDGE_0;
+					result = eCutResult::Edge0;
 					is_cut_vs[ ( j + 1 ) % 4 ] = true;
 					is_cut_vs[ ( j + 2 ) % 4 ] = true;
 				}
 			}
 			else if( cnt_on == 2 && oris[ ( j + 2 ) % 4 ] == eOrientation::Zero && oris[ ( j + 3 ) % 4 ] == eOrientation::Zero )
 			{
-				if( is_tri_tri_cutted_hint( vs[ 0 ], vs[ 1 ], vs[ 2 ], tp1, tp2, tp3, CUT_EDGE_1 ) == CUT_EDGE_1 )
+				if( is_tri_tri_cutted_hint( vs[ 0 ], vs[ 1 ], vs[ 2 ], tp1, tp2, tp3, eCutResult::Edge1 ) == eCutResult::Edge1 )
 				{
-					result = CUT_EDGE_1;
+					result = eCutResult::Edge1;
 					is_cut_vs[ ( j + 2 ) % 4 ] = true;
 					is_cut_vs[ ( j + 3 ) % 4 ] = true;
 				}
 			}
 			else if( cnt_on == 2 && oris[ ( j + 3 ) % 4 ] == eOrientation::Zero && oris[ ( j + 1 ) % 4 ] == eOrientation::Zero )
 			{
-				if( is_tri_tri_cutted_hint( vs[ 0 ], vs[ 1 ], vs[ 2 ], tp1, tp2, tp3, CUT_EDGE_2 ) == CUT_EDGE_2 )
+				if( is_tri_tri_cutted_hint( vs[ 0 ], vs[ 1 ], vs[ 2 ], tp1, tp2, tp3, eCutResult::Edge2 ) == eCutResult::Edge2 )
 				{
-					result = CUT_EDGE_2;
+					result = eCutResult::Edge2;
 					is_cut_vs[ ( j + 3 ) % 4 ] = true;
 					is_cut_vs[ ( j + 1 ) % 4 ] = true;
 				}

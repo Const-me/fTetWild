@@ -11,14 +11,17 @@
 
 namespace floatTetWild
 {
-#define CUT_EDGE_0 0
-#define CUT_EDGE_1 1
-#define CUT_EDGE_2 2
-#define CUT_FACE 3
-#define CUT_COPLANAR 4
-#define CUT_EMPTY -1
+	enum struct eCutResult : uint8_t
+	{
+		Edge0 = 0,
+		Edge1 = 1,
+		Edge2 = 2,
+		Face = 3,
+		Coplanar = 4,
+		Empty = 0xFF
+	};
 
-	int is_tri_tri_cutted( const std::array<Vector3, 3>& f_tri, const std::array<Vector3, 3>& f_tet, const std::array<eOrientation, 3>& oris_tri );
+	eCutResult is_tri_tri_cutted( const std::array<Vector3, 3>& f_tri, const std::array<Vector3, 3>& f_tet, const std::array<eOrientation, 3>& oris_tri );
 
 	Scalar seg_seg_squared_dist_3d( const std::array<Vector3, 2>& s1, const std::array<Vector3, 2>& s2 );
 
@@ -39,11 +42,11 @@ namespace floatTetWild
 
 	bool is_crossing( eOrientation s1, eOrientation s2 );
 
-	int is_tri_tri_cutted( const Vector3& p1, const Vector3& p2, const Vector3& p3,		  // cutting tri
+	eCutResult is_tri_tri_cutted( const Vector3& p1, const Vector3& p2, const Vector3& p3,	// cutting tri
 	  const Vector3& q1, const Vector3& q2, const Vector3& q3 );						  // face of tet
-	int is_tri_tri_cutted_hint( const Vector3& p1, const Vector3& p2, const Vector3& p3,  // cutting tri
-	  const Vector3& q1, const Vector3& q2, const Vector3& q3, int hint,
-	  const Logger* log = nullptr );	// face of tet
+	eCutResult is_tri_tri_cutted_hint( const Vector3& p1, const Vector3& p2, const Vector3& p3,	 // cutting tri
+	  const Vector3& q1, const Vector3& q2, const Vector3& q3, eCutResult hint,
+	  const Logger* log = nullptr );  // face of tet
 
 	void get_bbox_face( const Vector3& p0, const Vector3& p1, const Vector3& p2, __m256d& min, __m256d& max );
 	void get_bbox_tet( const Vector3& p0, const Vector3& p1, const Vector3& p2, const Vector3& p3, __m256d& min, __m256d& max );

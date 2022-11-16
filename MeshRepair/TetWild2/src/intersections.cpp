@@ -159,7 +159,8 @@ bool floatTetWild::seg_plane_intersection( const Vector3& p1, const Vector3& p2,
 	return true;
 }
 
-int floatTetWild::is_tri_tri_cutted( const std::array<Vector3, 3>& f_tri, const std::array<Vector3, 3>& f_tet, const std::array<eOrientation, 3>& oris_tri )
+floatTetWild::eCutResult floatTetWild::is_tri_tri_cutted(
+  const std::array<Vector3, 3>& f_tri, const std::array<Vector3, 3>& f_tet, const std::array<eOrientation, 3>& oris_tri )
 {
 	int cnt_pos = 0;
 	int cnt_neg = 0;
@@ -174,15 +175,15 @@ int floatTetWild::is_tri_tri_cutted( const std::array<Vector3, 3>& f_tri, const 
 			cnt_neg++;
 	}
 	if( cnt_pos == 3 || cnt_neg == 3 )
-		return CUT_EMPTY;
+		return eCutResult::Empty;
 
 	if( cnt_zero == 3 )
 	{
 		int t = get_t( f_tri[ 0 ], f_tri[ 1 ], f_tri[ 2 ] );
 		if( is_tri_tri_cutted_2d( { { to_2d( f_tri[ 0 ], t ), to_2d( f_tri[ 1 ], t ), to_2d( f_tri[ 2 ], t ) } },
 			  { { to_2d( f_tet[ 0 ], t ), to_2d( f_tet[ 1 ], t ), to_2d( f_tet[ 2 ], t ) } } ) )
-			return CUT_COPLANAR;
-		return CUT_EMPTY;
+			return eCutResult::Coplanar;
+		return eCutResult::Empty;
 	}
 
 	if( cnt_zero == 2 )
@@ -194,18 +195,18 @@ int floatTetWild::is_tri_tri_cutted( const std::array<Vector3, 3>& f_tri, const 
 																{ { to_2d( f_tri[ 0 ], t ), to_2d( f_tri[ 1 ], t ), to_2d( f_tri[ 2 ], t ) } } ) )
 			{
 				if( j == 0 )
-					return CUT_EDGE_0;
+					return eCutResult::Edge0;
 				if( j == 1 )
-					return CUT_EDGE_1;
+					return eCutResult::Edge1;
 				if( j == 2 )
-					return CUT_EDGE_2;
+					return eCutResult::Edge2;
 			}
 		}
-		return CUT_EMPTY;
+		return eCutResult::Empty;
 	}
 
 	if( cnt_pos == 0 || cnt_neg == 0 )
-		return CUT_EMPTY;
+		return eCutResult::Empty;
 
 	std::array<eOrientation, 3> oris_tet;
 	int cnt_pos1 = 0;
@@ -221,9 +222,8 @@ int floatTetWild::is_tri_tri_cutted( const std::array<Vector3, 3>& f_tri, const 
 		else
 			cnt_neg1++;
 	}
-	//    if(cnt_pos1 == 3 || cnt_neg1 == 3)
 	if( cnt_pos1 == 0 || cnt_neg1 == 0 )
-		return CUT_EMPTY;
+		return eCutResult::Empty;
 
 	auto is_f1_cut_f2 = []( const std::array<Vector3, 3>& f1, const std::array<Vector3, 3>& f2, const std::array<eOrientation, 3>& oris ) {	 // check f2 plane
 		Vector3 n = ( ( f2[ 1 ] - f2[ 2 ] ).cross( f2[ 0 ] - f2[ 2 ] ) ).normalized();
@@ -242,14 +242,16 @@ int floatTetWild::is_tri_tri_cutted( const std::array<Vector3, 3>& f_tri, const 
 		}
 		return false;
 	};
+
 	// check tri plane
 	if( is_f1_cut_f2( f_tet, f_tri, oris_tri ) )
-		return CUT_FACE;
+		return eCutResult::Face;
+
 	// check tet plane
 	if( is_f1_cut_f2( f_tri, f_tet, oris_tet ) )
-		return CUT_FACE;
+		return eCutResult::Face;
 
-	return CUT_EMPTY;
+	return eCutResult::Empty;
 }
 
 bool floatTetWild::is_tri_tri_cutted_2d( const std::array<Vector2, 3>& vs_tet, const std::array<Vector2, 3>& vs_tri )
@@ -464,7 +466,8 @@ bool floatTetWild::is_crossing( eOrientation s1, eOrientation s2 )
 	return false;
 }
 
-int floatTetWild::is_tri_tri_cutted( const Vector3& p1, const Vector3& p2, const Vector3& p3, const Vector3& q1, const Vector3& q2, const Vector3& q3 )
+floatTetWild::eCutResult floatTetWild::is_tri_tri_cutted(
+  const Vector3& p1, const Vector3& p2, const Vector3& p3, const Vector3& q1, const Vector3& q2, const Vector3& q3 )
 {
 	std::array<Scalar, 3> p_1 = { { 0, 0, 0 } }, q_1 = { { 0, 0, 0 } }, r_1 = { { 0, 0, 0 } };
 	std::array<Scalar, 3> p_2 = { { 0, 0, 0 } }, q_2 = { { 0, 0, 0 } }, r_2 = { { 0, 0, 0 } };
@@ -481,16 +484,16 @@ int floatTetWild::is_tri_tri_cutted( const Vector3& p1, const Vector3& p2, const
 	}
 
 	if( !triangleIntersectionTest( &p_1[ 0 ], &q_1[ 0 ], &r_1[ 0 ], &p_2[ 0 ], &q_2[ 0 ], &r_2[ 0 ], &coplanar, &s[ 0 ], &t[ 0 ] ) )
-		return CUT_EMPTY;
+		return eCutResult::Empty;
 
 	if( coplanar == 1 )
 	{
 		// if(tri_tri_overlap_test_3d(&p_1[0], &q_1[0], &r_1[0], &p_2[0], &q_2[0], &r_2[0])) //TODO?
-		return CUT_COPLANAR;
+		return eCutResult::Coplanar;
 	}
 
 	if( s[ 0 ] == t[ 0 ] && s[ 1 ] == t[ 1 ] && s[ 2 ] == t[ 2 ] )
-		return CUT_EMPTY;
+		return eCutResult::Empty;
 
 	auto is_collinear = [ & ]( const Vector3& st, const Vector3& q12 )
 	{
@@ -502,17 +505,17 @@ int floatTetWild::is_tri_tri_cutted( const Vector3& p1, const Vector3& p2, const
 
 	Vector3 st( t[ 0 ] - s[ 0 ], t[ 1 ] - s[ 1 ], t[ 2 ] - s[ 2 ] );
 	if( is_collinear( st, q1 - q2 ) )
-		return CUT_EDGE_0;
+		return eCutResult::Edge0;
 	if( is_collinear( st, q2 - q3 ) )
-		return CUT_EDGE_1;
+		return eCutResult::Edge1;
 	if( is_collinear( st, q3 - q1 ) )
-		return CUT_EDGE_2;
+		return eCutResult::Edge2;
 
-	return CUT_FACE;
+	return eCutResult::Face;
 }
 
-int floatTetWild::is_tri_tri_cutted_hint(
-  const Vector3& p1, const Vector3& p2, const Vector3& p3, const Vector3& q1, const Vector3& q2, const Vector3& q3, int hint, const Logger* log )
+floatTetWild::eCutResult floatTetWild::is_tri_tri_cutted_hint(
+  const Vector3& p1, const Vector3& p2, const Vector3& p3, const Vector3& q1, const Vector3& q2, const Vector3& q3, eCutResult hint, const Logger* log )
 {
 	std::array<Scalar, 3> p_1 = { { 0, 0, 0 } }, q_1 = { { 1, 0, 0 } }, r_1 = { { 0, 1, 0 } };
 	std::array<Scalar, 3> p_2 = { { 0, 0, 0 } }, q_2 = { { -1, -1, 0 } }, r_2 = { { 1, 1, 0 } };
@@ -529,13 +532,13 @@ int floatTetWild::is_tri_tri_cutted_hint(
 		r_2[ j ] = q3[ j ];
 	}
 
-	if( hint == CUT_COPLANAR )
+	if( hint == eCutResult::Coplanar )
 	{
 		int t = get_t( p1, p2, p3 );
 
 		if( is_tri_tri_cutted_2d( { { to_2d( p1, t ), to_2d( p2, t ), to_2d( p3, t ) } }, { { to_2d( q1, t ), to_2d( q2, t ), to_2d( q3, t ) } } ) )
-			return CUT_COPLANAR;
-		return CUT_EMPTY;
+			return eCutResult::Coplanar;
+		return eCutResult::Empty;
 	}
 
 	int result = triangleIntersectionTest( &p_1[ 0 ], &q_1[ 0 ], &r_1[ 0 ], &p_2[ 0 ], &q_2[ 0 ], &r_2[ 0 ], &coplanar, &s[ 0 ], &t[ 0 ] );
@@ -543,19 +546,19 @@ int floatTetWild::is_tri_tri_cutted_hint(
 		log->logDebug( ">>result = %i", result );
 
 	if( result != 1 )
-		return CUT_EMPTY;
+		return eCutResult::Empty;
 
 	if( std::abs( s[ 0 ] - t[ 0 ] ) <= SCALAR_ZERO && std::abs( s[ 1 ] - t[ 1 ] ) <= SCALAR_ZERO && std::abs( s[ 2 ] - t[ 2 ] ) <= SCALAR_ZERO )
-		return CUT_EMPTY;
+		return eCutResult::Empty;
 
-	if( hint == CUT_EDGE_0 )
-		return CUT_EDGE_0;
-	if( hint == CUT_EDGE_1 )
-		return CUT_EDGE_1;
-	if( hint == CUT_EDGE_2 )
-		return CUT_EDGE_2;
+	if( hint == eCutResult::Edge0 )
+		return eCutResult::Edge0;
+	if( hint == eCutResult::Edge1 )
+		return eCutResult::Edge1;
+	if( hint == eCutResult::Edge2 )
+		return eCutResult::Edge2;
 
-	return CUT_FACE;
+	return eCutResult::Face;
 }
 
 void floatTetWild::get_bbox_face( const Vector3& p0, const Vector3& p1, const Vector3& p2, __m256d& min, __m256d& max )
