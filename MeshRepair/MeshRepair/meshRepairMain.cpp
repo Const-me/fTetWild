@@ -106,9 +106,7 @@ HRESULT meshRepairMain( MeshRepair::SourceMesh& rsi, MeshRepair::eGlobalFlags gl
 	}
 }
 
+// If you try to compile with gcc or clang, you gonna need to add libgmp.so or an equivalent to the input of the linker
 #ifdef _MSC_VER
-#ifdef FLOAT_TETWILD_USE_TBB
-#pragma comment( lib, "tbb_static.lib" )
-#endif
 #pragma comment( lib, "mpir.lib" )
 #endif
