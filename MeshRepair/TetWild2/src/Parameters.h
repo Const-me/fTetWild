@@ -53,12 +53,7 @@ namespace floatTetWild
 
 		int max_its = 80;
 		Scalar stop_energy = 10;
-
-#ifdef NEW_ENVELOPE
-		int stage = 1;
-#else
 		int stage = 2;
-#endif
 
 		unsigned int num_threads = std::numeric_limits<unsigned int>::max();
 
@@ -101,15 +96,9 @@ namespace floatTetWild
 			dd = eps_input;	 // / stage;
 			dd /= 1.5;
 
-#ifdef NEW_ENVELOPE
-			double eps_usable = eps_input;
-			eps_delta = eps_usable * 0.1;
-			eps = eps_usable - eps_delta * ( stage - 1 );
-#else
 			double eps_usable = eps_input - dd / std::sqrt( 3 );
 			eps_delta = eps_usable * 0.1;
 			eps = eps_usable - eps_delta * ( stage - 1 );
-#endif
 
 			eps_2 = eps * eps;
 
