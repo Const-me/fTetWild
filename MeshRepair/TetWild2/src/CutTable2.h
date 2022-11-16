@@ -142,6 +142,7 @@ namespace floatTetWild
 		};
 		class DiagConfigsOuter;
 
+		// The maximum size of these buffers is 4
 		static const DiagConfigs get_diag_confs( const int idx );
 
 		class SurfaceConfigs : public BufferViewBase<uint16_t, Bool4Buffer, SurfaceConfigs>
@@ -163,6 +164,7 @@ namespace floatTetWild
 		class FaceIdConfigsOuter;
 		static const FaceIdConfigs get_face_id_conf( const int idx );
 
+		// The maximum size of these buffers is 16
 		static inline const Vec4Buffer get_tet_conf( const int idx, const int cfg )
 		{
 			return get_tet_confs( idx )[ cfg ];
