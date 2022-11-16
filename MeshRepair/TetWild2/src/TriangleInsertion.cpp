@@ -118,6 +118,32 @@ void floatTetWild::insert_triangles( const std::vector<Vector3>& input_vertices,
 	insert_triangles_aux( input_vertices, input_faces, input_tags, mesh, is_face_inserted, tree, is_again );
 }
 
+namespace
+{
+	using namespace floatTetWild;
+
+	static void computeMeshQuality( Mesh& mesh )
+	{
+		for( auto& t : mesh.tets )
+		{
+			if( !t.is_removed )
+				t.quality = get_quality( mesh, t );
+		}
+	}
+
+	static void computeMeshQualityOmp( Mesh& mesh )
+	{
+		const int64_t length = (int64_t)mesh.tets.size();
+#pragma omp parallel for schedule( dynamic )
+		for( int64_t i = 0; i < length; i++ )
+		{
+			MeshTet& t = mesh.tets[ i ];
+			if( !t.is_removed )
+				t.quality = get_quality( mesh, t );
+		}
+	}
+}  // namespace
+
 void floatTetWild::insert_triangles_aux( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces,
   const std::vector<int>& input_tags, Mesh& mesh, std::vector<bool>& is_face_inserted, AABBWrapper& tree, bool is_again )
 {
@@ -214,24 +240,10 @@ void floatTetWild::insert_triangles_aux( const std::vector<Vector3>& input_verti
 	// build b_tree using b_edges
 	tree.init_tmp_b_mesh_and_tree( input_vertices, input_faces, b_edges1, mesh, b_edges2 );
 
-#ifdef FLOAT_TETWILD_USE_TBB
-	tbb::parallel_for( size_t( 0 ), mesh.tets.size(),
-	  [ & ]( size_t i )
-	  {
-		  auto& t = mesh.tets[ i ];
-#else
-	for( auto& t : mesh.tets )
-	{
-#endif
-		  if( !t.is_removed )
-		  {
-			  t.quality = get_quality( mesh, t );
-		  }
-#ifdef FLOAT_TETWILD_USE_TBB
-	  } );
-#else
-	}
-#endif
+	if( mesh.params.num_threads > 1 )
+		computeMeshQualityOmp( mesh );
+	else
+		computeMeshQuality( mesh );
 
 	if( std::count( is_face_inserted.begin(), is_face_inserted.end(), false ) == 0 )
 		mesh.is_input_all_inserted = true;
