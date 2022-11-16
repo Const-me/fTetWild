@@ -89,6 +89,10 @@ HRESULT testRepair()
 	// The defaults are reasonable
 	Parameters params;
 
+	// The default epsilon is 1E-3
+	// With 1E-4 it takes about 13 minutes, for the dragon https://en.wikipedia.org/wiki/Stanford_dragon
+	// params.epsilon = 1E-4;
+
 	CComPtr<iResultMesh> result;
 	{
 		Timer tt { "iMeshRepair.repair()" };
