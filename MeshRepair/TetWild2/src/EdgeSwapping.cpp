@@ -14,6 +14,8 @@
 
 void floatTetWild::edge_swapping( Mesh& mesh )
 {
+	auto tm = mesh.times.edgeSwapping.measure();
+
 	auto& tet_vertices = mesh.tet_vertices;
 	auto& tets = mesh.tets;
 

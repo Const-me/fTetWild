@@ -112,4 +112,5 @@ void TimeMeasures::logInfo( const Logger& log ) const
 	LOG_ENTRY( insertTrianglesAux );
 	LOG_ENTRY( insertOneTriangle );
 	LOG_ENTRY( findCuttingTets );
+	LOG_ENTRY( edgeSwapping );
 }

@@ -50,4 +50,6 @@ class TimeMeasures
 	TimeMeasure insertOneTriangle;
 	// find_cutting_tets
 	TimeMeasure findCuttingTets;
+	// edge_swapping
+	TimeMeasure edgeSwapping;
 };
