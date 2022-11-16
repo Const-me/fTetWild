@@ -132,6 +132,7 @@
     <ClInclude Include="Utils\Box32.h" />
     <ClInclude Include="src\GlobalVariables.h" />
     <ClInclude Include="parallelThreadsCount.h" />
+    <ClInclude Include="parallelThreadsImpl.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp" />
@@ -238,6 +239,7 @@
     <ClCompile Include="Utils\Cbrt\cbrtHalleyMetamerist.cpp" />
     <ClCompile Include="Utils\Cbrt\cbrtCustom.cpp" />
     <ClCompile Include="Utils\Box32.cpp" />
+    <ClCompile Include="parallelThreadsImpl.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="external">

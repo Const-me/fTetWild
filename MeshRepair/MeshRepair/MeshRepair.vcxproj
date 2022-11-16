@@ -94,6 +94,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="API\eGlobalFlags.h" />
     <ClInclude Include="API\interfaces.h" />
     <ClInclude Include="API\library.h" />
     <ClInclude Include="API\Parameters.h" />

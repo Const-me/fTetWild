@@ -89,6 +89,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="parallelThreadsCount.h" />
+    <ClInclude Include="parallelThreadsImpl.h" />
     <ClInclude Include="src\GlobalVariables.h" />
     <ClInclude Include="Utils\Box32.h" />
     <ClInclude Include="src\Bitset32.h" />
@@ -159,6 +160,7 @@
     <ClInclude Include="src\VertexConnectedTets.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="parallelThreadsImpl.cpp" />
     <ClCompile Include="Utils\Box32.cpp" />
     <ClCompile Include="Utils\Cbrt\cbrtBsdOrig.cpp" />
     <ClCompile Include="Utils\Cbrt\cbrtBsdSse.cpp" />

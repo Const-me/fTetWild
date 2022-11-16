@@ -8,39 +8,18 @@
 #include "../TetWild2/src/MeshImprovement.h"
 #include "ResultMesh.h"
 #include "Utils/writeStl.h"
+#include "../TetWild2/parallelThreadsImpl.h"
 
 using namespace floatTetWild;
 
 namespace
 {
 	constexpr bool skip_simplify = false;
-
-	thread_local uint32_t ts_threadsCount = 0;
-
-	struct SetThreadsCountRaii
-	{
-		SetThreadsCountRaii( uint32_t count )
-		{
-			ts_threadsCount = count;
-		}
-		~SetThreadsCountRaii()
-		{
-			ts_threadsCount = 0;
-		}
-	};
 }  // namespace
 
-// Implement that global function used in random places to check OPM support
-namespace MeshRepair
-{
-	uint32_t getThreadsCount()
-	{
-		return ts_threadsCount;
-	}
-}
 
-HRESULT meshRepairMain(
-  MeshRepair::SourceMesh& rsi, const MeshRepair::Parameters& parameters, const MeshRepair::sLoggerSetup& logger, MeshRepair::iResultMesh** rdi ) noexcept
+HRESULT meshRepairMain( MeshRepair::SourceMesh& rsi, MeshRepair::eGlobalFlags globalFlags, const MeshRepair::Parameters& parameters,
+  const MeshRepair::sLoggerSetup& logger, MeshRepair::iResultMesh** rdi ) noexcept
 {
 	// writeStl( rsi.input_vertices, rsi.input_faces, LR"(C:\Temp\2remove\MeshRepair\Temp-01.stl)" );
 
@@ -48,8 +27,8 @@ HRESULT meshRepairMain(
 	try
 	{
 		Parameters& params = mesh.params;
-		CHECK( convertParameters( params, parameters ) );
-		SetThreadsCountRaii iglThreadCountSet { params.num_threads };
+		CHECK( convertParameters( params, globalFlags, parameters ) );
+		MeshRepair::SetThreadsCountRaii iglThreadCountSet { params.num_threads };
 		mesh.createThreadLocalBuffers();
 
 		AABBWrapper tree( rsi.mesh, mesh.facetRecursionStacks );

@@ -80,13 +80,14 @@ HRESULT testRepair()
 	using namespace MeshRepair;
 	CComPtr<iMeshRepair> repair;
 	ConsoleLogSink consoleLogSink;
-	CHECK( createMeshRepair( consoleLogSink, &repair ) );
+	const eGlobalFlags globalFlags = eGlobalFlags::UseOpenMP;
+	CHECK( createMeshRepair( globalFlags, consoleLogSink, &repair ) );
 
 	CComPtr<iSourceMesh> source;
 	CHECK( createMesh( repair, mesh, source ) );
 
+	// The defaults are reasonable
 	Parameters params;
-	params.flags |= eRepairFlags::UseOpenMP;
 
 	CComPtr<iResultMesh> result;
 	{

@@ -8,9 +8,13 @@ namespace
 	{
 		return 0 != ( flags & bit );
 	}
+	inline bool flag( MeshRepair::eGlobalFlags flags, MeshRepair::eGlobalFlags bit )
+	{
+		return 0 != ( flags & bit );
+	}
 }  // namespace
 
-HRESULT convertParameters( floatTetWild::Parameters& rdi, const MeshRepair::Parameters& rsi )
+HRESULT convertParameters( floatTetWild::Parameters& rdi, MeshRepair::eGlobalFlags globalFlags, const MeshRepair::Parameters& rsi )
 {
 	rdi.ideal_edge_length = rsi.idealEdgeLength;
 	rdi.eps_rel = rsi.epsilon;
@@ -27,7 +31,7 @@ HRESULT convertParameters( floatTetWild::Parameters& rdi, const MeshRepair::Para
 	rdi.use_input_for_wn = flag( f, eRepairFlags::UseInputForWN );
 
 	rdi.num_threads = 0;
-	if( flag( f, eRepairFlags::UseOpenMP ) ) 
+	if( flag( globalFlags, MeshRepair::eGlobalFlags::UseOpenMP ) ) 
 	{
 		int threads = omp_get_max_threads();
 		if( threads > 1 )

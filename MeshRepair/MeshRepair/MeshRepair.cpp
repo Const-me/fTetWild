@@ -9,6 +9,7 @@
 #include "../GeogramDelaunay/geogram/numerics/predicates.h"
 // #include "../TetWild2/Utils/Geogram2.h"
 // #include "../TetWild2/Utils/lowLevel.h"
+#include "../TetWild2/parallelThreadsImpl.h"
 
 namespace MeshRepair
 {
@@ -19,6 +20,7 @@ namespace MeshRepair
 
 		HRESULT COMLIGHTCALL repair( iSourceMesh* mesh, const Parameters& parameters, iResultMesh** rdi ) noexcept override final;
 
+		eGlobalFlags globalFlags;
 		sLoggerSetup logger;
 
 	  protected:
@@ -26,6 +28,10 @@ namespace MeshRepair
 		void FinalRelease();
 
 	  public:
+		void setFlags( eGlobalFlags flags )
+		{
+			globalFlags = flags;
+		}
 		void initLogger( const sLoggerSetup* src );
 	};
 
@@ -57,10 +63,11 @@ namespace MeshRepair
 		}
 	}
 
-	DLLEXPORT HRESULT COMLIGHTCALL createMeshRepair( const sLoggerSetup* logSetup, iMeshRepair** rdi )
+	DLLEXPORT HRESULT COMLIGHTCALL createMeshRepair( eGlobalFlags globalFlags, const sLoggerSetup* logSetup, iMeshRepair** rdi )
 	{
 		ComLight::CComPtr<ComLight::Object<MeshRepair>> result;
 		CHECK( ComLight::Object<MeshRepair>::create( result ) );
+		result->setFlags( globalFlags );
 		result->initLogger( logSetup );
 		result.detach( rdi );
 		return S_OK;
@@ -75,6 +82,7 @@ namespace MeshRepair
 		using namespace ComLight;
 		CComPtr<Object<SourceMesh>> result;
 		CHECK( Object<SourceMesh>::create( result ) );
+		SetThreadsCountRaii raii( globalFlags );
 		CHECK( result->createMesh( countVertices, vb, countTriangles, ib ) );
 		result.detach( rdi );
 		return S_OK;
@@ -88,7 +96,7 @@ namespace MeshRepair
 		SourceMesh* const objMesh = static_cast<SourceMesh*>( mesh );
 		try
 		{
-			return meshRepairMain( *objMesh, parameters, logger, rdi );
+			return meshRepairMain( *objMesh, globalFlags, parameters, logger, rdi );
 		}
 		catch( const std::bad_alloc& )
 		{

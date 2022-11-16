@@ -30,6 +30,7 @@
     <ClInclude Include="Utils\writeStl.h">
       <Filter>Utils</Filter>
     </ClInclude>
+    <ClInclude Include="API\eGlobalFlags.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="API">

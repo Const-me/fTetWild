@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include "eGlobalFlags.h"
 
 namespace MeshRepair
 {
@@ -21,9 +22,6 @@ namespace MeshRepair
 		UseInputForWN = 0x40,
 		// The idealEdgeLength and epsilon fields are absolute numbers; by default, they're relative to the bounding box diagonal
 		LengthsAreAbsolute = 0x80,
-
-		// Use OpenMP, if enabled
-		UseOpenMP = 0x100,
 	};
 
 	struct Parameters

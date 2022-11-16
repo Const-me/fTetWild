@@ -11,5 +11,5 @@
 
 namespace MeshRepair
 {
-	DLLEXPORT HRESULT COMLIGHTCALL createMeshRepair( const sLoggerSetup* logSetup, iMeshRepair** rdi );
+	DLLEXPORT HRESULT COMLIGHTCALL createMeshRepair( eGlobalFlags globalFlags, const sLoggerSetup* logSetup, iMeshRepair** rdi );
 }
