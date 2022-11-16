@@ -113,4 +113,5 @@ void TimeMeasures::logInfo( const Logger& log ) const
 	LOG_ENTRY( insertOneTriangle );
 	LOG_ENTRY( findCuttingTets );
 	LOG_ENTRY( edgeSwapping );
+	LOG_ENTRY( subdivideTets );
 }

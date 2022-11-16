@@ -702,14 +702,19 @@ void floatTetWild::find_cutting_tets( int f_id, const std::vector<Vector3>& inpu
 	}
 }
 
+namespace
+{
+	static const std::array<std::array<int, 2>, 6> t_es = { { { { 0, 1 } }, { { 1, 2 } }, { { 2, 0 } }, { { 0, 3 } }, { { 1, 3 } }, { { 2, 3 } } } };
+	static const std::array<std::array<int, 3>, 4> t_f_es = { { { { 1, 5, 4 } }, { { 5, 3, 2 } }, { { 3, 0, 4 } }, { { 0, 1, 2 } } } };
+	static const std::array<std::array<int, 3>, 4> t_f_vs = { { { { 3, 1, 2 } }, { { 0, 2, 3 } }, { { 1, 3, 0 } }, { { 2, 0, 1 } } } };
+}
+
 bool floatTetWild::subdivide_tets( int insert_f_id, Mesh& mesh, CutMesh& cut_mesh, std::vector<Vector3>& points,
   std::map<std::array<int, 2>, int>& map_edge_to_intersecting_point, std::vector<std::array<std::vector<int>, 4>>& track_surface_fs,
   std::vector<int>& subdivide_t_ids, std::vector<bool>& is_mark_surface, std::vector<MeshTet>& new_tets,
   std::vector<std::array<std::vector<int>, 4>>& new_track_surface_fs, std::vector<int>& modified_t_ids )
 {
-	static const std::array<std::array<int, 2>, 6> t_es = { { { { 0, 1 } }, { { 1, 2 } }, { { 2, 0 } }, { { 0, 3 } }, { { 1, 3 } }, { { 2, 3 } } } };
-	static const std::array<std::array<int, 3>, 4> t_f_es = { { { { 1, 5, 4 } }, { { 5, 3, 2 } }, { { 3, 0, 4 } }, { { 0, 1, 2 } } } };
-	static const std::array<std::array<int, 3>, 4> t_f_vs = { { { { 3, 1, 2 } }, { { 0, 2, 3 } }, { { 1, 3, 0 } }, { { 2, 0, 1 } } } };
+	auto tm = mesh.times.subdivideTets.measure();
 
 	std::vector<std::array<int, 3>>& covered_tet_fs = mesh.globalVars.triangleInsertion.covered_tet_fs;
 	covered_tet_fs.clear();

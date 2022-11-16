@@ -52,4 +52,6 @@ class TimeMeasures
 	TimeMeasure findCuttingTets;
 	// edge_swapping
 	TimeMeasure edgeSwapping;
+	// subdivide_tets
+	TimeMeasure subdivideTets;
 };
