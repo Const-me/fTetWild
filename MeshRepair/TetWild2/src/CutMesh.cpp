@@ -300,25 +300,11 @@ void floatTetWild::CutMesh::expand( std::vector<int>& cut_t_ids )
 				}
 			}
 		}
-		//        time_cut_mesh14 += timer.getElapsedTime();
 		if( old_tets_size == tets.size() )
 			break;
 
 		revert_totally_snapped_tets( old_tets_size, tets.size() );
 	}
-
-	//    //fortest
-	//    for(int i=0;i<v_ids.size();i++){
-	//        int v_id = v_ids[i];
-	//        double dis = get_to_plane_dist(mesh.tet_vertices[v_id].pos);
-	//        if(to_plane_dists[map_v_ids[v_id]] != dis){
-	//            cout<<"expand.. to_plane_dists[map_v_ids[v_id]] != dis"<<endl;
-	//            cout<<to_plane_dists[map_v_ids[v_id]] <<" "<< dis<<endl;
-	//            cout<<i<<endl;
-	//            pausee();
-	//        }
-	//    }
-	//    //fortest
 }
 
 void floatTetWild::CutMesh::expand_new( std::vector<int>& cut_t_ids )
@@ -351,8 +337,6 @@ void floatTetWild::CutMesh::expand_new( std::vector<int>& cut_t_ids )
 				continue;
 			if( !is_snapped[ lv_id ] )
 				continue;
-			//            if(is_projected[lv_id])
-			//                continue;
 
 			bool is_in = true;
 			for( int gt_id : mesh.tet_vertices[ gv_id ].connTets )
@@ -380,7 +364,6 @@ void floatTetWild::CutMesh::expand_new( std::vector<int>& cut_t_ids )
 				}
 				if( cnt < 3 )
 					continue;
-				//                if (cnt_on < 3) {
 				int cnt_pos = 0;
 				int cnt_neg = 0;
 				for( int j = 0; j < 4; j++ )
@@ -412,7 +395,6 @@ void floatTetWild::CutMesh::expand_new( std::vector<int>& cut_t_ids )
 				}
 				if( !is_overlapped )
 					continue;
-				//                }
 
 				///
 				cut_t_ids.push_back( gt_id );
@@ -459,62 +441,6 @@ void floatTetWild::CutMesh::expand_new( std::vector<int>& cut_t_ids )
 			break;
 	}
 	revert_totally_snapped_tets( 0, tets.size() );
-
-	//    cout<<"("<<cnt_loop<<")";
-
-	//    //fortest
-	//    std::vector <std::vector<int>> conn_tets(v_ids.size());
-	//    for (int i = 0; i < tets.size(); i++) {
-	//        for (int j = 0; j < 4; j++)
-	//            conn_tets[tets[i][j]].push_back(i);
-	//    }
-	//
-	//    std::vector <std::array<int, 4>> opp_t_ids(tets.size(), {{-1, -1, -1, -1}});
-	//    for (int i = 0; i < tets.size(); i++) {
-	//        for (int j = 0; j < 4; j++) {
-	//            if (opp_t_ids[i][j] >= 0)
-	//                continue;
-	//
-	//            std::vector<int> n_t_ids;
-	//            set_intersection_sorted(conn_tets[tets[i][(j + 1) % 4]], conn_tets[tets[i][(j + 2) % 4]],
-	//                                    conn_tets[tets[i][(j + 3) % 4]], n_t_ids);
-	//
-	//            assert(!n_t_ids.empty());
-	//            if (n_t_ids.size() < 2)
-	//                continue;
-	//
-	//            int n_t_id = n_t_ids[0] == i ? n_t_ids[1] : n_t_ids[0];
-	//            opp_t_ids[i][j] = n_t_id;
-	//            for (int k = 0; k < 4; k++) {
-	//                if (tets[n_t_id][k] != tets[i][(j + 1) % 4] && tets[n_t_id][k] != tets[i][(j + 2) % 4]
-	//                    && tets[n_t_id][k] != tets[i][(j + 3) % 4]) {
-	//                    opp_t_ids[n_t_id][k] = i;
-	//                    break;
-	//                }
-	//            }
-	//        }
-	//    }
-	//    int tmp_cnt = 0;
-	//    for (int i = 0; i < cut_t_ids.size(); i++) {
-	//        for (int j = 0; j < 4; j++) {
-	//            if (opp_t_ids[i][j] < 0
-	//                && is_v_on_plane(tets[i][(j + 1) % 4])
-	//                && is_v_on_plane(tets[i][(j + 2) % 4])
-	//                && is_v_on_plane(tets[i][(j + 3) % 4])) {
-	//                tmp_cnt++;
-	//                cout << i << " gt_id " << cut_t_ids[i] << " should include the neighbor!!!" << endl;
-	//                cout << "opp_t_id = " << get_opp_t_id(cut_t_ids[i], j, mesh) << endl;
-	//                cout << is_snapped[tets[i][(j + 1) % 4]] << " "
-	//                     << is_snapped[tets[i][(j + 2) % 4]] << " "
-	//                     << is_snapped[tets[i][(j + 3) % 4]] << endl;
-	//                pausee();
-	//            }
-	//        }
-	//    }
-	//    if(tmp_cnt>0) {
-	//        cout << tmp_cnt << " tets missing!!" << endl;
-	//    }
-	//    //fortest
 }
 
 int floatTetWild::CutMesh::project_to_plane( int input_vertices_size )
