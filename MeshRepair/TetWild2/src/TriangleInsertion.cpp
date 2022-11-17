@@ -26,6 +26,7 @@
 #include "../external/Rational.h"
 #include "../Utils/miscUtils.h"
 #include <atomic>
+#include "../ParallelInsertion/parallelInsertion.h"
 
 floatTetWild::Vector3 floatTetWild::getNormal( const std::vector<Vector3>& vb, const std::vector<Vector3i>& ib, int idx )
 {
@@ -130,6 +131,12 @@ namespace
 				t.quality = get_quality( mesh, t );
 		}
 	}
+
+	template<class E, class Lambda>
+	inline void removeIf( std::vector<E>& v, Lambda lambda )
+	{
+		v.erase( std::remove_if( v.begin(), v.end(), lambda ), v.end() );
+	}
 }  // namespace
 
 void floatTetWild::insert_triangles_aux( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces,
@@ -150,29 +157,27 @@ void floatTetWild::insert_triangles_aux( const std::vector<Vector3>& input_verti
 
 	std::vector<int> sorted_f_ids;
 	sort_input_faces( input_vertices, input_faces, mesh, sorted_f_ids );
+	removeIf( sorted_f_ids, [ & ]( int i ) { return is_face_inserted[ i ]; } );
 
-	/////
-	std::vector<Vector3> new_vertices;
-	std::vector<std::array<int, 4>> new_tets;
 	std::atomic_int cnt_fail = 0;
 	std::atomic_int cnt_total = 0;
-
-	//////
-	for( int i = 0; i < sorted_f_ids.size(); i++ )
+	pfnInsertTri pfn = [ & ]( int i )
 	{
-		int f_id = sorted_f_ids[ i ];
-		if( is_face_inserted[ f_id ] )
-			continue;
-
+		assert( !is_face_inserted[ i ] );
 		cnt_total++;
-		if( insert_one_triangle( f_id, input_vertices, input_faces, input_tags, mesh, track_surface_fs, tree, is_again ) )
-			is_face_inserted.set( f_id );
+		if( insert_one_triangle( i, input_vertices, input_faces, input_tags, mesh, track_surface_fs, tree, is_again ) )
+			is_face_inserted.setAtomic( i );
 		else
 			cnt_fail++;
+	};
 
-		if( f_id == III )
-			break;	// fortest
-	}
+#if PARALLEL_TRIANGLES_INSERTION
+#error Not implemented
+#else
+	for( int i : sorted_f_ids )
+		pfn( i );
+#endif
+
 	mesh.logger().logInfo( "insert_one_triangle * n done, #v = %zu, #t = %zu", mesh.tet_vertices.size(), mesh.tets.size() );
 	mesh.logger().logInfo( "uninserted #f = %zu/%i", is_face_inserted.countFalse(), (int)is_face_inserted.size() - cnt_matched );
 
@@ -937,8 +942,8 @@ bool floatTetWild::subdivide_tets( int insert_f_id, const Mesh& mesh, CutMesh& c
 
 				tmp_centroids.clear();
 				const double min_q = check_config( i, tmp_centroids );
-				// The original code of this function was building some nested vectors, sorted them by quality, and then only used the last element of the vector
-				// Instead of that expensive stuff, we can search for the best quality on the fly. Copying small vectors ain't that expensive.
+				// The original code of this function was building some nested vectors, sorted them by quality, and then only used the last element of the
+				// vector Instead of that expensive stuff, we can search for the best quality on the fly. Copying small vectors ain't that expensive.
 				if( min_q > bestQuality )
 				{
 					bestQuality = min_q;
@@ -1042,9 +1047,8 @@ void floatTetWild::pair_track_surface_fs( const Mesh& mesh, TrackSF& track_surfa
 }
 
 void floatTetWild::find_boundary_edges( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces,
-  const BoolVector& is_face_inserted, const BoolVector& old_is_face_inserted,
-  std::vector<std::pair<std::array<int, 2>, std::vector<int>>>& b_edge_infos, std::vector<bool>& is_on_cut_edges, std::vector<std::array<int, 2>>& b_edges,
-  const Logger& log )
+  const BoolVector& is_face_inserted, const BoolVector& old_is_face_inserted, std::vector<std::pair<std::array<int, 2>, std::vector<int>>>& b_edge_infos,
+  std::vector<bool>& is_on_cut_edges, std::vector<std::array<int, 2>>& b_edges, const Logger& log )
 {
 	std::vector<std::array<int, 2>> edges;
 	std::vector<std::vector<int>> conn_tris( input_vertices.size() );
@@ -1182,8 +1186,8 @@ void floatTetWild::find_boundary_edges( const std::vector<Vector3>& input_vertic
 
 bool floatTetWild::insert_boundary_edges( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces,
   std::vector<std::pair<std::array<int, 2>, std::vector<int>>>& b_edge_infos, std::vector<bool>& is_on_cut_edges, TrackSF& track_surface_fs, Mesh& mesh,
-  AABBWrapper& tree, BoolVector& is_face_inserted, bool is_again,
-  std::vector<std::array<int, 3>>& known_surface_fs, std::vector<std::array<int, 3>>& known_not_surface_fs )
+  AABBWrapper& tree, BoolVector& is_face_inserted, bool is_again, std::vector<std::array<int, 3>>& known_surface_fs,
+  std::vector<std::array<int, 3>>& known_not_surface_fs )
 {
 	igl::Timer timer;
 
@@ -1378,8 +1382,8 @@ bool floatTetWild::insert_boundary_edges( const std::vector<Vector3>& input_vert
 
 bool floatTetWild::insert_boundary_edges_get_intersecting_edges_and_points( const std::vector<std::vector<std::pair<int, int>>>& covered_fs_infos,
   const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const std::array<int, 2>& e, const std::vector<int>& n_f_ids,
-  TrackSF& track_surface_fs, Mesh& mesh, std::vector<Vector3>& points,
-  std::map<std::array<int, 2>, int>& map_edge_to_intersecting_point, std::vector<int>& snapped_v_ids, std::vector<std::array<int, 3>>& cut_fs, bool is_again )
+  TrackSF& track_surface_fs, Mesh& mesh, std::vector<Vector3>& points, std::map<std::array<int, 2>, int>& map_edge_to_intersecting_point,
+  std::vector<int>& snapped_v_ids, std::vector<std::array<int, 3>>& cut_fs, bool is_again )
 {
 	//    igl::Timer timer;
 
@@ -1658,9 +1662,8 @@ bool floatTetWild::insert_boundary_edges_get_intersecting_edges_and_points( cons
 }
 
 void floatTetWild::mark_surface_fs( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const std::vector<int>& input_tags,
-  TrackSF& track_surface_fs, const BoolVector& is_face_inserted,
-  const std::vector<std::array<int, 3>>& known_surface_fs, const std::vector<std::array<int, 3>>& known_not_surface_fs,
-  std::vector<std::array<int, 2>>& b_edges, Mesh& mesh, AABBWrapper& tree )
+  TrackSF& track_surface_fs, const BoolVector& is_face_inserted, const std::vector<std::array<int, 3>>& known_surface_fs,
+  const std::vector<std::array<int, 3>>& known_not_surface_fs, std::vector<std::array<int, 2>>& b_edges, Mesh& mesh, AABBWrapper& tree )
 {
 	auto is_on_bounded_side = [ & ]( const std::array<Vector2, 3>& ps_2d, const Vector2& c )
 	{
@@ -1881,8 +1884,8 @@ void floatTetWild::mark_surface_fs( const std::vector<Vector3>& input_vertices, 
 	}
 }
 
-bool floatTetWild::is_uninserted_face_covered(
-  int uninserted_f_id, const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const std::vector<int>& cut_t_ids, const Mesh& mesh )
+bool floatTetWild::is_uninserted_face_covered( int uninserted_f_id, const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces,
+  const std::vector<int>& cut_t_ids, const Mesh& mesh )
 {
 	std::array<Vector3, 3> vs = { { input_vertices[ input_faces[ uninserted_f_id ][ 0 ] ], input_vertices[ input_faces[ uninserted_f_id ][ 1 ] ],
 	  input_vertices[ input_faces[ uninserted_f_id ][ 2 ] ] } };

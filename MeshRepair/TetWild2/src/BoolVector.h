@@ -35,6 +35,16 @@ namespace floatTetWild
 			vec[ elt ] |= bit;
 		}
 
+		void setAtomic( size_t idx )
+		{
+			assert( idx < length );
+			const size_t elt = idx / 64;
+			const uint64_t bit = 1ull << ( idx % 64 );
+
+			int64_t* const rdi = (int64_t*)&vec[ elt ];
+			_InterlockedOr64( rdi, (int64_t)bit );
+		}
+
 		void reset( size_t idx )
 		{
 			assert( idx < length );
