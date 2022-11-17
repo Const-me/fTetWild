@@ -420,31 +420,33 @@ bool floatTetWild::is_p_inside_tri_2d( const Vector2& p, const std::array<Vector
 
 int floatTetWild::get_t( const Vector3& p0, const Vector3& p1, const Vector3& p2 )
 {
-	static const std::array<Vector3, 3> ns = { { Vector3( 1, 0, 0 ), Vector3( 0, 1, 0 ), Vector3( 0, 0, 1 ) } };
+	using namespace AvxMath;
+	// Load all 3 vectors
+	const __m256d v0 = loadDouble3( p0.data() );
+	const __m256d v1 = loadDouble3( p1.data() );
+	const __m256d v2 = loadDouble3( p2.data() );
 
-	Vector3 n = ( p1 - p2 ).cross( p0 - p2 );
-	Scalar max = 0;
-	int t = 0;
-	for( int i = 0; i < 3; i++ )
-	{
-		//        Scalar cos_a = abs(n.dot(ns[i]));
-		Scalar cos_a = abs( n[ i ] );
-		if( cos_a > max )
-		{
-			max = cos_a;
-			t = i;
-		}
-	}
-	return t;
-
-	//    int t = 2;
-	//    for (int k = 0; k < 3; k++) {
-	//        if (p2[k] == p0[k] && p0[k] == p1[k]) {
-	//            t = k;
-	//            break;
-	//        }
-	//    }
-	//    return t;
+	// Compute the cross product
+	__m256d n = vector3Cross( _mm256_sub_pd( v1, v2 ), _mm256_sub_pd( v0, v2 ) );
+	// Absolute value
+	n = vectorAbs( n );
+	// Compute maximum of XYZ lanes
+	const __m128d high = _mm256_extractf128_pd( n, 1 );
+	const __m128d low = _mm256_castpd256_pd128( n );
+	__m128d max2 = _mm_max_sd( low, _mm_unpackhi_pd( low, low ) );
+	max2 = _mm_max_sd( max2, high );
+	// Broadcast the maximum to all lanes of another vector
+#ifdef __AVX2__
+	const __m256d max4 = _mm256_broadcastsd_pd( max2 );
+#else
+	max2 = _mm_movedup_pd( max2 );
+	const __m256d max4 = _mm256_setr_m128d( max2, max2 );
+#endif
+	// Compare for equality with n
+	const __m256d eq = _mm256_cmp_pd( n, max4, _CMP_EQ_OQ );
+	// Return index of the first equal lane
+	const uint32_t mask = _mm256_movemask_pd( eq );
+	return (int)_tzcnt_u32( mask );
 }
 
 floatTetWild::Vector2 floatTetWild::to_2d( const Vector3& p, int t )
