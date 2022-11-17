@@ -88,4 +88,16 @@ namespace floatTetWild
 		std::vector<std::array<std::vector<int>, 4>> new_track_surface_fs;
 		std::vector<int> modified_t_ids;
 	};
+
+	struct CutMeshBuffers
+	{
+		std::vector<int> v_ids;
+		// TODO: replace with another container which retains the memory
+		std::map<int, int> map_v_ids;
+		std::vector<std::array<int, 4>> tets;
+
+		std::vector<double> to_plane_dists;
+		std::vector<bool> is_snapped;
+		std::vector<bool> is_projected;
+	};
 }

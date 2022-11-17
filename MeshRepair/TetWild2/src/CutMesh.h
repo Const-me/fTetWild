@@ -23,7 +23,7 @@ namespace floatTetWild
 		std::map<int, int> map_v_ids;
 		std::vector<std::array<int, 4>> tets;
 
-		std::vector<Scalar> to_plane_dists;
+		std::vector<double> to_plane_dists;
 		std::vector<bool> is_snapped;
 		std::vector<bool> is_projected;
 
@@ -38,6 +38,36 @@ namespace floatTetWild
 			, p_vs( _p_vs )
 			, logger( mesh.params.logger )
 		{
+			CutMeshBuffers& buffers = mesh.cutMeshBuffers;
+
+			v_ids = std::move( buffers.v_ids );
+			v_ids.clear();
+
+			map_v_ids = std::move( buffers.map_v_ids );
+			map_v_ids.clear();
+
+			tets = std::move( buffers.tets );
+			tets.clear();
+
+			to_plane_dists = std::move( buffers.to_plane_dists );
+			to_plane_dists.clear();
+
+			is_snapped = std::move( buffers.is_snapped );
+			is_snapped.clear();
+
+			is_projected = std::move( buffers.is_projected );
+			is_projected.clear();
+		}
+
+		~CutMesh()
+		{
+			CutMeshBuffers& buffers = mesh.cutMeshBuffers;
+			buffers.v_ids = std::move( v_ids );
+			buffers.map_v_ids = std::move( map_v_ids );
+			buffers.tets = std::move( tets );
+			buffers.to_plane_dists = std::move( to_plane_dists );
+			buffers.is_snapped = std::move( is_snapped );
+			buffers.is_projected = std::move( is_projected );
 		}
 
 		void construct( const std::vector<int>& cut_t_ids );
