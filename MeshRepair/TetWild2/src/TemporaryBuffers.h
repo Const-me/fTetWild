@@ -52,6 +52,8 @@ namespace floatTetWild
 		std::vector<bool> is_visited;
 		std::queue<int> queue_t_ids;
 		std::vector<int> n_t_ids;
+		// Used by findCuttingTetsOmp, to sort triangles produced by different threads
+		std::vector<int> queueSortIDs;
 	};
 
 	struct IsBoundaryEdgeBuffers

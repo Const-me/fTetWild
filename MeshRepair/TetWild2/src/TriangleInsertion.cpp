@@ -506,9 +506,12 @@ namespace
 
 	static void findCuttingTetsOmp( Mesh& mesh, __m256d min_f, __m256d max_f, std::queue<int>& queue_t_ids, std::vector<bool>& is_visited )
 	{
-		const int length = (int)mesh.tets.size();
+		std::vector<int>& queueSortIDs = mesh.findCuttingTetsBuffers.queueSortIDs;
+		queueSortIDs.clear();
+
+		const int64_t length = (int64_t)mesh.tets.size();
 #pragma omp parallel for
-		for( int t_id = 0; t_id < mesh.tets.size(); t_id++ )
+		for( int64_t t_id = 0; t_id < length; t_id++ )
 		{
 			const auto& mt = mesh.tets[ t_id ];
 			if( mt.is_removed )
@@ -523,9 +526,15 @@ namespace
 
 #pragma omp critical
 			{
-				queue_t_ids.push( t_id );
-				is_visited[ t_id ] = true;
+				queueSortIDs.push_back( (int)t_id );
 			}
+		}
+
+		std::sort( queueSortIDs.begin(), queueSortIDs.end() );
+		for( int i : queueSortIDs )
+		{
+			queue_t_ids.push( i );
+			is_visited[ i ] = true;
 		}
 	}
 
