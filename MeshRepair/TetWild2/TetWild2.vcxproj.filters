@@ -133,6 +133,7 @@
     <ClInclude Include="parallelThreadsCount.h" />
     <ClInclude Include="parallelThreadsImpl.h" />
     <ClInclude Include="ParallelInsertion\TrianglePartition.h" />
+    <ClInclude Include="ParallelInsertion\parallelInsertion.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp" />
@@ -241,6 +242,7 @@
     <ClCompile Include="Utils\Box32.cpp" />
     <ClCompile Include="parallelThreadsImpl.cpp" />
     <ClCompile Include="ParallelInsertion\TrianglePartition.cpp" />
+    <ClCompile Include="ParallelInsertion\parallelInsertion.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="external">
