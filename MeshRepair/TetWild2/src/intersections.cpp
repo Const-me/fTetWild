@@ -431,22 +431,9 @@ int floatTetWild::get_t( const Vector3& p0, const Vector3& p1, const Vector3& p2
 	// Absolute value
 	n = vectorAbs( n );
 	// Compute maximum of XYZ lanes
-	const __m128d high = _mm256_extractf128_pd( n, 1 );
-	const __m128d low = _mm256_castpd256_pd128( n );
-	__m128d max2 = _mm_max_sd( low, _mm_unpackhi_pd( low, low ) );
-	max2 = _mm_max_sd( max2, high );
-	// Broadcast the maximum to all lanes of another vector
-#ifdef __AVX2__
-	const __m256d max4 = _mm256_broadcastsd_pd( max2 );
-#else
-	max2 = _mm_movedup_pd( max2 );
-	const __m256d max4 = _mm256_setr_m128d( max2, max2 );
-#endif
-	// Compare for equality with n
-	const __m256d eq = _mm256_cmp_pd( n, max4, _CMP_EQ_OQ );
-	// Return index of the first equal lane
-	const uint32_t mask = _mm256_movemask_pd( eq );
-	return (int)_tzcnt_u32( mask );
+	const __m256d max4 = vector3BroadcastMaximum( n );
+	// Return index of the first maximum lane
+	return firstEqualLaneIndex( n, max4 );
 }
 
 floatTetWild::Vector2 floatTetWild::to_2d( const Vector3& p, int t )

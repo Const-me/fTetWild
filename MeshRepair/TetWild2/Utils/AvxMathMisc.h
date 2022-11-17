@@ -108,10 +108,17 @@ namespace AvxMath
 		return _mm256_sub_pd( _mm256_mul_pd( a1, b2 ), _mm256_mul_pd( a2, b1 ) );
 	}
 
-	inline __m256d vectorAbs( __m256d v )
+	// Negate all 4 lanes of the vector
+	inline __m256d vectorNegate( __m256d v )
 	{
 		__m256d zero = _mm256_setzero_pd();
-		__m256d neg = _mm256_sub_pd( zero, v );
+		return _mm256_sub_pd( zero, v );
+	}
+
+	// Absolute value of all 4 lanes
+	inline __m256d vectorAbs( __m256d v )
+	{
+		__m256d neg = vectorNegate( v );
 		return _mm256_max_pd( v, neg );
 	}
 
@@ -122,5 +129,44 @@ namespace AvxMath
 		x = _mm256_mul_pd( x, _mm256_set1_pd( 1.0 - s ) );
 		y = _mm256_mul_pd( y, _mm256_set1_pd( s ) );
 		return _mm256_add_pd( x, y );
+	}
+
+	// Compute maximum of the 3 XYZ lanes, and broadcast the value over all 4 lanes of the result
+	inline __m256d vector3BroadcastMaximum( __m256d v )
+	{
+		// Compute maximum of XYZ lanes
+		const __m128d high = _mm256_extractf128_pd( v, 1 );
+		const __m128d low = _mm256_castpd256_pd128( v );
+		__m128d max2 = _mm_max_sd( low, _mm_unpackhi_pd( low, low ) );
+		max2 = _mm_max_sd( max2, high );
+		// Broadcast the maximum to all lanes of another vector
+#ifdef __AVX2__
+		return _mm256_broadcastsd_pd( max2 );
+#else
+		max2 = _mm_movedup_pd( max2 );
+		return _mm256_setr_m128d( max2, max2 );
+#endif
+	}
+
+	// Compare vectors for a == b, return index of the first lane which compared as true. 
+	// If none of the lanes were equal, returns 32.
+	inline uint32_t firstEqualLaneIndex( __m256d a, __m256d b )
+	{
+		// Compare for equality with n
+		const __m256d eq = _mm256_cmp_pd( a, b, _CMP_EQ_OQ );
+		// Return index of the first equal lane
+		const uint32_t mask = _mm256_movemask_pd( eq );
+		return (int)_tzcnt_u32( mask );
+	}
+
+	// Extract specified lane from the vector
+	inline double vectorExtractLane( __m256d vec, uint32_t lane )
+	{
+		assert( lane < 4 );
+		__m128i v1 = _mm_cvtsi32_si128( (int)lane );
+		__m256i v2 = _mm256_castsi128_si256( v1 );
+		// Surprisingly, that instruction is from AVX1 set, no need for #ifdef-s
+		vec = _mm256_permutevar_pd( vec, v2 );
+		return _mm256_cvtsd_f64( vec );
 	}
 }  // namespace AvxMath
