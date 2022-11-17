@@ -46,7 +46,7 @@ namespace floatTetWild
 	  const Mesh& mesh, std::vector<int>& result, bool is_again );
 
 	bool subdivide_tets( int insert_f_id, const Mesh& mesh, CutMesh& cut_mesh, std::vector<Vector3>& points,
-	  std::map<std::array<int, 2>, int>& map_edge_to_intersecting_point, TrackSF& track_surface_fs, std::vector<int>& subdivide_t_ids,
+	  std::map<std::array<int, 2>, int>& map_edge_to_intersecting_point, const TrackSF& track_surface_fs, std::vector<int>& subdivide_t_ids,
 	  std::vector<bool>& is_mark_surface, std::vector<MeshTet>& new_tets, TrackSF& new_track_surface_fs, std::vector<int>& modified_t_ids );
 
 	void pair_track_surface_fs( const Mesh& mesh, TrackSF& track_surface_fs );

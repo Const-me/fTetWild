@@ -8,9 +8,19 @@
 #include "Mesh.h"
 #include "LocalOperations.h"
 #include <numeric>
+#include <omp.h>
 
 namespace floatTetWild
 {
+	InsertionBuffers& Mesh::insertionBuffers() const
+	{
+#if PARALLEL_TRIANGLES_INSERTION
+		return insertion[ omp_get_thread_num() ];
+#else
+		return insertion;
+#endif
+	}
+
 	void Mesh::one_ring_vertex_coloring( std::vector<Scalar>& colors ) const
 	{
 		colors.resize( tet_vertices.size() );

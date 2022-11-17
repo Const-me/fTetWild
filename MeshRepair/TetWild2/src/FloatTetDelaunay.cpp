@@ -250,8 +250,6 @@ namespace floatTetWild
 			updateMaxTetraSize( maxElementSizeVec, vertexPointer, vertexCount, tet2v[ i ] );
 		}
 
-		// Multiply by that safety epsilon
-		maxElementSizeVec = _mm256_mul_pd( maxElementSizeVec, _mm256_broadcast_sd( &Mesh::maxTetraSizeEpsilonMul ) );
 		// We gonna divide vectors by that vector; set W lane to 1.0 to avoid division by 0 in the unused lane
 		// On some CPUs, these singularity shenanigans have a small performance cost
 		maxElementSizeVec = _mm256_blend_pd( maxElementSizeVec, _mm256_set1_pd( 1 ), 0b1000 );

@@ -15,6 +15,7 @@
 #include "MeshTet.h"
 #include "../Utils/TimeMeasure.h"
 #include "TemporaryBuffers.h"
+#include <mutex>
 
 namespace floatTetWild
 {
@@ -151,7 +152,6 @@ namespace floatTetWild
 		}
 
 #if PARALLEL_TRIANGLES_INSERTION
-		static constexpr double maxTetraSizeEpsilonMul = 17.0 / 16.0;
 		// Maximum size of the element produced by the first stage of the algorithm, during FloatTetDelaunay::tetrahedralize method
 		__m256d maxTetraSize;
 #endif
@@ -167,19 +167,14 @@ namespace floatTetWild
 	  private:
 #if PARALLEL_TRIANGLES_INSERTION
 		mutable std::vector<InsertionBuffers> insertion;
+	  public:
+		mutable std::mutex mutex;
 #else
 		mutable InsertionBuffers insertion;
 #endif
 
 	  public:
-		InsertionBuffers& insertionBuffers() const
-		{
-#if PARALLEL_TRIANGLES_INSERTION
-			return insertion[ omp_get_thread_num() ];
-#else
-			return insertion;
-#endif
-		}
+		InsertionBuffers& insertionBuffers() const;
 
 		// Some of the temporary buffers are per-thread, this method resizes them to params.num_threads length
 		void createThreadLocalBuffers();
