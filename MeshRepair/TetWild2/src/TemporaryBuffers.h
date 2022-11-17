@@ -47,6 +47,7 @@ namespace floatTetWild
 
 	struct FindCuttingTetsBuffers
 	{
+		std::vector<int> cut_t_ids;
 		std::vector<bool> is_visited;
 		std::queue<int> queue_t_ids;
 		std::vector<int> n_t_ids;

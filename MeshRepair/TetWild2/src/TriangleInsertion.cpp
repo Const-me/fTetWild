@@ -235,9 +235,10 @@ bool floatTetWild::insert_one_triangle( int insert_f_id, const std::vector<Vecto
 	  input_vertices[ input_faces[ insert_f_id ][ 2 ] ] } };
 	Vector3 n = ( vs[ 1 ] - vs[ 0 ] ).cross( vs[ 2 ] - vs[ 0 ] );
 	n.normalize();
-	int t = get_t( vs[ 0 ], vs[ 1 ], vs[ 2 ] );
+	const int t = get_t( vs[ 0 ], vs[ 1 ], vs[ 2 ] );
 
-	std::vector<int> cut_t_ids;
+	std::vector<int>& cut_t_ids = mesh.findCuttingTetsBuffers.cut_t_ids;
+	cut_t_ids.clear();
 	find_cutting_tets( insert_f_id, input_vertices, input_faces, vs, mesh, cut_t_ids, is_again );
 
 	if( cut_t_ids.empty() )
@@ -574,7 +575,7 @@ void floatTetWild::find_cutting_tets( int f_id, const std::vector<Vector3>& inpu
 
 	while( !queue_t_ids.empty() )
 	{
-		int t_id = queue_t_ids.front();
+		const int t_id = queue_t_ids.front();
 		queue_t_ids.pop();
 
 		if( is_again )
