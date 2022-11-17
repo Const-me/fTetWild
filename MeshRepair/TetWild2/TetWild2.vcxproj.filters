@@ -130,7 +130,6 @@
     <ClInclude Include="src\SmallBuffer.h" />
     <ClInclude Include="src\Bitset32.h" />
     <ClInclude Include="Utils\Box32.h" />
-    <ClInclude Include="src\GlobalVariables.h" />
     <ClInclude Include="parallelThreadsCount.h" />
     <ClInclude Include="parallelThreadsImpl.h" />
     <ClInclude Include="ParallelInsertion\TrianglePartition.h" />

@@ -1,4 +1,6 @@
 #pragma once
+#include <assert.h>
+#include <immintrin.h>
 
 namespace AvxMath
 {

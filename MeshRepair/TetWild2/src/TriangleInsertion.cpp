@@ -25,6 +25,7 @@
 #define III -1
 #include "../external/Rational.h"
 #include "../Utils/miscUtils.h"
+#include <atomic>
 
 floatTetWild::Vector3 floatTetWild::get_normal( const Vector3& a, const Vector3& b, const Vector3& c )
 {
@@ -137,40 +138,12 @@ void floatTetWild::insert_triangles_aux( const std::vector<Vector3>& input_verti
 	/////
 	std::vector<Vector3> new_vertices;
 	std::vector<std::array<int, 4>> new_tets;
-	int cnt_fail = 0;
-	int cnt_total = 0;
+	std::atomic_int cnt_fail = 0;
+	std::atomic_int cnt_total = 0;
 
 	//////
-	TriangleInsertionVars& vars = mesh.globalVars.triangleInsertion;
 	for( int i = 0; i < sorted_f_ids.size(); i++ )
 	{
-		// fortest
-		if( !is_again && i > 0 && i % 1000 == 0 )
-		{
-			mesh.logger().logDebug( "inserting f%i... %i failed", i, cnt_fail );
-			mesh.logger().logDebug( "snapped %i/%i", vars.cnt_snapped, cnt_total );
-			mesh.logger().logDebug(
-			  "\t- time_find_cutting_tets = %gs (total %gs)", vars.time_find_cutting_tets - vars.old_time_find_cutting_tets, vars.time_find_cutting_tets );
-			mesh.logger().logDebug( "\t- time_cut_mesh = %gs (total %gs)", vars.time_cut_mesh - vars.old_time_cut_mesh, vars.time_cut_mesh );
-			mesh.logger().logDebug( "\t- time_get_intersecting_edges_and_points = %gs (total %gs)",
-			  vars.time_get_intersecting_edges_and_points - vars.old_time_get_intersecting_edges_and_points, vars.time_get_intersecting_edges_and_points );
-			mesh.logger().logDebug(
-			  "\t- time_subdivide_tets = %gs (total %gs)", vars.time_subdivide_tets - vars.old_time_subdivide_tets, vars.time_subdivide_tets );
-			mesh.logger().logDebug(
-			  "\t- time_push_new_tets = %gs (total %gs)", vars.time_push_new_tets - vars.old_time_push_new_tets, vars.time_push_new_tets );
-			mesh.logger().logDebug( "\t- time_simplify_subdivision_result = %gs (total %gs)",
-			  vars.time_simplify_subdivision_result - vars.old_time_simplify_subdivision_result, vars.time_simplify_subdivision_result );
-
-			vars.old_time_find_cutting_tets = vars.time_find_cutting_tets;
-			vars.old_time_cut_mesh = vars.time_cut_mesh;
-			vars.old_time_get_intersecting_edges_and_points = vars.time_get_intersecting_edges_and_points;
-			vars.old_time_subdivide_tets = vars.time_subdivide_tets;
-			vars.old_time_push_new_tets = vars.time_push_new_tets;
-			vars.old_time_simplify_subdivision_result = vars.time_simplify_subdivision_result;
-			mesh.logger().logDebug( "#v = %i/%zu", mesh.get_v_num(), mesh.tet_vertices.size() );
-			mesh.logger().logDebug( "#t = %i/%zu", mesh.get_t_num(), mesh.tets.size() );
-		}
-
 		int f_id = sorted_f_ids[ i ];
 		if( is_face_inserted[ f_id ] )
 			continue;
@@ -181,15 +154,12 @@ void floatTetWild::insert_triangles_aux( const std::vector<Vector3>& input_verti
 		else
 			cnt_fail++;
 
-		//        pausee();//fortest
 		if( f_id == III )
 			break;	// fortest
 	}
 	mesh.logger().logInfo( "insert_one_triangle * n done, #v = %zu, #t = %zu", mesh.tet_vertices.size(), mesh.tets.size() );
 	mesh.logger().logInfo(
 	  "uninserted #f = %zu/%i", std::count( is_face_inserted.begin(), is_face_inserted.end(), false ), (int)is_face_inserted.size() - cnt_matched );
-	mesh.logger().logInfo( "total timing: %gs",
-	  vars.time_find_cutting_tets + vars.time_cut_mesh + vars.time_get_intersecting_edges_and_points + vars.time_subdivide_tets + vars.time_push_new_tets );
 
 	pair_track_surface_fs( mesh, track_surface_fs );
 	mesh.logger().logInfo( "pair_track_surface_fs done" );
@@ -250,7 +220,7 @@ bool floatTetWild::insert_one_triangle( int insert_f_id, const std::vector<Vecto
 
 	if( cut_mesh.snap_to_plane() )
 	{
-		mesh.globalVars.triangleInsertion.cnt_snapped++;
+		buffers.cnt_snapped++;
 		cut_mesh.project_to_plane( input_vertices.size() );
 		cut_mesh.expand_new( cut_t_ids );
 		cut_mesh.project_to_plane( input_vertices.size() );
@@ -353,7 +323,7 @@ void floatTetWild::push_new_tets( Mesh& mesh, std::vector<std::array<std::vector
 void floatTetWild::simplify_subdivision_result(
   int insert_f_id, int input_v_size, Mesh& mesh, AABBWrapper& tree, std::vector<std::array<std::vector<int>, 4>>& track_surface_fs )
 {
-	std::vector<std::array<int, 3>>& covered_tet_fs = mesh.globalVars.triangleInsertion.covered_tet_fs;
+	std::vector<std::array<int, 3>>& covered_tet_fs = mesh.insertOneTriangleBuffers.covered_tet_fs;
 	if( covered_tet_fs.empty() )
 		return;
 
@@ -747,7 +717,7 @@ bool floatTetWild::subdivide_tets( int insert_f_id, Mesh& mesh, CutMesh& cut_mes
 	auto tm = mesh.times.subdivideTets.measure();
 	SubdivideTetsBuffers& buffers = mesh.subdivideTetsBuffers;
 
-	std::vector<std::array<int, 3>>& covered_tet_fs = mesh.globalVars.triangleInsertion.covered_tet_fs;
+	std::vector<std::array<int, 3>>& covered_tet_fs = mesh.insertOneTriangleBuffers.covered_tet_fs;
 	covered_tet_fs.clear();
 
 	for( int I = 0; I < subdivide_t_ids.size(); I++ )

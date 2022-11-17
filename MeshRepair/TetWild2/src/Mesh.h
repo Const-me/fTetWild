@@ -15,7 +15,6 @@
 #include "MeshTet.h"
 #include "../Utils/TimeMeasure.h"
 #include "TemporaryBuffers.h"
-#include "GlobalVariables.h"
 
 namespace floatTetWild
 {
@@ -168,7 +167,6 @@ namespace floatTetWild
 		SubdivideTetsBuffers subdivideTetsBuffers;
 		InsertOneTriangleBuffers insertOneTriangleBuffers;
 		CutMeshBuffers cutMeshBuffers;
-		GlobalVariables globalVars;
 
 		// Some of the temporary buffers are per-thread, this method resizes them to params.num_threads length
 		void createThreadLocalBuffers();

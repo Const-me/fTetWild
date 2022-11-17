@@ -78,6 +78,9 @@ namespace floatTetWild
 
 	struct InsertOneTriangleBuffers
 	{
+		std::vector<std::array<int, 3>> covered_tet_fs;
+		int cnt_snapped = 0;
+
 		std::vector<Vector3> points;
 		// TODO: replace with another container which retains the memory
 		std::map<std::array<int, 2>, int> map_edge_to_intersecting_point;
