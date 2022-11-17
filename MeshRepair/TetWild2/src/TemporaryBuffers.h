@@ -64,4 +64,11 @@ namespace floatTetWild
 		std::vector<int> n12_t_ids;
 		std::vector<std::array<int, 2>> new_edges;
 	};
+
+	struct SubdivideTetsBuffers
+	{
+		std::vector<int> n_ids;
+		std::vector<std::pair<int, Vector3>> centroids;
+		std::vector<std::pair<int, Vector3>> tmp_centroids;
+	};
 }

@@ -708,7 +708,7 @@ namespace
 	static const std::array<std::array<int, 2>, 6> t_es = { { { { 0, 1 } }, { { 1, 2 } }, { { 2, 0 } }, { { 0, 3 } }, { { 1, 3 } }, { { 2, 3 } } } };
 	static const std::array<std::array<int, 3>, 4> t_f_es = { { { { 1, 5, 4 } }, { { 5, 3, 2 } }, { { 3, 0, 4 } }, { { 0, 1, 2 } } } };
 	static const std::array<std::array<int, 3>, 4> t_f_vs = { { { { 3, 1, 2 } }, { { 0, 2, 3 } }, { { 1, 3, 0 } }, { { 2, 0, 1 } } } };
-}
+}  // namespace
 
 bool floatTetWild::subdivide_tets( int insert_f_id, Mesh& mesh, CutMesh& cut_mesh, std::vector<Vector3>& points,
   std::map<std::array<int, 2>, int>& map_edge_to_intersecting_point, std::vector<std::array<std::vector<int>, 4>>& track_surface_fs,
@@ -716,6 +716,7 @@ bool floatTetWild::subdivide_tets( int insert_f_id, Mesh& mesh, CutMesh& cut_mes
   std::vector<std::array<std::vector<int>, 4>>& new_track_surface_fs, std::vector<int>& modified_t_ids )
 {
 	auto tm = mesh.times.subdivideTets.measure();
+	SubdivideTetsBuffers& buffers = mesh.subdivideTetsBuffers;
 
 	std::vector<std::array<int, 3>>& covered_tet_fs = mesh.globalVars.triangleInsertion.covered_tet_fs;
 	covered_tet_fs.clear();
@@ -828,12 +829,15 @@ bool floatTetWild::subdivide_tets( int insert_f_id, Mesh& mesh, CutMesh& cut_mes
 		}
 
 		/////
+		std::vector<int>& n_ids = buffers.n_ids;
+		n_ids.clear();
+
 		auto get_centroid = [ & ]( const CutTable::Vec4Buffer& config, int lv_id, Vector3& c )
 		{
-			std::vector<int> n_ids;
+			n_ids.clear();
 			for( const auto& tet : config )
 			{
-				std::vector<int> tmp;
+				SmallBuffer<int, 4> tmp;
 				for( int j = 0; j < 4; j++ )
 				{
 					if( tet[ j ] != lv_id )
@@ -899,38 +903,39 @@ bool floatTetWild::subdivide_tets( int insert_f_id, Mesh& mesh, CutMesh& cut_mes
 		};
 
 		int diag_config_id = 0;
-		std::vector<std::pair<int, Vector3>> centroids;
+		std::vector<std::pair<int, Vector3>>& centroids = buffers.centroids;
+		centroids.clear();
+		std::vector<std::pair<int, Vector3>>& tmp_centroids = buffers.tmp_centroids;
+
 		if( !my_diags.empty() )
 		{
 			const auto& all_diags = CutTable::get_diag_confs( config_id );
-			std::vector<std::pair<int, Scalar>> min_qualities( all_diags.size() );
-			std::vector<std::vector<std::pair<int, Vector3>>> all_centroids( all_diags.size() );
+			int bestId = -1;
+			double bestQuality = 0;
 			for( int i = 0; i < all_diags.size(); i++ )
 			{
 				if( !all_diags[ i ].equal( my_diags.data(), my_diags.data() + my_diags.size() ) )
-				{
-					min_qualities[ i ] = std::make_pair( i, -1 );
 					continue;
+
+				tmp_centroids.clear();
+				const double min_q = check_config( i, tmp_centroids );
+				// The original code of this function was building some nested vectors, sorted them by quality, and then only used the last element of the vector
+				// Instead of that expensive stuff, we can search for the best quality on the fly. Copying small vectors ain't that expensive.
+				if( min_q > bestQuality )
+				{
+					bestQuality = min_q;
+					bestId = i;
+					centroids = tmp_centroids;
 				}
-
-				std::vector<std::pair<int, Vector3>> tmp_centroids;
-				Scalar min_q = check_config( i, tmp_centroids );
-				//                if (min_q < SCALAR_ZERO_3)
-				//                    continue;
-				min_qualities[ i ] = std::make_pair( i, min_q );
-				all_centroids[ i ] = tmp_centroids;
 			}
-			std::sort( min_qualities.begin(), min_qualities.end(),
-			  []( const std::pair<int, Scalar>& a, const std::pair<int, Scalar>& b ) { return a.second < b.second; } );
 
-			if( min_qualities.back().second < SCALAR_ZERO_3 )
-			{  // if tet quality is too bad
-				//                cout<<std::setprecision(16)<<"return 1 "<<min_qualities.back().second<<endl;
+			if( bestQuality < SCALAR_ZERO_3 )
+			{
+				// if tet quality is too bad
 				return false;
 			}
 
-			diag_config_id = min_qualities.back().first;
-			centroids = all_centroids[ diag_config_id ];
+			diag_config_id = bestId;
 		}
 		else
 		{
