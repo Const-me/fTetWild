@@ -17,7 +17,7 @@ namespace floatTetWild
 
 	int get_opp_t_id( const Mesh& mesh, int t_id, int j );
 	void set_opp_t_id( Mesh& mesh, int t_id, int j );
-	inline int get_local_f_id( int t_id, int v1_id, int v2_id, int v3_id, Mesh& mesh )
+	inline int get_local_f_id( int t_id, int v1_id, int v2_id, int v3_id, const Mesh& mesh )
 	{
 		for( int j = 0; j < 4; j++ )
 		{
