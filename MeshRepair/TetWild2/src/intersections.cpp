@@ -436,6 +436,12 @@ int floatTetWild::get_t( const Vector3& p0, const Vector3& p1, const Vector3& p2
 	return firstEqualLaneIndex( n, max4 );
 }
 
+int floatTetWild::get_t( const std::vector<Vector3>& vb, const std::vector<Vector3i>& ib, int idx )
+{
+	const Vector3i& tri = ib[ idx ];
+	return get_t( vb[ tri[ 0 ] ], vb[ tri[ 1 ] ], vb[ tri[ 2 ] ] );
+}
+
 floatTetWild::Vector2 floatTetWild::to_2d( const Vector3& p, int t )
 {
 	return Vector2( p[ ( t + 1 ) % 3 ], p[ ( t + 2 ) % 3 ] );

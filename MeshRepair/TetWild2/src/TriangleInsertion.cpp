@@ -27,9 +27,26 @@
 #include "../Utils/miscUtils.h"
 #include <atomic>
 
-floatTetWild::Vector3 floatTetWild::get_normal( const Vector3& a, const Vector3& b, const Vector3& c )
+floatTetWild::Vector3 floatTetWild::getNormal( const std::vector<Vector3>& vb, const std::vector<Vector3i>& ib, int idx )
 {
-	return ( ( b - c ).cross( a - c ) ).normalized();
+	const Vector3i& tri = ib[ idx ];
+	const double* p0 = vb[ tri[ 0 ] ].data();
+	const double* p1 = vb[ tri[ 1 ] ].data();
+	const double* p2 = vb[ tri[ 2 ] ].data();
+
+	using namespace AvxMath;
+	const __m256d a = loadDouble3( p0 );
+	const __m256d b = loadDouble3( p1 );
+	const __m256d c = loadDouble3( p2 );
+
+	const __m256d e1 = _mm256_sub_pd( b, c );
+	const __m256d e2 = _mm256_sub_pd( a, c );
+	const __m256d cp = vector3Cross( e1, e2 );
+	const __m256d norm = vector3Normalize( cp );
+
+	Vector3 res;
+	storeDouble3( res.data(), norm );
+	return res;
 }
 
 void floatTetWild::match_surface_fs( const Mesh& mesh, const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces,
@@ -1102,17 +1119,15 @@ void floatTetWild::find_boundary_edges( const std::vector<Vector3>& input_vertic
 					break;
 			}
 
-			Vector3 n =
-			  get_normal( input_vertices[ input_faces[ f_id ][ 0 ] ], input_vertices[ input_faces[ f_id ][ 1 ] ], input_vertices[ input_faces[ f_id ][ 2 ] ] );
-			int t = get_t( input_vertices[ input_faces[ f_id ][ 0 ] ], input_vertices[ input_faces[ f_id ][ 1 ] ], input_vertices[ input_faces[ f_id ][ 2 ] ] );
+			Vector3 n = getNormal( input_vertices, input_faces, f_id );
+			int t = get_t( input_vertices, input_faces, f_id );
 
 			bool is_fine = false;
 			for( int k = 0; k < n12_f_ids.size(); k++ )
 			{
 				if( n12_f_ids[ k ] == f_id )
 					continue;
-				Vector3 n1 = get_normal( input_vertices[ input_faces[ n12_f_ids[ k ] ][ 0 ] ], input_vertices[ input_faces[ n12_f_ids[ k ] ][ 1 ] ],
-				  input_vertices[ input_faces[ n12_f_ids[ k ] ][ 2 ] ] );
+				Vector3 n1 = getNormal( input_vertices, input_faces, n12_f_ids[ k ] );
 				if( abs( n1.dot( n ) ) < 1 - SCALAR_ZERO )
 				{
 					is_fine = true;
@@ -1380,12 +1395,9 @@ bool floatTetWild::insert_boundary_edges_get_intersecting_edges_and_points( cons
 		return false;
 	};
 
-	int t = get_t( input_vertices[ input_faces[ n_f_ids.front() ][ 0 ] ], input_vertices[ input_faces[ n_f_ids.front() ][ 1 ] ],
-	  input_vertices[ input_faces[ n_f_ids.front() ][ 2 ] ] );
+	const int t = get_t( input_vertices, input_faces, n_f_ids.front() );
 	std::array<Vector2, 2> evs_2d = { { to_2d( input_vertices[ e[ 0 ] ], t ), to_2d( input_vertices[ e[ 1 ] ], t ) } };
-	Vector3 n = ( input_vertices[ input_faces[ n_f_ids.front() ][ 1 ] ] - input_vertices[ input_faces[ n_f_ids.front() ][ 0 ] ] )
-				  .cross( input_vertices[ input_faces[ n_f_ids.front() ][ 2 ] ] - input_vertices[ input_faces[ n_f_ids.front() ][ 0 ] ] );
-	n.normalize();
+	const Vector3 n = getNormal( input_vertices, input_faces, n_f_ids.front() );
 	const Vector3& pp = input_vertices[ input_faces[ n_f_ids.front() ][ 0 ] ];
 
 	//    timer.start();

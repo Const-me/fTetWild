@@ -133,6 +133,16 @@ namespace AvxMath
 		return _mm256_add_pd( x, y );
 	}
 
+	inline __m256d vectorBroadcast( __m128d x )
+	{
+#ifdef __AVX2__
+		return _mm256_broadcastsd_pd( x );
+#else
+		x = _mm_movedup_pd( x );
+		return _mm256_setr_m128d( x, x );
+#endif
+	}
+
 	// Compute maximum of the 3 XYZ lanes, and broadcast the value over all 4 lanes of the result
 	inline __m256d vector3BroadcastMaximum( __m256d v )
 	{
@@ -142,15 +152,10 @@ namespace AvxMath
 		__m128d max2 = _mm_max_sd( low, _mm_unpackhi_pd( low, low ) );
 		max2 = _mm_max_sd( max2, high );
 		// Broadcast the maximum to all lanes of another vector
-#ifdef __AVX2__
-		return _mm256_broadcastsd_pd( max2 );
-#else
-		max2 = _mm_movedup_pd( max2 );
-		return _mm256_setr_m128d( max2, max2 );
-#endif
+		return vectorBroadcast( max2 );
 	}
 
-	// Compare vectors for a == b, return index of the first lane which compared as true. 
+	// Compare vectors for a == b, return index of the first lane which compared as true.
 	// If none of the lanes were equal, returns 32.
 	inline uint32_t firstEqualLaneIndex( __m256d a, __m256d b )
 	{
@@ -170,5 +175,11 @@ namespace AvxMath
 		// Surprisingly, that instruction is from AVX1 set, no need for #ifdef-s
 		vec = _mm256_permutevar_pd( vec, v2 );
 		return _mm256_cvtsd_f64( vec );
+	}
+
+	inline __m256d vector3Normalize( __m256d v )
+	{
+		__m256d div = _mm256_set1_pd( vector3Length( v ) );
+		return _mm256_div_pd( v, div );
 	}
 }  // namespace AvxMath

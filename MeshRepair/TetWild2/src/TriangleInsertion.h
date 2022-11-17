@@ -78,7 +78,7 @@ namespace floatTetWild
 
 	void myassert( bool b, const std::string& s );
 
-	Vector3 get_normal( const Vector3& a, const Vector3& b, const Vector3& c );
+	Vector3 getNormal( const std::vector<Vector3>& vb, const std::vector<Vector3i>& ib, int idx );
 
 	// fortest
 	using Vector3_r = Eigen::Matrix<triwild::Rational, 3, 1>;

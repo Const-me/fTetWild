@@ -37,6 +37,8 @@ namespace floatTetWild
 	bool seg_plane_intersection( const Vector3& p1, const Vector3& p2, const Vector3& a, const Vector3& n, Vector3& p, Scalar& d1 );
 
 	int get_t( const Vector3& p0, const Vector3& p1, const Vector3& p2 );
+	int get_t( const std::vector<Vector3>& vb, const std::vector<Vector3i>& ib, int idx );
+
 	Vector2 to_2d( const Vector3& p, int t );
 	Vector2 to_2d( const Vector3& p, const Vector3& n, const Vector3& pp, int t );
 
