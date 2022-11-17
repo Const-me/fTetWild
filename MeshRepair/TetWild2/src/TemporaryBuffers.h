@@ -30,7 +30,7 @@ namespace floatTetWild
 	};
 
 	// Temporary buffers used by collapse_an_edge function
-	struct CollapseEdgeBuffers
+	struct alignas( 64 ) CollapseEdgeBuffers
 	{
 		std::vector<int> n12_t_ids;
 		std::vector<int> n1_t_ids;
@@ -113,4 +113,4 @@ namespace floatTetWild
 		CutMeshBuffers cutMesh;
 		SubdivideTetsBuffers subdivideTets;
 	};
-}
+}  // namespace floatTetWild

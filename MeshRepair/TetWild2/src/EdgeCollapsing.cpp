@@ -231,7 +231,7 @@ floatTetWild::eCollapseStatus floatTetWild::collapse_an_edge(
 	if( tet_vertices[ v1_id ].isSurface() && is_point_out_envelope( mesh, tet_vertices[ v2_id ].pos, tree ) )
 		return eCollapseStatus::failEnvelope1;
 
-	CollapseEdgeBuffers& buffers = mesh.collapseEdgeBuffers;
+	CollapseEdgeBuffers& buffers = mesh.collapseEdgeBuffers();
 	////check tets
 	std::vector<int>& n12_t_ids = buffers.n12_t_ids;
 	n12_t_ids.clear();

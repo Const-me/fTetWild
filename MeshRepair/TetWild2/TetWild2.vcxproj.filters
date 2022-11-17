@@ -135,6 +135,7 @@
     <ClInclude Include="ParallelInsertion\TrianglePartition.h" />
     <ClInclude Include="ParallelInsertion\parallelInsertion.h" />
     <ClInclude Include="src\BoolVector.h" />
+    <ClInclude Include="ParallelInsertion\InsertionLocks.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp" />

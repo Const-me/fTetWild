@@ -15,7 +15,7 @@
 #include "MeshTet.h"
 #include "../Utils/TimeMeasure.h"
 #include "TemporaryBuffers.h"
-#include <mutex>
+#include "../ParallelInsertion/InsertionLocks.h"
 
 namespace floatTetWild
 {
@@ -158,7 +158,6 @@ namespace floatTetWild
 
 		std::vector<FindNewPosBuffers> findNewPosBuffers;
 		EdgeCollapsingAuxBuffers edgeCollapsingAuxBuffers;
-		CollapseEdgeBuffers collapseEdgeBuffers;
 		EdgeCollapsingBuffers edgeCollapsingBuffers;
 		std::vector<FacetRecursionStack> facetRecursionStacks;
 		mutable IsBoundaryEdgeBuffers isBoundaryEdgeBuffers;
@@ -167,14 +166,17 @@ namespace floatTetWild
 	  private:
 #if PARALLEL_TRIANGLES_INSERTION
 		mutable std::vector<InsertionBuffers> insertion;
+		std::vector<CollapseEdgeBuffers> collapseEdge;
 	  public:
-		mutable std::mutex mutex;
+		mutable InsertionLocks locks;
 #else
+		CollapseEdgeBuffers collapseEdge;
 		mutable InsertionBuffers insertion;
 #endif
 
 	  public:
 		InsertionBuffers& insertionBuffers() const;
+		CollapseEdgeBuffers& collapseEdgeBuffers(); 
 
 		// Some of the temporary buffers are per-thread, this method resizes them to params.num_threads length
 		void createThreadLocalBuffers();

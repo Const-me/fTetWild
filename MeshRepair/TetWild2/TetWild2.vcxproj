@@ -88,6 +88,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ParallelInsertion\InsertionLocks.h" />
     <ClInclude Include="ParallelInsertion\parallelInsertion.h" />
     <ClInclude Include="parallelThreadsCount.h" />
     <ClInclude Include="parallelThreadsImpl.h" />

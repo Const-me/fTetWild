@@ -21,6 +21,15 @@ namespace floatTetWild
 #endif
 	}
 
+	CollapseEdgeBuffers& Mesh::collapseEdgeBuffers()
+	{
+#if PARALLEL_TRIANGLES_INSERTION
+		return collapseEdge[ omp_get_thread_num() ];
+#else
+		return collapseEdge;
+#endif
+	}
+
 	void Mesh::one_ring_vertex_coloring( std::vector<Scalar>& colors ) const
 	{
 		colors.resize( tet_vertices.size() );
@@ -183,7 +192,8 @@ namespace floatTetWild
 		findNewPosBuffers.resize( count );
 		facetRecursionStacks.resize( count );
 #if PARALLEL_TRIANGLES_INSERTION
-		return insertion.resize( count );
+		insertion.resize( count );
+		collapseEdge.resize( count );
 #endif
 	}
 }  // namespace floatTetWild
