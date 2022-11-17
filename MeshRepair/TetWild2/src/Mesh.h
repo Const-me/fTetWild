@@ -160,13 +160,26 @@ namespace floatTetWild
 		EdgeCollapsingAuxBuffers edgeCollapsingAuxBuffers;
 		CollapseEdgeBuffers collapseEdgeBuffers;
 		EdgeCollapsingBuffers edgeCollapsingBuffers;
-		FindCuttingTetsBuffers findCuttingTetsBuffers;
 		std::vector<FacetRecursionStack> facetRecursionStacks;
 		mutable IsBoundaryEdgeBuffers isBoundaryEdgeBuffers;
 		EdgeSwappingBuffers edgeSwappingBuffers;
-		SubdivideTetsBuffers subdivideTetsBuffers;
-		InsertOneTriangleBuffers insertOneTriangleBuffers;
-		CutMeshBuffers cutMeshBuffers;
+
+	  private:
+#if PARALLEL_TRIANGLES_INSERTION
+		std::vector<InsertionBuffers> insertion;
+#else
+		InsertionBuffers insertion;
+#endif
+
+	  public:
+		InsertionBuffers& insertionBuffers()
+		{
+#if PARALLEL_TRIANGLES_INSERTION
+			return insertion[ omp_get_thread_num() ];
+#else
+			return insertion;
+#endif
+		}
 
 		// Some of the temporary buffers are per-thread, this method resizes them to params.num_threads length
 		void createThreadLocalBuffers();

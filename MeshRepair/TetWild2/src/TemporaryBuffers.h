@@ -105,4 +105,12 @@ namespace floatTetWild
 		std::vector<bool> is_snapped;
 		std::vector<bool> is_projected;
 	};
+
+	struct alignas( 64 ) InsertionBuffers
+	{
+		InsertOneTriangleBuffers insertOneTriangle;
+		FindCuttingTetsBuffers findCuttingTets;
+		CutMeshBuffers cutMesh;
+		SubdivideTetsBuffers subdivideTets;
+	};
 }

@@ -32,14 +32,17 @@ namespace floatTetWild
 		const std::array<Vector3, 3>& p_vs;
 		const Logger& logger;
 
-		CutMesh( Mesh& _mesh, const Vector3& _p_n, const std::array<Vector3, 3>& _p_vs )
+	  private:
+		CutMeshBuffers& buffers;
+	  public:
+
+		CutMesh( Mesh& _mesh, const Vector3& _p_n, const std::array<Vector3, 3>& _p_vs, InsertionBuffers& insb )
 			: mesh( _mesh )
 			, p_n( _p_n )
 			, p_vs( _p_vs )
 			, logger( mesh.params.logger )
+			, buffers( insb.cutMesh )
 		{
-			CutMeshBuffers& buffers = mesh.cutMeshBuffers;
-
 			v_ids = std::move( buffers.v_ids );
 			v_ids.clear();
 
@@ -61,7 +64,6 @@ namespace floatTetWild
 
 		~CutMesh()
 		{
-			CutMeshBuffers& buffers = mesh.cutMeshBuffers;
 			buffers.v_ids = std::move( v_ids );
 			buffers.map_v_ids = std::move( map_v_ids );
 			buffers.tets = std::move( tets );

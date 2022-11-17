@@ -207,15 +207,16 @@ bool floatTetWild::insert_one_triangle( int insert_f_id, const std::vector<Vecto
 	n.normalize();
 	const int t = get_t( vs[ 0 ], vs[ 1 ], vs[ 2 ] );
 
-	std::vector<int>& cut_t_ids = mesh.findCuttingTetsBuffers.cut_t_ids;
+	auto& insertionBuffers = mesh.insertionBuffers();
+	std::vector<int>& cut_t_ids = insertionBuffers.findCuttingTets.cut_t_ids;
 	cut_t_ids.clear();
 	find_cutting_tets( insert_f_id, input_vertices, input_faces, vs, mesh, cut_t_ids, is_again );
 
 	if( cut_t_ids.empty() )
 		throw std::logic_error( "cut_t_ids.empty()" );
 
-	InsertOneTriangleBuffers& buffers = mesh.insertOneTriangleBuffers;
-	CutMesh cut_mesh( mesh, n, vs );
+	InsertOneTriangleBuffers& buffers = insertionBuffers.insertOneTriangle;
+	CutMesh cut_mesh( mesh, n, vs, insertionBuffers );
 	cut_mesh.construct( cut_t_ids );
 
 	if( cut_mesh.snap_to_plane() )
@@ -323,7 +324,7 @@ void floatTetWild::push_new_tets( Mesh& mesh, std::vector<std::array<std::vector
 void floatTetWild::simplify_subdivision_result(
   int insert_f_id, int input_v_size, Mesh& mesh, AABBWrapper& tree, std::vector<std::array<std::vector<int>, 4>>& track_surface_fs )
 {
-	std::vector<std::array<int, 3>>& covered_tet_fs = mesh.insertOneTriangleBuffers.covered_tet_fs;
+	std::vector<std::array<int, 3>>& covered_tet_fs = mesh.insertionBuffers().insertOneTriangle.covered_tet_fs;
 	if( covered_tet_fs.empty() )
 		return;
 
@@ -474,9 +475,10 @@ namespace
 {
 	using namespace floatTetWild;
 
-	static void findCuttingTetsOmp( Mesh& mesh, __m256d min_f, __m256d max_f, std::queue<int>& queue_t_ids, std::vector<bool>& is_visited )
+	static void findCuttingTetsOmp(
+	  Mesh& mesh, __m256d min_f, __m256d max_f, std::queue<int>& queue_t_ids, std::vector<bool>& is_visited, FindCuttingTetsBuffers& buffers )
 	{
-		std::vector<int>& queueSortIDs = mesh.findCuttingTetsBuffers.queueSortIDs;
+		std::vector<int>& queueSortIDs = buffers.queueSortIDs;
 		queueSortIDs.clear();
 
 		const int64_t length = (int64_t)mesh.tets.size();
@@ -534,7 +536,7 @@ void floatTetWild::find_cutting_tets( int f_id, const std::vector<Vector3>& inpu
 {
 	auto tm = mesh.times.findCuttingTets.measure();
 
-	FindCuttingTetsBuffers& buffers = mesh.findCuttingTetsBuffers;
+	FindCuttingTetsBuffers& buffers = mesh.insertionBuffers().findCuttingTets;
 
 	std::vector<bool>& is_visited = buffers.is_visited;
 	is_visited.clear();
@@ -566,7 +568,7 @@ void floatTetWild::find_cutting_tets( int f_id, const std::vector<Vector3>& inpu
 		get_bbox_face(
 		  input_vertices[ input_faces[ f_id ][ 0 ] ], input_vertices[ input_faces[ f_id ][ 1 ] ], input_vertices[ input_faces[ f_id ][ 2 ] ], min_f, max_f );
 		if( mesh.params.num_threads > 1 )
-			findCuttingTetsOmp( mesh, min_f, max_f, queue_t_ids, is_visited );
+			findCuttingTetsOmp( mesh, min_f, max_f, queue_t_ids, is_visited, buffers );
 		else
 			findCuttingTets( mesh, min_f, max_f, queue_t_ids, is_visited );
 	}
@@ -715,9 +717,10 @@ bool floatTetWild::subdivide_tets( int insert_f_id, Mesh& mesh, CutMesh& cut_mes
   std::vector<std::array<std::vector<int>, 4>>& new_track_surface_fs, std::vector<int>& modified_t_ids )
 {
 	auto tm = mesh.times.subdivideTets.measure();
-	SubdivideTetsBuffers& buffers = mesh.subdivideTetsBuffers;
+	auto& insBuffers = mesh.insertionBuffers();
+	SubdivideTetsBuffers& buffers = insBuffers.subdivideTets;
 
-	std::vector<std::array<int, 3>>& covered_tet_fs = mesh.insertOneTriangleBuffers.covered_tet_fs;
+	std::vector<std::array<int, 3>>& covered_tet_fs = insBuffers.insertOneTriangle.covered_tet_fs;
 	covered_tet_fs.clear();
 
 	for( int I = 0; I < subdivide_t_ids.size(); I++ )
@@ -1294,7 +1297,7 @@ bool floatTetWild::insert_boundary_edges( const std::vector<Vector3>& input_vert
 		}
 		vector_unique( cut_t_ids );
 		std::vector<bool> is_mark_surface( cut_t_ids.size(), false );
-		CutMesh empty_cut_mesh( mesh, Vector3( 0, 0, 0 ), std::array<Vector3, 3>() );
+		CutMesh empty_cut_mesh( mesh, Vector3( 0, 0, 0 ), std::array<Vector3, 3>(), mesh.insertionBuffers() );
 		//
 		std::vector<MeshTet> new_tets;
 		std::vector<std::array<std::vector<int>, 4>> new_track_surface_fs;
