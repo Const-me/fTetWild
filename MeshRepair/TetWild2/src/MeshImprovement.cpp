@@ -80,7 +80,7 @@ void floatTetWild::init( Mesh& mesh, AABBWrapper& tree )
 }
 
 void floatTetWild::optimization( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const std::vector<int>& input_tags,
-  std::vector<bool>& is_face_inserted, Mesh& mesh, AABBWrapper& tree, const std::array<int, 4>& ops )
+  BoolVector& is_face_inserted, Mesh& mesh, AABBWrapper& tree, const std::array<int, 4>& ops )
 {
 	init( mesh, tree );
 
@@ -335,7 +335,7 @@ void floatTetWild::operation( Mesh& mesh, AABBWrapper& tree, const std::array<in
 }
 
 void floatTetWild::operation( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const std::vector<int>& input_tags,
-  std::vector<bool>& is_face_inserted, Mesh& mesh, AABBWrapper& tree, const std::array<int, 5>& ops )
+  BoolVector& is_face_inserted, Mesh& mesh, AABBWrapper& tree, const std::array<int, 5>& ops )
 {
 	operation( mesh, tree, { { ops[ 0 ], ops[ 1 ], ops[ 2 ], ops[ 3 ] } } );
 
@@ -350,7 +350,7 @@ void floatTetWild::operation( const std::vector<Vector3>& input_vertices, const 
 			insert_triangles( input_vertices, input_faces, input_tags, mesh, is_face_inserted, tree, true );
 			init( mesh, tree );
 			stats().record( StateInfo::cutting_id, igl_timer.getElapsedTimeInSec(), mesh.get_v_num(), mesh.get_t_num(), mesh.get_max_energy(),
-			  mesh.get_avg_energy(), std::count( is_face_inserted.begin(), is_face_inserted.end(), false ) );
+			  mesh.get_avg_energy(), is_face_inserted.countFalse() );
 
 			if( mesh.is_input_all_inserted && mesh.is_closed )
 			{

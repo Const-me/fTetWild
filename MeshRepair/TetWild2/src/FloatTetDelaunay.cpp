@@ -16,6 +16,7 @@
 #include "LocalOperations.h"
 #include "MeshImprovement.h"
 #include "../../GeogramDelaunay/GeogramDelaunay.h"
+#include "BoolVector.h"
 
 namespace floatTetWild
 {
@@ -52,8 +53,7 @@ namespace floatTetWild
 			return std::tuple<int, int, int>( a[ 0 ], a[ 1 ], a[ 2 ] ) < std::tuple<int, int, int>( b[ 0 ], b[ 1 ], b[ 2 ] );
 		}
 
-		void match_surface_fs(
-		  Mesh& mesh, const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, std::vector<bool>& is_face_inserted )
+		void match_surface_fs( Mesh& mesh, const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, BoolVector& is_face_inserted )
 		{
 			std::vector<std::array<int, 4>> input_fs( input_faces.size() );
 			for( int i = 0; i < input_faces.size(); i++ )
@@ -73,7 +73,7 @@ namespace floatTetWild
 					for( auto it = bounds.first; it != bounds.second; ++it )
 					{
 						int f_id = ( *it )[ 3 ];
-						is_face_inserted[ f_id ] = true;
+						is_face_inserted.set( f_id );
 					}
 				}
 			}
@@ -170,7 +170,7 @@ namespace floatTetWild
 	}  // namespace
 
 	void FloatTetDelaunay::tetrahedralize( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const AABBWrapper& tree,
-	  Mesh& mesh, std::vector<bool>& is_face_inserted )
+	  Mesh& mesh, BoolVector& is_face_inserted )
 	{
 		const Parameters& params = mesh.params;
 		auto& tet_vertices = mesh.tet_vertices;

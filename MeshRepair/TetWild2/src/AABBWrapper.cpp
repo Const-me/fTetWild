@@ -49,8 +49,9 @@ void floatTetWild::AABBWrapper::init_b_mesh_and_tree(
 	std::vector<std::pair<std::array<int, 2>, std::vector<int>>> _;
 	std::vector<std::array<int, 2>> b_edges;
 	std::vector<bool> _1;
-	find_boundary_edges(
-	  input_vertices, input_faces, std::vector<bool>( input_faces.size(), true ), std::vector<bool>( input_faces.size(), true ), _, _1, b_edges, mesh.logger() );
+	BoolVector iff;
+	iff.resize( input_faces.size(), true );
+	find_boundary_edges( input_vertices, input_faces, iff, iff, _, _1, b_edges, mesh.logger() );
 
 	if( b_edges.empty() )
 		setSingleTriangle( b_mesh );

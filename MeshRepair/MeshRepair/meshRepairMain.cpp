@@ -47,7 +47,8 @@ HRESULT meshRepairMain( MeshRepair::SourceMesh& rsi, MeshRepair::eGlobalFlags gl
 		tree.init_b_mesh_and_tree( rsi.input_vertices, rsi.input_faces, mesh );
 
 		// tetrahedralizing
-		std::vector<bool> is_face_inserted( rsi.input_faces.size(), false );
+		BoolVector is_face_inserted;
+		is_face_inserted.resize( rsi.input_faces.size(), false );
 		FloatTetDelaunay::tetrahedralize( rsi.input_vertices, rsi.input_faces, tree, mesh, is_face_inserted );
 
 		// cutting

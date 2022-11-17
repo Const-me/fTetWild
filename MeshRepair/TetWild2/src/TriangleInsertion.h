@@ -16,19 +16,20 @@
 #include "../external/Rational.h"
 #include "../external/Predicates.h"
 #include <map>
+#include "BoolVector.h"
 
 namespace floatTetWild
 {
 	using TrackSF = std::vector<std::array<std::vector<int>, 4>>;
 
-	void match_surface_fs( const Mesh& mesh, const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces,
-	  std::vector<bool>& is_face_inserted, TrackSF& track_surface_fs );
+	void match_surface_fs( const Mesh& mesh, const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, BoolVector& is_face_inserted,
+	  TrackSF& track_surface_fs );
 
 	void insert_triangles( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const std::vector<int>& input_tags, Mesh& mesh,
-	  std::vector<bool>& is_face_inserted, AABBWrapper& tree, bool is_again );
+	  BoolVector& is_face_inserted, AABBWrapper& tree, bool is_again );
 
 	void insert_triangles_aux( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const std::vector<int>& input_tags,
-	  Mesh& mesh, std::vector<bool>& is_face_inserted, AABBWrapper& tree, bool is_again );
+	  Mesh& mesh, BoolVector& is_face_inserted, AABBWrapper& tree, bool is_again );
 
 	void sort_input_faces(
 	  const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const Mesh& mesh, std::vector<int>& sorted_f_ids );
@@ -51,13 +52,13 @@ namespace floatTetWild
 	void pair_track_surface_fs( const Mesh& mesh, TrackSF& track_surface_fs );
 
 	/// edge
-	void find_boundary_edges( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const std::vector<bool>& is_face_inserted,
-	  const std::vector<bool>& old_is_face_inserted, std::vector<std::pair<std::array<int, 2>, std::vector<int>>>& b_edge_infos,
+	void find_boundary_edges( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const BoolVector& is_face_inserted,
+	  const BoolVector& old_is_face_inserted, std::vector<std::pair<std::array<int, 2>, std::vector<int>>>& b_edge_infos,
 	  std::vector<bool>& is_on_cut_edges, std::vector<std::array<int, 2>>& b_edges, const Logger& log );
 
 	bool insert_boundary_edges( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces,
 	  std::vector<std::pair<std::array<int, 2>, std::vector<int>>>& b_edge_infos, std::vector<bool>& is_on_cut_edges, TrackSF& track_surface_fs, Mesh& mesh,
-	  AABBWrapper& tree, std::vector<bool>& is_face_inserted, bool is_again,
+	  AABBWrapper& tree, BoolVector& is_face_inserted, bool is_again,
 	  std::vector<std::array<int, 3>>& known_surface_fs, std::vector<std::array<int, 3>>& known_not_surface_fs );
 
 	bool insert_boundary_edges_get_intersecting_edges_and_points( const std::vector<std::vector<std::pair<int, int>>>& covered_fs_infos,
@@ -71,7 +72,7 @@ namespace floatTetWild
 	  const std::vector<int>& cut_t_ids, const Mesh& mesh );
 
 	void mark_surface_fs( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const std::vector<int>& input_tags,
-	  TrackSF& track_surface_fs, const std::vector<bool>& is_face_inserted, const std::vector<std::array<int, 3>>& known_surface_fs,
+	  TrackSF& track_surface_fs, const BoolVector& is_face_inserted, const std::vector<std::array<int, 3>>& known_surface_fs,
 	  const std::vector<std::array<int, 3>>& known_not_surface_fs, std::vector<std::array<int, 2>>& b_edges, Mesh& mesh, AABBWrapper& tree );
 
 	int get_opp_t_id( int t_id, int j, const Mesh& mesh );

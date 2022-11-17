@@ -11,14 +11,14 @@
 #include "Mesh.h"
 #include "Types.hpp"
 #include "AABBWrapper.h"
+#include "BoolVector.h"
 
 namespace floatTetWild
 {
-	class FloatTetDelaunay
+	struct FloatTetDelaunay
 	{
-	  public:
-		// to generate delaunay meshes with the model vertices and bounding box points.
+		// Generate Delaunay meshes with the model vertices and bounding box points.
 		static void tetrahedralize( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const AABBWrapper& tree, Mesh& mesh,
-		  std::vector<bool>& is_face_inserted );
+		  BoolVector& is_face_inserted );
 	};
 }  // namespace floatTetWild
