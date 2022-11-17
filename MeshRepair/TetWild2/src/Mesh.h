@@ -114,10 +114,10 @@ namespace floatTetWild
 		inline int get_t_num() const
 		{
 			int cnt = 0;
-			for( int i = 0; i < tets.size(); i++ )
+			for( const auto& tet : tets )
 			{
-				if( !tets[ i ].is_removed )
-					cnt++;
+				const int inc = tet.is_removed ? 0 : 1;
+				cnt += inc;
 			}
 			return cnt;
 		}
