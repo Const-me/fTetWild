@@ -4,6 +4,7 @@
 #include "EdgesSet.h"
 #include <queue>
 #include "../Utils/Geogram2.h"
+#include <map>
 
 namespace floatTetWild
 {
@@ -71,5 +72,20 @@ namespace floatTetWild
 		std::vector<int> n_ids;
 		std::vector<std::pair<int, Vector3>> centroids;
 		std::vector<std::pair<int, Vector3>> tmp_centroids;
+	};
+
+	struct InsertOneTriangleBuffers
+	{
+		std::vector<Vector3> points;
+		// TODO: replace with another container which retains the memory
+		std::map<std::array<int, 2>, int> map_edge_to_intersecting_point;
+		std::vector<int> subdivide_t_ids;
+		std::vector<int> tmp;
+		std::vector<bool> is_mark_surface;
+
+		std::vector<MeshTet> new_tets;
+		// TODO: replace this with another collection which retains the memory; nested vectors don't retain
+		std::vector<std::array<std::vector<int>, 4>> new_track_surface_fs;
+		std::vector<int> modified_t_ids;
 	};
 }

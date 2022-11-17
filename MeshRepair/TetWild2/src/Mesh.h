@@ -160,6 +160,7 @@ namespace floatTetWild
 		mutable IsBoundaryEdgeBuffers isBoundaryEdgeBuffers;
 		EdgeSwappingBuffers edgeSwappingBuffers;
 		SubdivideTetsBuffers subdivideTetsBuffers;
+		InsertOneTriangleBuffers insertOneTriangleBuffers;
 		GlobalVariables globalVars;
 
 		// Some of the temporary buffers are per-thread, this method resizes them to params.num_threads length

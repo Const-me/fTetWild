@@ -244,6 +244,7 @@ bool floatTetWild::insert_one_triangle( int insert_f_id, const std::vector<Vecto
 	if( cut_t_ids.empty() )
 		throw std::logic_error( "cut_t_ids.empty()" );
 
+	InsertOneTriangleBuffers& buffers = mesh.insertOneTriangleBuffers;
 	CutMesh cut_mesh( mesh, n, vs );
 	cut_mesh.construct( cut_t_ids );
 
@@ -255,9 +256,15 @@ bool floatTetWild::insert_one_triangle( int insert_f_id, const std::vector<Vecto
 		cut_mesh.project_to_plane( input_vertices.size() );
 	}
 
-	std::vector<Vector3> points;
-	std::map<std::array<int, 2>, int> map_edge_to_intersecting_point;
-	std::vector<int> subdivide_t_ids;
+	std::vector<Vector3>& points = buffers.points;
+	points.clear();
+
+	std::map<std::array<int, 2>, int>& map_edge_to_intersecting_point = buffers.map_edge_to_intersecting_point;
+	map_edge_to_intersecting_point.clear();
+
+	std::vector<int>& subdivide_t_ids = buffers.subdivide_t_ids;
+	subdivide_t_ids.clear();
+
 	if( !cut_mesh.get_intersecting_edges_and_points( points, map_edge_to_intersecting_point, subdivide_t_ids ) )
 	{
 		if( is_again )
@@ -271,15 +278,27 @@ bool floatTetWild::insert_one_triangle( int insert_f_id, const std::vector<Vecto
 
 	// have to add all cut_t_ids
 	vector_unique( cut_t_ids );
-	std::vector<int> tmp;
+	std::vector<int>& tmp = buffers.tmp;
+	tmp.clear();
+
 	std::set_difference( subdivide_t_ids.begin(), subdivide_t_ids.end(), cut_t_ids.begin(), cut_t_ids.end(), std::back_inserter( tmp ) );
-	std::vector<bool> is_mark_surface( cut_t_ids.size(), true );
+
+	std::vector<bool>& is_mark_surface = buffers.is_mark_surface;
+	is_mark_surface.clear();
+	is_mark_surface.resize( cut_t_ids.size(), true );
+
 	cut_t_ids.insert( cut_t_ids.end(), tmp.begin(), tmp.end() );
 	is_mark_surface.resize( is_mark_surface.size() + tmp.size(), false );
 
-	std::vector<MeshTet> new_tets;
-	std::vector<std::array<std::vector<int>, 4>> new_track_surface_fs;
-	std::vector<int> modified_t_ids;
+	std::vector<MeshTet>& new_tets = buffers.new_tets;
+	new_tets.clear();
+
+	std::vector<std::array<std::vector<int>, 4>>& new_track_surface_fs = buffers.new_track_surface_fs;
+	new_track_surface_fs.clear();
+
+	std::vector<int>& modified_t_ids = buffers.modified_t_ids;
+	modified_t_ids.clear();
+
 	if( !subdivide_tets( insert_f_id, mesh, cut_mesh, points, map_edge_to_intersecting_point, track_surface_fs, cut_t_ids, is_mark_surface, new_tets,
 		  new_track_surface_fs, modified_t_ids ) )
 	{
