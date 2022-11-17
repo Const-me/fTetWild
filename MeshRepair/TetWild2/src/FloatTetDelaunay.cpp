@@ -144,6 +144,29 @@ namespace floatTetWild
 				}
 			}
 		}
+
+		__forceinline __m256d loadVertex( const double* vb, size_t vbSize, int si )
+		{
+			const size_t ui = (size_t)(uint32_t)si;
+			const double* const p = vb + ui * 3;
+			if( ui + 1 < vbSize )
+				return _mm256_loadu_pd( p );	//< This branch is extremely likely to be taken, and saves quite a few instructions
+			else
+				return AvxMath::loadDouble3( p );
+		}
+
+		__forceinline void updateMaxTetraSize( __m256d& acc, const double* vb, size_t vbSize, __m128i elt )
+		{
+			const __m256d v0 = loadVertex( vb, vbSize, _mm_cvtsi128_si32( elt ) );
+			const __m256d v1 = loadVertex( vb, vbSize, _mm_extract_epi32( elt, 1 ) );
+			const __m256d v2 = loadVertex( vb, vbSize, _mm_extract_epi32( elt, 2 ) );
+			const __m256d v3 = loadVertex( vb, vbSize, _mm_extract_epi32( elt, 3 ) );
+
+			__m256d i = _mm256_min_pd( _mm256_min_pd( v0, v1 ), _mm256_min_pd( v2, v3 ) );
+			__m256d ax = _mm256_max_pd( _mm256_max_pd( v0, v1 ), _mm256_max_pd( v2, v3 ) );
+			__m256d sz = _mm256_sub_pd( ax, i );
+			acc = _mm256_max_pd( acc, sz );
+		}
 	}  // namespace
 
 	void FloatTetDelaunay::tetrahedralize( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const AABBWrapper& tree,
@@ -193,16 +216,17 @@ namespace floatTetWild
 				V_d[ i * 3 + j ] = tet_vertices[ i ].pos[ j ];
 		}
 
+		// The Delaunay is implemented in Geogram; we consume the algorithm through the usable wrapper exposed by GeogramDelaunay static library
 		constexpr bool multithreadedDelaunay = false;
 		auto delaunay = iDelaunay::create( multithreadedDelaunay );
 		delaunay->compute( n_pts, V_d.data() );
+
 		const size_t countElements = delaunay->countElements();
 		tets.resize( countElements );
 		const __m128i* const tet2v = delaunay->getElements();
 		for( size_t i = 0; i < countElements; i++ )
 		{
 			__m128i tetra = tet2v[ i ];
-			// std::swap( tets[ i ][ 1 ], tets[ i ][ 3 ] );
 			tetra = _mm_shuffle_epi32( tetra, _MM_SHUFFLE( 1, 2, 3, 0 ) );
 			_mm_storeu_si128( (__m128i*)&tets[ i ].indices, tetra );
 
@@ -211,6 +235,29 @@ namespace floatTetWild
 			tet_vertices[ _mm_extract_epi32( tetra, 2 ) ].connTets.add( (int)i );
 			tet_vertices[ _mm_extract_epi32( tetra, 3 ) ].connTets.add( (int)i );
 		}
+
+#if PARALLEL_TRIANGLES_INSERTION
+		const double* const vertexPointer = V_d.data();
+		const size_t vertexCount = tet_vertices.size();
+		__m256d maxElementSizeVec = _mm256_setzero_pd();
+
+		for( size_t i = 0; i < countElements; i++ )
+		{
+			// The above loop calls vector.push_back()
+			// The compiler won't inline that, and due to the ABI convention this evicts some of the registers to memory
+			// updateMaxTetraSize uses quite a few of these vector registers.
+			// It's probably more efficient to run another loop over the same elements, this time without calling any functions from the loop
+			updateMaxTetraSize( maxElementSizeVec, vertexPointer, vertexCount, tet2v[ i ] );
+		}
+
+		// Multiply by that safety epsilon
+		maxElementSizeVec = _mm256_mul_pd( maxElementSizeVec, _mm256_broadcast_sd( &Mesh::maxTetraSizeEpsilonMul ) );
+		// We gonna divide vectors by that vector; set W lane to 1.0 to avoid division by 0 in the unused lane
+		// On some CPUs, these singularity shenanigans have a small performance cost
+		maxElementSizeVec = _mm256_blend_pd( maxElementSizeVec, _mm256_set1_pd( 1 ), 0b1000 );
+		// Store in the mesh
+		mesh.maxTetraSize = maxElementSizeVec;
+#endif
 
 		for( int i = 0; i < mesh.tets.size(); i++ )
 		{

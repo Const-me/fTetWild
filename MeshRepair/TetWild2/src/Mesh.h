@@ -151,6 +151,12 @@ namespace floatTetWild
 			return avg_energy;
 		}
 
+#if PARALLEL_TRIANGLES_INSERTION
+		static constexpr double maxTetraSizeEpsilonMul = 17.0 / 16.0;
+		// Maximum size of the element produced by the first stage of the algorithm, during FloatTetDelaunay::tetrahedralize method
+		__m256d maxTetraSize;
+#endif
+
 		std::vector<FindNewPosBuffers> findNewPosBuffers;
 		EdgeCollapsingAuxBuffers edgeCollapsingAuxBuffers;
 		CollapseEdgeBuffers collapseEdgeBuffers;

@@ -27,3 +27,6 @@ namespace floatTetWild
 	typedef Eigen::Matrix<int, 3, 1> Vector3i;
 	typedef Eigen::Matrix<int, 2, 1> Vector2i;
 }  // namespace floatTetWild
+
+// Insert triangles in parallel, incomplete
+#define PARALLEL_TRIANGLES_INSERTION 0
