@@ -42,13 +42,13 @@ namespace floatTetWild
 	  const std::vector<int>& input_tags, Mesh& mesh, TrackSF& track_surface_fs, AABBWrapper& tree, bool is_again );
 
 	void find_cutting_tets( int f_id, const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const std::array<Vector3, 3>& vs,
-	  Mesh& mesh, std::vector<int>& result, bool is_again );
+	  const Mesh& mesh, std::vector<int>& result, bool is_again );
 
-	bool subdivide_tets( int insert_f_id, Mesh& mesh, CutMesh& cut_mesh, std::vector<Vector3>& points,
+	bool subdivide_tets( int insert_f_id, const Mesh& mesh, CutMesh& cut_mesh, std::vector<Vector3>& points,
 	  std::map<std::array<int, 2>, int>& map_edge_to_intersecting_point, TrackSF& track_surface_fs, std::vector<int>& subdivide_t_ids,
 	  std::vector<bool>& is_mark_surface, std::vector<MeshTet>& new_tets, TrackSF& new_track_surface_fs, std::vector<int>& modified_t_ids );
 
-	void pair_track_surface_fs( Mesh& mesh, TrackSF& track_surface_fs );
+	void pair_track_surface_fs( const Mesh& mesh, TrackSF& track_surface_fs );
 
 	/// edge
 	void find_boundary_edges( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const std::vector<bool>& is_face_inserted,
@@ -68,23 +68,20 @@ namespace floatTetWild
 
 	/// other
 	bool is_uninserted_face_covered( int uninserted_f_id, const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces,
-	  const std::vector<int>& cut_t_ids, Mesh& mesh );
+	  const std::vector<int>& cut_t_ids, const Mesh& mesh );
 
 	void mark_surface_fs( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const std::vector<int>& input_tags,
-	  TrackSF& track_surface_fs, const std::vector<bool>& is_face_inserted,
-	  const std::vector<std::array<int, 3>>& known_surface_fs, const std::vector<std::array<int, 3>>& known_not_surface_fs,
-	  std::vector<std::array<int, 2>>& b_edges, Mesh& mesh, AABBWrapper& tree );
+	  TrackSF& track_surface_fs, const std::vector<bool>& is_face_inserted, const std::vector<std::array<int, 3>>& known_surface_fs,
+	  const std::vector<std::array<int, 3>>& known_not_surface_fs, std::vector<std::array<int, 2>>& b_edges, Mesh& mesh, AABBWrapper& tree );
 
 	int get_opp_t_id( int t_id, int j, const Mesh& mesh );
 
 	void myassert( bool b, const std::string& s );
 
-	void check_track_surface_fs( Mesh& mesh, TrackSF& track_surface_fs, const std::vector<Vector3>& input_vertices,
-	  const std::vector<Vector3i>& input_faces, const std::vector<int>& sorted_f_ids );
 	Vector3 get_normal( const Vector3& a, const Vector3& b, const Vector3& c );
 
 	// fortest
-	typedef Eigen::Matrix<triwild::Rational, 3, 1> Vector3_r;
+	using Vector3_r = Eigen::Matrix<triwild::Rational, 3, 1>;
 
 	eOrientation orient_rational( const Vector3_r& p1, const Vector3_r& p2, const Vector3_r& p3, const Vector3_r& p );
 }  // namespace floatTetWild

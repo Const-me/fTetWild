@@ -166,13 +166,13 @@ namespace floatTetWild
 
 	  private:
 #if PARALLEL_TRIANGLES_INSERTION
-		std::vector<InsertionBuffers> insertion;
+		mutable std::vector<InsertionBuffers> insertion;
 #else
-		InsertionBuffers insertion;
+		mutable InsertionBuffers insertion;
 #endif
 
 	  public:
-		InsertionBuffers& insertionBuffers()
+		InsertionBuffers& insertionBuffers() const
 		{
 #if PARALLEL_TRIANGLES_INSERTION
 			return insertion[ omp_get_thread_num() ];
@@ -184,6 +184,6 @@ namespace floatTetWild
 		// Some of the temporary buffers are per-thread, this method resizes them to params.num_threads length
 		void createThreadLocalBuffers();
 
-		TimeMeasures times;
+		mutable TimeMeasures times;
 	};
 }  // namespace floatTetWild

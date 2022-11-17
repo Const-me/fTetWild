@@ -475,7 +475,7 @@ namespace
 	using namespace floatTetWild;
 
 	static void findCuttingTetsOmp(
-	  Mesh& mesh, __m256d min_f, __m256d max_f, std::queue<int>& queue_t_ids, std::vector<bool>& is_visited, FindCuttingTetsBuffers& buffers )
+	  const Mesh& mesh, __m256d min_f, __m256d max_f, std::queue<int>& queue_t_ids, std::vector<bool>& is_visited, FindCuttingTetsBuffers& buffers )
 	{
 		std::vector<int>& queueSortIDs = buffers.queueSortIDs;
 		queueSortIDs.clear();
@@ -509,7 +509,7 @@ namespace
 		}
 	}
 
-	static void findCuttingTets( Mesh& mesh, __m256d min_f, __m256d max_f, std::queue<int>& queue_t_ids, std::vector<bool>& is_visited )
+	static void findCuttingTets( const Mesh& mesh, __m256d min_f, __m256d max_f, std::queue<int>& queue_t_ids, std::vector<bool>& is_visited )
 	{
 		for( size_t t_id = 0; t_id < mesh.tets.size(); t_id++ )
 		{
@@ -531,7 +531,7 @@ namespace
 }  // namespace
 
 void floatTetWild::find_cutting_tets( int f_id, const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces,
-  const std::array<Vector3, 3>& vs, Mesh& mesh, std::vector<int>& cut_t_ids, bool is_again )
+  const std::array<Vector3, 3>& vs, const Mesh& mesh, std::vector<int>& cut_t_ids, bool is_again )
 {
 	auto tm = mesh.times.findCuttingTets.measure();
 
@@ -566,10 +566,14 @@ void floatTetWild::find_cutting_tets( int f_id, const std::vector<Vector3>& inpu
 		__m256d min_f, max_f;
 		get_bbox_face(
 		  input_vertices[ input_faces[ f_id ][ 0 ] ], input_vertices[ input_faces[ f_id ][ 1 ] ], input_vertices[ input_faces[ f_id ][ 2 ] ], min_f, max_f );
+#if PARALLEL_TRIANGLES_INSERTION
+		findCuttingTets( mesh, min_f, max_f, queue_t_ids, is_visited );
+#else
 		if( mesh.params.num_threads > 1 )
 			findCuttingTetsOmp( mesh, min_f, max_f, queue_t_ids, is_visited, buffers );
 		else
 			findCuttingTets( mesh, min_f, max_f, queue_t_ids, is_visited );
+#endif
 	}
 
 	while( !queue_t_ids.empty() )
@@ -710,7 +714,7 @@ namespace
 	static const std::array<std::array<int, 3>, 4> t_f_vs = { { { { 3, 1, 2 } }, { { 0, 2, 3 } }, { { 1, 3, 0 } }, { { 2, 0, 1 } } } };
 }  // namespace
 
-bool floatTetWild::subdivide_tets( int insert_f_id, Mesh& mesh, CutMesh& cut_mesh, std::vector<Vector3>& points,
+bool floatTetWild::subdivide_tets( int insert_f_id, const Mesh& mesh, CutMesh& cut_mesh, std::vector<Vector3>& points,
   std::map<std::array<int, 2>, int>& map_edge_to_intersecting_point, TrackSF& track_surface_fs, std::vector<int>& subdivide_t_ids,
   std::vector<bool>& is_mark_surface, std::vector<MeshTet>& new_tets, TrackSF& new_track_surface_fs, std::vector<int>& modified_t_ids )
 {
@@ -988,7 +992,7 @@ bool floatTetWild::subdivide_tets( int insert_f_id, Mesh& mesh, CutMesh& cut_mes
 	return true;
 }
 
-void floatTetWild::pair_track_surface_fs( Mesh& mesh, TrackSF& track_surface_fs )
+void floatTetWild::pair_track_surface_fs( const Mesh& mesh, TrackSF& track_surface_fs )
 {
 	std::vector<std::array<bool, 4>> is_visited( track_surface_fs.size(), { { false, false, false, false } } );
 	for( int t_id = 0; t_id < track_surface_fs.size(); t_id++ )
@@ -1871,7 +1875,7 @@ void floatTetWild::mark_surface_fs( const std::vector<Vector3>& input_vertices, 
 }
 
 bool floatTetWild::is_uninserted_face_covered(
-  int uninserted_f_id, const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const std::vector<int>& cut_t_ids, Mesh& mesh )
+  int uninserted_f_id, const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const std::vector<int>& cut_t_ids, const Mesh& mesh )
 {
 	std::array<Vector3, 3> vs = { { input_vertices[ input_faces[ uninserted_f_id ][ 0 ] ], input_vertices[ input_faces[ uninserted_f_id ][ 1 ] ],
 	  input_vertices[ input_faces[ uninserted_f_id ][ 2 ] ] } };
