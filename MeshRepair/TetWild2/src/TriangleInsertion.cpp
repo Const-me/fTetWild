@@ -369,33 +369,37 @@ bool floatTetWild::insert_one_triangle( int insert_f_id, const std::vector<Vecto
 }
 
 void floatTetWild::push_new_tets( Mesh& mesh, TrackSF& track_surface_fs, std::vector<Vector3>& points, std::vector<MeshTet>& new_tets,
-  const TrackSF& new_track_surface_fs, std::vector<int>& modified_t_ids, bool is_again )
+  TrackSF& new_track_surface_fs, std::vector<int>& modified_t_ids, bool is_again )
 {
 	const int old_v_size = mesh.tet_vertices.size();
 	mesh.tet_vertices.resize( mesh.tet_vertices.size() + points.size() );
 	for( int i = 0; i < points.size(); i++ )
 		mesh.tet_vertices[ old_v_size + i ].pos = points[ i ];
 
-	for( int i = 0; i < new_tets.size(); i++ )
+	for( int i = 0; i < modified_t_ids.size(); i++ )
 	{
-		if( i < modified_t_ids.size() )
-		{
-			for( int j = 0; j < 4; j++ )
-				mesh.tet_vertices[ mesh.tets[ modified_t_ids[ i ] ][ j ] ].connTets.remove( modified_t_ids[ i ] );
+		const int id = modified_t_ids[ i ];
+		auto& tet = mesh.tets[ id ];
+		for( int j = 0; j < 4; j++ )
+			mesh.tet_vertices[ tet.indices[ j ] ].connTets.remove( id );
 
-			mesh.tets[ modified_t_ids[ i ] ] = new_tets[ i ];
-			track_surface_fs[ modified_t_ids[ i ] ] = new_track_surface_fs[ i ];
-			for( int j = 0; j < 4; j++ )
-				mesh.tet_vertices[ mesh.tets[ modified_t_ids[ i ] ][ j ] ].connTets.add( modified_t_ids[ i ] );
-		}
-		else
-		{
-			for( int j = 0; j < 4; j++ )
-				mesh.tet_vertices[ new_tets[ i ][ j ] ].connTets.add( mesh.tets.size() + i - modified_t_ids.size() );
-		}
+		tet = new_tets[ i ];
+		track_surface_fs[ id ] = std::move( new_track_surface_fs[ i ] );
+
+		for( int j = 0; j < 4; j++ )
+			mesh.tet_vertices[ tet.indices[ j ] ].connTets.add( id );
 	}
+	for( int i = modified_t_ids.size(); i < new_tets.size(); i++ )
+	{
+		for( int j = 0; j < 4; j++ )
+			mesh.tet_vertices[ new_tets[ i ][ j ] ].connTets.add( mesh.tets.size() + i - modified_t_ids.size() );
+	}
+
 	mesh.tets.insert( mesh.tets.end(), new_tets.begin() + modified_t_ids.size(), new_tets.end() );
-	track_surface_fs.insert( track_surface_fs.end(), new_track_surface_fs.begin() + modified_t_ids.size(), new_track_surface_fs.end() );
+	// https://stackoverflow.com/a/53710597/126995
+	using std::make_move_iterator;
+	track_surface_fs.insert(
+	  track_surface_fs.end(), make_move_iterator( new_track_surface_fs.begin() + modified_t_ids.size() ), make_move_iterator( new_track_surface_fs.end() ) );
 	modified_t_ids.clear();
 }
 
