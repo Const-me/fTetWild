@@ -5,6 +5,7 @@
 #include <queue>
 #include "../Utils/Geogram2.h"
 #include <map>
+#include "TrackedSurfaceChanges.h"
 
 namespace floatTetWild
 {
@@ -89,8 +90,7 @@ namespace floatTetWild
 		std::vector<bool> is_mark_surface;
 
 		std::vector<MeshTet> new_tets;
-		// TODO: replace this with another collection which retains the memory; nested vectors don't retain
-		std::vector<std::array<std::vector<int>, 4>> new_track_surface_fs;
+		TSChanges trackedSurfaceChanges;
 		std::vector<int> modified_t_ids;
 	};
 

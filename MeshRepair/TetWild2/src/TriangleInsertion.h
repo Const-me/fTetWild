@@ -20,8 +20,6 @@
 
 namespace floatTetWild
 {
-	using TrackSF = std::vector<std::array<std::vector<int>, 4>>;
-
 	void match_surface_fs( const Mesh& mesh, const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, BoolVector& is_face_inserted,
 	  TrackSF& track_surface_fs );
 
@@ -34,11 +32,11 @@ namespace floatTetWild
 	void sort_input_faces(
 	  const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const Mesh& mesh, std::vector<int>& sorted_f_ids );
 
-	void push_new_tets( Mesh& mesh, TrackSF& track_surface_fs, std::vector<Vector3>& points, std::vector<MeshTet>& new_tets,
-	  TrackSF& new_track_surface_fs, std::vector<int>& modified_t_ids, bool is_again );
+	void push_new_tets( Mesh& mesh, TrackSF& track_surface_fs, std::vector<Vector3>& points, std::vector<MeshTet>& new_tets, const TSChanges& tracked,
+	  std::vector<int>& modified_t_ids, bool is_again );
 
-	void pushNewTetsParallel( Mesh& mesh, TrackSF& track_surface_fs, std::vector<Vector3>& points, std::vector<MeshTet>& new_tets,
-	  TrackSF& new_track_surface_fs, std::vector<int>& modified_t_ids, bool is_again, size_t prevVerts, size_t prevTets );
+	void pushNewTetsParallel( Mesh& mesh, TrackSF& track_surface_fs, std::vector<Vector3>& points, std::vector<MeshTet>& new_tets, const TSChanges& tracked,
+	  std::vector<int>& modified_t_ids, bool is_again, size_t prevVerts, size_t prevTets );
 
 	void simplify_subdivision_result( int insert_f_id, int input_v_size, Mesh& mesh, AABBWrapper& tree, TrackSF& track_surface_fs );
 
@@ -49,8 +47,8 @@ namespace floatTetWild
 	  const Mesh& mesh, std::vector<int>& result, bool is_again, size_t countTets );
 
 	bool subdivide_tets( int insert_f_id, const Mesh& mesh, CutMesh& cut_mesh, std::vector<Vector3>& points,
-	  std::map<std::array<int, 2>, int>& map_edge_to_intersecting_point, const TrackSF& track_surface_fs, std::vector<int>& subdivide_t_ids,
-	  std::vector<bool>& is_mark_surface, std::vector<MeshTet>& new_tets, TrackSF& new_track_surface_fs, std::vector<int>& modified_t_ids,
+	  std::map<std::array<int, 2>, int>& map_edge_to_intersecting_point, std::vector<int>& subdivide_t_ids, std::vector<bool>& is_mark_surface,
+	  std::vector<MeshTet>& new_tets, TSChanges& tracked, std::vector<int>& modified_t_ids,
 	  size_t countVertices );
 
 	void pair_track_surface_fs( const Mesh& mesh, TrackSF& track_surface_fs );

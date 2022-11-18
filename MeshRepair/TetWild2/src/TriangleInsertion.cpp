@@ -352,14 +352,14 @@ bool floatTetWild::insert_one_triangle( int insert_f_id, const std::vector<Vecto
 	std::vector<MeshTet>& new_tets = buffers.new_tets;
 	new_tets.clear();
 
-	TrackSF& new_track_surface_fs = buffers.new_track_surface_fs;
-	new_track_surface_fs.clear();
+	auto& tracked = buffers.trackedSurfaceChanges;
+	tracked.clear();
 
 	std::vector<int>& modified_t_ids = buffers.modified_t_ids;
 	modified_t_ids.clear();
 
-	if( !subdivide_tets( insert_f_id, mesh, cut_mesh, points, map_edge_to_intersecting_point, track_surface_fs, cut_t_ids, is_mark_surface, new_tets,
-		  new_track_surface_fs, modified_t_ids, countVertices ) )
+	if( !subdivide_tets(
+		  insert_f_id, mesh, cut_mesh, points, map_edge_to_intersecting_point, cut_t_ids, is_mark_surface, new_tets, tracked, modified_t_ids, countVertices ) )
 	{
 		if( is_again )
 		{
@@ -371,9 +371,9 @@ bool floatTetWild::insert_one_triangle( int insert_f_id, const std::vector<Vecto
 	}
 #if PARALLEL_TRIANGLES_INSERTION
 	lockShared.unlock();
-	pushNewTetsParallel( mesh, track_surface_fs, points, new_tets, new_track_surface_fs, modified_t_ids, is_again, countVertices, countTets );
+	pushNewTetsParallel( mesh, track_surface_fs, points, new_tets, tracked, modified_t_ids, is_again, countVertices, countTets );
 #else
-	push_new_tets( mesh, track_surface_fs, points, new_tets, new_track_surface_fs, modified_t_ids, is_again );
+	push_new_tets( mesh, track_surface_fs, points, new_tets, tracked, modified_t_ids, is_again );
 #endif
 
 #if PARALLEL_TRIANGLES_INSERTION
@@ -383,13 +383,21 @@ bool floatTetWild::insert_one_triangle( int insert_f_id, const std::vector<Vecto
 	return true;
 }
 
-void floatTetWild::push_new_tets( Mesh& mesh, TrackSF& track_surface_fs, std::vector<Vector3>& points, std::vector<MeshTet>& new_tets,
-  TrackSF& new_track_surface_fs, std::vector<int>& modified_t_ids, bool is_again )
+void floatTetWild::push_new_tets( Mesh& mesh, TrackSF& track_surface_fs, std::vector<Vector3>& points, std::vector<MeshTet>& new_tets, const TSChanges& tracked,
+  std::vector<int>& modified_t_ids, bool is_again )
 {
+	// Copy positions of the new vertices
 	const int old_v_size = mesh.tet_vertices.size();
 	mesh.tet_vertices.resize( mesh.tet_vertices.size() + points.size() );
 	for( int i = 0; i < points.size(); i++ )
 		mesh.tet_vertices[ old_v_size + i ].pos = points[ i ];
+
+	// Produce new elements of the tracked surface first, this way they consume the unmodified values
+	const size_t newSf = tracked.size() - modified_t_ids.size();
+	const size_t oldSf = track_surface_fs.size();
+	track_surface_fs.resize( oldSf + newSf );
+	for( size_t i = 0; i < newSf; i++ )
+		tracked[ i + modified_t_ids.size() ].apply( track_surface_fs[ i + oldSf ], track_surface_fs );
 
 	for( int i = 0; i < modified_t_ids.size(); i++ )
 	{
@@ -399,11 +407,27 @@ void floatTetWild::push_new_tets( Mesh& mesh, TrackSF& track_surface_fs, std::ve
 			mesh.tet_vertices[ tet.indices[ j ] ].connTets.remove( id );
 
 		tet = new_tets[ i ];
-		track_surface_fs[ id ] = std::move( new_track_surface_fs[ i ] );
 
 		for( int j = 0; j < 4; j++ )
 			mesh.tet_vertices[ tet.indices[ j ] ].connTets.add( id );
 	}
+
+	// Apply changes to the tracked surface, using a temporary vector for the result
+	// If this code will show in the profiler, possible to optimize into a series of in-place moves
+	TrackSF newTrackSf;
+	newTrackSf.resize( modified_t_ids.size() );
+	for( size_t i = 0; i < modified_t_ids.size(); i++ ) 
+		tracked[ i ].apply( newTrackSf[ i ], track_surface_fs );
+	// Move these vectors to the destination
+	for( size_t i = 0; i < modified_t_ids.size(); i++ ) 
+	{
+		const int id = modified_t_ids[ i ];
+		track_surface_fs[ id ] = std::move( newTrackSf[ i ] );
+	}
+	// Release memory of the newTrackSf vector
+	newTrackSf.clear();
+	newTrackSf.shrink_to_fit();
+
 	for( int i = modified_t_ids.size(); i < new_tets.size(); i++ )
 	{
 		for( int j = 0; j < 4; j++ )
@@ -411,10 +435,7 @@ void floatTetWild::push_new_tets( Mesh& mesh, TrackSF& track_surface_fs, std::ve
 	}
 
 	mesh.tets.insert( mesh.tets.end(), new_tets.begin() + modified_t_ids.size(), new_tets.end() );
-	// https://stackoverflow.com/a/53710597/126995
-	using std::make_move_iterator;
-	track_surface_fs.insert(
-	  track_surface_fs.end(), make_move_iterator( new_track_surface_fs.begin() + modified_t_ids.size() ), make_move_iterator( new_track_surface_fs.end() ) );
+
 	modified_t_ids.clear();
 }
 
@@ -932,8 +953,8 @@ namespace
 }  // namespace
 
 bool floatTetWild::subdivide_tets( int insert_f_id, const Mesh& mesh, CutMesh& cut_mesh, std::vector<Vector3>& points,
-  std::map<std::array<int, 2>, int>& map_edge_to_intersecting_point, const TrackSF& track_surface_fs, std::vector<int>& subdivide_t_ids,
-  std::vector<bool>& is_mark_surface, std::vector<MeshTet>& new_tets, TrackSF& new_track_surface_fs, std::vector<int>& modified_t_ids, size_t countVertices )
+  std::map<std::array<int, 2>, int>& map_edge_to_intersecting_point, std::vector<int>& subdivide_t_ids, std::vector<bool>& is_mark_surface,
+  std::vector<MeshTet>& new_tets, TSChanges& tracked, std::vector<int>& modified_t_ids, size_t countVertices )
 {
 	auto tm = mesh.times.subdivideTets.measure();
 	auto& insBuffers = mesh.insertionBuffers();
@@ -993,8 +1014,7 @@ bool floatTetWild::subdivide_tets( int insert_f_id, const Mesh& mesh, CutMesh& c
 					if( cnt_on == 3 )
 					{
 						new_tets.push_back( mesh.tets[ t_id ] );
-						new_track_surface_fs.push_back( track_surface_fs[ t_id ] );
-						( new_track_surface_fs.back() )[ j ].push_back( insert_f_id );
+						tracked.emplace_back().makeCopyWithAppend( t_id, (uint8_t)j, insert_f_id );
 						modified_t_ids.push_back( t_id );
 
 						covered_tet_fs.push_back(
@@ -1182,12 +1202,13 @@ bool floatTetWild::subdivide_tets( int insert_f_id, const Mesh& mesh, CutMesh& c
 		{
 			const auto& t = config[ i ];
 			auto& newTet = new_tets.emplace_back( MeshTet( map_lv_to_v_id[ t[ 0 ] ], map_lv_to_v_id[ t[ 1 ] ], map_lv_to_v_id[ t[ 2 ] ], map_lv_to_v_id[ t[ 3 ] ] ) );
-			auto& ntsf = new_track_surface_fs.emplace_back();
+			auto& tsf = tracked.emplace_back();
+			tsf.makeEmpty( t_id );
 			for( int j = 0; j < 4; j++ )
 			{
 				if( new_is_surface_fs[ i ][ j ] && is_mark_sf )
 				{
-					ntsf[ j ].push_back( insert_f_id );
+					tsf.prepend( (uint8_t)j, insert_f_id );
 					auto& cff = covered_tet_fs.emplace_back();
 					cff[ 0 ] = newTet.indices[ ( j + 1 ) % 4 ];
 					cff[ 1 ] = newTet.indices[ ( j + 3 ) % 4 ];
@@ -1197,7 +1218,7 @@ bool floatTetWild::subdivide_tets( int insert_f_id, const Mesh& mesh, CutMesh& c
 				int old_local_f_id = new_local_f_ids[ i ][ j ];
 				if( old_local_f_id < 0 )
 					continue;
-				appendVector( ntsf[ j ], track_surface_fs[ t_id ][ old_local_f_id ] );
+				tsf.setSourceCopy( j, old_local_f_id );
 				newTet.is_bbox_fs[ j ] = mesh.tets[ t_id ].is_bbox_fs[ old_local_f_id ];
 				newTet.is_surface_fs[ j ] = mesh.tets[ t_id ].is_surface_fs[ old_local_f_id ];
 				newTet.surface_tags[ j ] = mesh.tets[ t_id ].surface_tags[ old_local_f_id ];
@@ -1515,10 +1536,10 @@ bool floatTetWild::insert_boundary_edges( const std::vector<Vector3>& input_vert
 		CutMesh empty_cut_mesh( mesh, Vector3( 0, 0, 0 ), std::array<Vector3, 3>(), mesh.insertionBuffers() );
 		//
 		std::vector<MeshTet> new_tets;
-		TrackSF new_track_surface_fs;
+		TSChanges tracked;
 		std::vector<int> modified_t_ids;
-		if( !subdivide_tets( -1, mesh, empty_cut_mesh, points, map_edge_to_intersecting_point, track_surface_fs, cut_t_ids, is_mark_surface, new_tets,
-			  new_track_surface_fs, modified_t_ids, mesh.tet_vertices.size() ) )
+		if( !subdivide_tets( -1, mesh, empty_cut_mesh, points, map_edge_to_intersecting_point, cut_t_ids, is_mark_surface, new_tets, tracked, modified_t_ids,
+			  mesh.tet_vertices.size() ) )
 		{
 			bool is_inside_envelope = true;
 			for( auto& f : cut_fs )
@@ -1556,7 +1577,7 @@ bool floatTetWild::insert_boundary_edges( const std::vector<Vector3>& input_vert
 
 		//
 		timer.start();
-		push_new_tets( mesh, track_surface_fs, points, new_tets, new_track_surface_fs, modified_t_ids, is_again );
+		push_new_tets( mesh, track_surface_fs, points, new_tets, tracked, modified_t_ids, is_again );
 		time5 += timer.getElapsedTime();
 
 		//

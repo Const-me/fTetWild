@@ -94,6 +94,7 @@
     <ClInclude Include="parallelThreadsImpl.h" />
     <ClInclude Include="ParallelInsertion\TrianglePartition.h" />
     <ClInclude Include="src\BoolVector.h" />
+    <ClInclude Include="src\TrackedSurfaceChanges.h" />
     <ClInclude Include="Utils\Box32.h" />
     <ClInclude Include="src\Bitset32.h" />
     <ClInclude Include="src\SmallBuffer.h" />
@@ -170,6 +171,7 @@
     <ClCompile Include="parallelThreadsImpl.cpp" />
     <ClCompile Include="ParallelInsertion\TrianglePartition.cpp" />
     <ClCompile Include="src\BoolVector.cpp" />
+    <ClCompile Include="src\TrackedSurfaceChanges.cpp" />
     <ClCompile Include="Utils\Box32.cpp" />
     <ClCompile Include="Utils\Cbrt\cbrtBsdOrig.cpp" />
     <ClCompile Include="Utils\Cbrt\cbrtBsdSse.cpp" />

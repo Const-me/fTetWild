@@ -26,6 +26,8 @@ namespace floatTetWild
 	typedef Eigen::Matrix<int, 4, 1> Vector4i;
 	typedef Eigen::Matrix<int, 3, 1> Vector3i;
 	typedef Eigen::Matrix<int, 2, 1> Vector2i;
+
+	using TrackSF = std::vector<std::array<std::vector<int>, 4>>;
 }  // namespace floatTetWild
 
 // Insert triangles in parallel, incomplete
