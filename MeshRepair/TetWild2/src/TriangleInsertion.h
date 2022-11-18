@@ -34,8 +34,11 @@ namespace floatTetWild
 	void sort_input_faces(
 	  const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const Mesh& mesh, std::vector<int>& sorted_f_ids );
 
-	void push_new_tets( Mesh& mesh, TrackSF& track_surface_fs, std::vector<Vector3>& points, std::vector<MeshTet>& new_tets, const TrackSF& new_track_surface_fs,
-	  std::vector<int>& modified_t_ids, bool is_again );
+	void push_new_tets( Mesh& mesh, TrackSF& track_surface_fs, std::vector<Vector3>& points, std::vector<MeshTet>& new_tets,
+	  const TrackSF& new_track_surface_fs, std::vector<int>& modified_t_ids, bool is_again );
+
+	void pushNewTetsParallel( Mesh& mesh, TrackSF& track_surface_fs, std::vector<Vector3>& points, std::vector<MeshTet>& new_tets,
+	  TrackSF& new_track_surface_fs, std::vector<int>& modified_t_ids, bool is_again, size_t prevVerts, size_t prevTets );
 
 	void simplify_subdivision_result( int insert_f_id, int input_v_size, Mesh& mesh, AABBWrapper& tree, TrackSF& track_surface_fs );
 
@@ -47,25 +50,25 @@ namespace floatTetWild
 
 	bool subdivide_tets( int insert_f_id, const Mesh& mesh, CutMesh& cut_mesh, std::vector<Vector3>& points,
 	  std::map<std::array<int, 2>, int>& map_edge_to_intersecting_point, const TrackSF& track_surface_fs, std::vector<int>& subdivide_t_ids,
-	  std::vector<bool>& is_mark_surface, std::vector<MeshTet>& new_tets, TrackSF& new_track_surface_fs, std::vector<int>& modified_t_ids );
+	  std::vector<bool>& is_mark_surface, std::vector<MeshTet>& new_tets, TrackSF& new_track_surface_fs, std::vector<int>& modified_t_ids,
+	  size_t countVertices );
 
 	void pair_track_surface_fs( const Mesh& mesh, TrackSF& track_surface_fs );
 
 	/// edge
 	void find_boundary_edges( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const BoolVector& is_face_inserted,
-	  const BoolVector& old_is_face_inserted, std::vector<std::pair<std::array<int, 2>, std::vector<int>>>& b_edge_infos,
-	  std::vector<bool>& is_on_cut_edges, std::vector<std::array<int, 2>>& b_edges, const Logger& log );
+	  const BoolVector& old_is_face_inserted, std::vector<std::pair<std::array<int, 2>, std::vector<int>>>& b_edge_infos, std::vector<bool>& is_on_cut_edges,
+	  std::vector<std::array<int, 2>>& b_edges, const Logger& log );
 
 	bool insert_boundary_edges( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces,
 	  std::vector<std::pair<std::array<int, 2>, std::vector<int>>>& b_edge_infos, std::vector<bool>& is_on_cut_edges, TrackSF& track_surface_fs, Mesh& mesh,
-	  AABBWrapper& tree, BoolVector& is_face_inserted, bool is_again,
-	  std::vector<std::array<int, 3>>& known_surface_fs, std::vector<std::array<int, 3>>& known_not_surface_fs );
+	  AABBWrapper& tree, BoolVector& is_face_inserted, bool is_again, std::vector<std::array<int, 3>>& known_surface_fs,
+	  std::vector<std::array<int, 3>>& known_not_surface_fs );
 
 	bool insert_boundary_edges_get_intersecting_edges_and_points( const std::vector<std::vector<std::pair<int, int>>>& covered_fs_infos,
 	  const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const std::array<int, 2>& e, const std::vector<int>& n_f_ids,
-	  TrackSF& track_surface_fs, Mesh& mesh, std::vector<Vector3>& points,
-	  std::map<std::array<int, 2>, int>& map_edge_to_intersecting_point, std::vector<int>& snapped_v_ids, std::vector<std::array<int, 3>>& cut_fs,
-	  bool is_again );
+	  TrackSF& track_surface_fs, Mesh& mesh, std::vector<Vector3>& points, std::map<std::array<int, 2>, int>& map_edge_to_intersecting_point,
+	  std::vector<int>& snapped_v_ids, std::vector<std::array<int, 3>>& cut_fs, bool is_again );
 
 	/// other
 	bool is_uninserted_face_covered( int uninserted_f_id, const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces,

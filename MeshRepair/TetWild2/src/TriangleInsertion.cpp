@@ -262,14 +262,16 @@ bool floatTetWild::insert_one_triangle( int insert_f_id, const std::vector<Vecto
 {
 	auto tm = mesh.times.insertOneTriangle.measure();
 #if PARALLEL_TRIANGLES_INSERTION
-	size_t countTets;
+	size_t countTets, countVertices;
 	{
 		std::lock_guard<std::mutex> lock { mesh.locks.mutex };
 		countTets = mesh.tets.size();
+		countVertices = mesh.tet_vertices.size();
 	}
 	std::shared_lock lockShared { mesh.locks.shared };
 #else
 	const size_t countTets = mesh.tets.size();
+	const size_t countVertices = mesh.tet_vertices.size();
 #endif
 
 	std::array<Vector3, 3> vs = { { input_vertices[ input_faces[ insert_f_id ][ 0 ] ], input_vertices[ input_faces[ insert_f_id ][ 1 ] ],
@@ -342,7 +344,7 @@ bool floatTetWild::insert_one_triangle( int insert_f_id, const std::vector<Vecto
 	modified_t_ids.clear();
 
 	if( !subdivide_tets( insert_f_id, mesh, cut_mesh, points, map_edge_to_intersecting_point, track_surface_fs, cut_t_ids, is_mark_surface, new_tets,
-		  new_track_surface_fs, modified_t_ids ) )
+		  new_track_surface_fs, modified_t_ids, countVertices ) )
 	{
 		if( is_again )
 		{
@@ -354,8 +356,10 @@ bool floatTetWild::insert_one_triangle( int insert_f_id, const std::vector<Vecto
 	}
 #if PARALLEL_TRIANGLES_INSERTION
 	lockShared.unlock();
-#endif
+	pushNewTetsParallel( mesh, track_surface_fs, points, new_tets, new_track_surface_fs, modified_t_ids, is_again, countVertices, countTets );
+#else
 	push_new_tets( mesh, track_surface_fs, points, new_tets, new_track_surface_fs, modified_t_ids, is_again );
+#endif
 
 #if PARALLEL_TRIANGLES_INSERTION
 	lockShared.lock();
@@ -367,29 +371,6 @@ bool floatTetWild::insert_one_triangle( int insert_f_id, const std::vector<Vecto
 void floatTetWild::push_new_tets( Mesh& mesh, TrackSF& track_surface_fs, std::vector<Vector3>& points, std::vector<MeshTet>& new_tets,
   const TrackSF& new_track_surface_fs, std::vector<int>& modified_t_ids, bool is_again )
 {
-#if PARALLEL_TRIANGLES_INSERTION
-	std::lock_guard<std::mutex> lock { mesh.locks.mutex };
-
-	const size_t newVerts = points.size();
-	const size_t newTets = new_tets.size() - modified_t_ids.size();
-	const size_t newSf = new_track_surface_fs.size() - modified_t_ids.size();
-
-	const bool capVerts = haveCapacity( mesh.tet_vertices, newVerts );
-	const bool capTets = haveCapacity( mesh.tets, newTets );
-	const bool capSf = haveCapacity( track_surface_fs, newSf );
-
-	const bool haveAllCapacity = capVerts && capTets && capSf;
-	if( !haveAllCapacity )
-	{
-		// This line kills the concurrency, all threads are keeping shared locks on that shared_mutex
-		std::unique_lock lock( mesh.locks.shared );
-		// Make sure it's unlikely to happen again
-		ensureCapacity( mesh.tet_vertices, newVerts );
-		ensureCapacity( mesh.tets, newTets );
-		ensureCapacity( track_surface_fs, newSf );
-	}
-#endif
-
 	const int old_v_size = mesh.tet_vertices.size();
 	mesh.tet_vertices.resize( mesh.tet_vertices.size() + points.size() );
 	for( int i = 0; i < points.size(); i++ )
@@ -418,6 +399,124 @@ void floatTetWild::push_new_tets( Mesh& mesh, TrackSF& track_surface_fs, std::ve
 	modified_t_ids.clear();
 }
 
+#if PARALLEL_TRIANGLES_INSERTION
+namespace
+{
+	void offsetNewTets( std::vector<MeshTet>& tets, size_t prevVerts, size_t newVerts )
+	{
+		if( prevVerts == newVerts || tets.empty() )
+			return;
+
+		assert( prevVerts < newVerts );
+		const __m128i off = _mm_set1_epi32( (int)( newVerts - prevVerts ) );
+		const __m128i pv = _mm_set1_epi32( (int)prevVerts );
+		for( MeshTet& tet : tets )
+		{
+			__m128i* const pointer = (__m128i*)tet.indices.data();
+			__m128i v = _mm_loadu_si128( pointer );
+			// Compare integers for i < prevVerts
+			// When true, the element references a pre-existing vertex, we need to keep such values
+			// When false, the element references a new vertex, need to apply offset to compensate for multiple threads changing shared state in parallel
+			__m128i isOldVertex = _mm_cmplt_epi32( v, pv );
+
+			__m128i withOffset = _mm_add_epi32( v, off );
+			v = _mm_blendv_epi8( withOffset, v, isOldVertex );
+			_mm_storeu_si128( pointer, v );
+		}
+	}
+
+	void offsetTetIDs( std::vector<int>& vec, size_t prevTets, size_t newTets )
+	{
+		if( prevTets == newTets || vec.empty() )
+			return;
+		assert( prevTets < newTets );
+
+		const int off = (int)( newTets - prevTets );
+		const int pv = (int)prevTets;
+
+		for( int& ref : vec )
+		{
+			const int i = ref;
+			const int withOffset = i + off;
+			ref = ( i < pv ) ? i : withOffset;
+		}
+	}
+}  // namespace
+
+void floatTetWild::pushNewTetsParallel( Mesh& mesh, TrackSF& track_surface_fs, std::vector<Vector3>& points, std::vector<MeshTet>& new_tets,
+  TrackSF& new_track_surface_fs, std::vector<int>& modified_t_ids, bool is_again, size_t prevVerts, size_t prevTets )
+{
+	std::lock_guard<std::mutex> lock { mesh.locks.mutex };
+
+	// Resize the buffers
+	size_t vertsIndex, tetsIndex, tsfIndex;
+	{
+		// Compute count of new things
+		const size_t newVerts = points.size();
+		const size_t newTets = new_tets.size() - modified_t_ids.size();
+		const size_t newSf = new_track_surface_fs.size() - modified_t_ids.size();
+
+		// Ensure the capacity
+		const bool capVerts = haveCapacity( mesh.tet_vertices, newVerts );
+		const bool capTets = haveCapacity( mesh.tets, newTets );
+		const bool capSf = haveCapacity( track_surface_fs, newSf );
+
+		const bool haveAllCapacity = capVerts && capTets && capSf;
+		if( !haveAllCapacity )
+		{
+			// This line kills the concurrency, all threads are keeping shared locks on that shared_mutex
+			std::unique_lock lockUnique( mesh.locks.shared );
+			// Make sure it's unlikely to happen again
+			ensureCapacity( mesh.tet_vertices, newVerts );
+			ensureCapacity( mesh.tets, newTets );
+			ensureCapacity( track_surface_fs, newSf );
+		}
+
+		vertsIndex = mesh.tet_vertices.size();
+		tetsIndex = mesh.tets.size();
+		tsfIndex = track_surface_fs.size();
+
+		// Resize the vectors
+		mesh.tet_vertices.resize( vertsIndex + newVerts );
+		mesh.tets.resize( tetsIndex + newTets );
+		track_surface_fs.resize( tsfIndex + newSf );
+	}
+
+	// We might need to apply some offsets, to account for other threads adding other things to the mesh
+	offsetNewTets( new_tets, prevVerts, vertsIndex );
+	offsetTetIDs( modified_t_ids, prevTets, tetsIndex );
+
+	std::shared_lock lockShared { mesh.locks.shared };
+
+	// Copy positions of the new vertices
+	for( size_t i = 0; i < points.size(); i++ )
+		mesh.tet_vertices[ vertsIndex + i ].pos = points[ i ];
+
+	// Changes mesh topology for the modified elements
+	for( size_t i = 0; i < modified_t_ids.size(); i++ )
+	{
+		for( int j = 0; j < 4; j++ )
+			mesh.tet_vertices[ mesh.tets[ modified_t_ids[ i ] ][ j ] ].connTets.remove( modified_t_ids[ i ] );
+
+		mesh.tets[ modified_t_ids[ i ] ] = new_tets[ i ];
+		track_surface_fs[ modified_t_ids[ i ] ] = new_track_surface_fs[ i ];
+		for( int j = 0; j < 4; j++ )
+			mesh.tet_vertices[ mesh.tets[ modified_t_ids[ i ] ][ j ] ].connTets.add( modified_t_ids[ i ] );
+	}
+
+	// Changes mesh topology for the new elements
+	for( size_t i = modified_t_ids.size(); i < new_tets.size(); i++ )
+	{
+		for( int j = 0; j < 4; j++ )
+			mesh.tet_vertices[ new_tets[ i ][ j ] ].connTets.add( tetsIndex + i - modified_t_ids.size() );
+	}
+
+	// Copy the new elements
+	std::copy( new_tets.begin() + modified_t_ids.size(), new_tets.end(), mesh.tets.begin() + tetsIndex );
+	// Move the tracked surface elements
+	std::move( new_track_surface_fs.begin() + modified_t_ids.size(), new_track_surface_fs.end(), track_surface_fs.begin() + tsfIndex );
+}
+#endif
 #include "EdgeCollapsing.h"
 
 void floatTetWild::simplify_subdivision_result( int insert_f_id, int input_v_size, Mesh& mesh, AABBWrapper& tree, TrackSF& track_surface_fs )
@@ -815,7 +914,7 @@ namespace
 
 bool floatTetWild::subdivide_tets( int insert_f_id, const Mesh& mesh, CutMesh& cut_mesh, std::vector<Vector3>& points,
   std::map<std::array<int, 2>, int>& map_edge_to_intersecting_point, const TrackSF& track_surface_fs, std::vector<int>& subdivide_t_ids,
-  std::vector<bool>& is_mark_surface, std::vector<MeshTet>& new_tets, TrackSF& new_track_surface_fs, std::vector<int>& modified_t_ids )
+  std::vector<bool>& is_mark_surface, std::vector<MeshTet>& new_tets, TrackSF& new_track_surface_fs, std::vector<int>& modified_t_ids, size_t countVertices )
 {
 	auto tm = mesh.times.subdivideTets.measure();
 	auto& insBuffers = mesh.insertionBuffers();
@@ -918,8 +1017,8 @@ bool floatTetWild::subdivide_tets( int insert_f_id, const Mesh& mesh, CutMesh& c
 
 		/////
 		std::map<int, int> map_lv_to_v_id;
-		const int v_size = mesh.tet_vertices.size();
-		const int vp_size = mesh.tet_vertices.size() + points.size();
+		const int v_size = countVertices;
+		const int vp_size = countVertices + points.size();
 		for( int i = 0; i < 4; i++ )
 			map_lv_to_v_id[ i ] = mesh.tets[ t_id ][ i ];
 		cnt = 0;
@@ -1401,7 +1500,7 @@ bool floatTetWild::insert_boundary_edges( const std::vector<Vector3>& input_vert
 		TrackSF new_track_surface_fs;
 		std::vector<int> modified_t_ids;
 		if( !subdivide_tets( -1, mesh, empty_cut_mesh, points, map_edge_to_intersecting_point, track_surface_fs, cut_t_ids, is_mark_surface, new_tets,
-			  new_track_surface_fs, modified_t_ids ) )
+			  new_track_surface_fs, modified_t_ids, mesh.tet_vertices.size() ) )
 		{
 			bool is_inside_envelope = true;
 			for( auto& f : cut_fs )
