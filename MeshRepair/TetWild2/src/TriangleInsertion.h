@@ -43,7 +43,7 @@ namespace floatTetWild
 	  const std::vector<int>& input_tags, Mesh& mesh, TrackSF& track_surface_fs, AABBWrapper& tree, bool is_again );
 
 	void find_cutting_tets( int f_id, const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const std::array<Vector3, 3>& vs,
-	  const Mesh& mesh, std::vector<int>& result, bool is_again );
+	  const Mesh& mesh, std::vector<int>& result, bool is_again, size_t countTets );
 
 	bool subdivide_tets( int insert_f_id, const Mesh& mesh, CutMesh& cut_mesh, std::vector<Vector3>& points,
 	  std::map<std::array<int, 2>, int>& map_edge_to_intersecting_point, const TrackSF& track_surface_fs, std::vector<int>& subdivide_t_ids,

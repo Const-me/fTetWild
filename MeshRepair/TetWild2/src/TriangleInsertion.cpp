@@ -229,6 +229,7 @@ bool floatTetWild::insert_one_triangle( int insert_f_id, const std::vector<Vecto
   const std::vector<int>& input_tags, Mesh& mesh, TrackSF& track_surface_fs, AABBWrapper& tree, bool is_again )
 {
 	auto tm = mesh.times.insertOneTriangle.measure();
+	const size_t countTets = mesh.tets.size();
 
 	std::array<Vector3, 3> vs = { { input_vertices[ input_faces[ insert_f_id ][ 0 ] ], input_vertices[ input_faces[ insert_f_id ][ 1 ] ],
 	  input_vertices[ input_faces[ insert_f_id ][ 2 ] ] } };
@@ -239,7 +240,7 @@ bool floatTetWild::insert_one_triangle( int insert_f_id, const std::vector<Vecto
 	auto& insertionBuffers = mesh.insertionBuffers();
 	std::vector<int>& cut_t_ids = insertionBuffers.findCuttingTets.cut_t_ids;
 	cut_t_ids.clear();
-	find_cutting_tets( insert_f_id, input_vertices, input_faces, vs, mesh, cut_t_ids, is_again );
+	find_cutting_tets( insert_f_id, input_vertices, input_faces, vs, mesh, cut_t_ids, is_again, countTets );
 
 	if( cut_t_ids.empty() )
 		throw std::logic_error( "cut_t_ids.empty()" );
@@ -252,7 +253,7 @@ bool floatTetWild::insert_one_triangle( int insert_f_id, const std::vector<Vecto
 	{
 		buffers.cnt_snapped++;
 		cut_mesh.project_to_plane( input_vertices.size() );
-		cut_mesh.expand_new( cut_t_ids );
+		cut_mesh.expand_new( cut_t_ids, countTets );
 		cut_mesh.project_to_plane( input_vertices.size() );
 	}
 
@@ -504,12 +505,12 @@ namespace
 	using namespace floatTetWild;
 
 	static void findCuttingTetsOmp(
-	  const Mesh& mesh, __m256d min_f, __m256d max_f, std::queue<int>& queue_t_ids, std::vector<bool>& is_visited, FindCuttingTetsBuffers& buffers )
+	  const Mesh& mesh, __m256d min_f, __m256d max_f, std::queue<int>& queue_t_ids, std::vector<bool>& is_visited, FindCuttingTetsBuffers& buffers, size_t countTets )
 	{
 		std::vector<int>& queueSortIDs = buffers.queueSortIDs;
 		queueSortIDs.clear();
 
-		const int64_t length = (int64_t)mesh.tets.size();
+		const int64_t length = (int64_t)countTets;
 #pragma omp parallel for
 		for( int64_t t_id = 0; t_id < length; t_id++ )
 		{
@@ -538,9 +539,9 @@ namespace
 		}
 	}
 
-	static void findCuttingTets( const Mesh& mesh, __m256d min_f, __m256d max_f, std::queue<int>& queue_t_ids, std::vector<bool>& is_visited )
+	static void findCuttingTets( const Mesh& mesh, __m256d min_f, __m256d max_f, std::queue<int>& queue_t_ids, std::vector<bool>& is_visited, size_t countTets )
 	{
-		for( size_t t_id = 0; t_id < mesh.tets.size(); t_id++ )
+		for( size_t t_id = 0; t_id < countTets; t_id++ )
 		{
 			const auto& mt = mesh.tets[ t_id ];
 			if( mt.is_removed )
@@ -560,7 +561,7 @@ namespace
 }  // namespace
 
 void floatTetWild::find_cutting_tets( int f_id, const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces,
-  const std::array<Vector3, 3>& vs, const Mesh& mesh, std::vector<int>& cut_t_ids, bool is_again )
+  const std::array<Vector3, 3>& vs, const Mesh& mesh, std::vector<int>& cut_t_ids, bool is_again, size_t countTets )
 {
 	auto tm = mesh.times.findCuttingTets.measure();
 
@@ -596,12 +597,12 @@ void floatTetWild::find_cutting_tets( int f_id, const std::vector<Vector3>& inpu
 		get_bbox_face(
 		  input_vertices[ input_faces[ f_id ][ 0 ] ], input_vertices[ input_faces[ f_id ][ 1 ] ], input_vertices[ input_faces[ f_id ][ 2 ] ], min_f, max_f );
 #if PARALLEL_TRIANGLES_INSERTION
-		findCuttingTets( mesh, min_f, max_f, queue_t_ids, is_visited );
+		findCuttingTets( mesh, min_f, max_f, queue_t_ids, is_visited, countTets );
 #else
 		if( mesh.params.num_threads > 1 )
-			findCuttingTetsOmp( mesh, min_f, max_f, queue_t_ids, is_visited, buffers );
+			findCuttingTetsOmp( mesh, min_f, max_f, queue_t_ids, is_visited, buffers, countTets );
 		else
-			findCuttingTets( mesh, min_f, max_f, queue_t_ids, is_visited );
+			findCuttingTets( mesh, min_f, max_f, queue_t_ids, is_visited, countTets );
 #endif
 	}
 

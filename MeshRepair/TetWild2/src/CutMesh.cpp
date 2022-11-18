@@ -262,12 +262,12 @@ void floatTetWild::CutMesh::expand( std::vector<int>& cut_t_ids )
 	}
 }
 
-void floatTetWild::CutMesh::expand_new( std::vector<int>& cut_t_ids )
+void floatTetWild::CutMesh::expand_new( std::vector<int>& cut_t_ids, size_t countTets )
 {
 	const int t = get_t( p_vs[ 0 ], p_vs[ 1 ], p_vs[ 2 ] );
 	const std::array<Vector2, 3> tri_2d = { { to_2d( p_vs[ 0 ], t ), to_2d( p_vs[ 1 ], t ), to_2d( p_vs[ 2 ], t ) } };
 
-	std::vector<bool> is_in_cutmesh( mesh.tets.size(), false );
+	std::vector<bool> is_in_cutmesh( countTets, false );
 	for( int t_id : cut_t_ids )
 		is_in_cutmesh[ t_id ] = true;
 
@@ -277,7 +277,7 @@ void floatTetWild::CutMesh::expand_new( std::vector<int>& cut_t_ids )
 	{
 		cnt_loop++;
 		/////
-		std::vector<bool> is_visited( mesh.tets.size(), false );
+		std::vector<bool> is_visited( countTets, false );
 		for( int t_id : cut_t_ids )
 			is_visited[ t_id ] = true;
 

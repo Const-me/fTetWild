@@ -77,7 +77,7 @@ namespace floatTetWild
 		bool snap_to_plane();
 
 		void expand( std::vector<int>& cut_t_ids );
-		void expand_new( std::vector<int>& cut_t_ids );
+		void expand_new( std::vector<int>& cut_t_ids, size_t countTets );
 
 		int project_to_plane( int input_vertices_size );
 
