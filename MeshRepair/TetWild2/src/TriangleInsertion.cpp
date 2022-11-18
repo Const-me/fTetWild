@@ -204,7 +204,6 @@ void floatTetWild::insert_triangles_aux( const std::vector<Vector3>& input_verti
 	{
 		ensureCapacity( mesh.tet_vertices, 0 );
 		ensureCapacity( mesh.tets, 0 );
-		ensureCapacity( track_surface_fs, 0 );
 
 		__m256d ts = mesh.maxTetraSize;
 		__m256d clearance = _mm256_mul_pd( ts, _mm256_set1_pd( 3 ) );
@@ -383,6 +382,43 @@ bool floatTetWild::insert_one_triangle( int insert_f_id, const std::vector<Vecto
 	return true;
 }
 
+namespace
+{
+	static void applyTrackedInserts( TrackSF& track_surface_fs, const TSChanges& tracked, size_t countModified )
+	{
+		const size_t newSf = tracked.size() - countModified;
+		const size_t oldSf = track_surface_fs.size();
+		track_surface_fs.resize( oldSf + newSf );
+		for( size_t i = 0; i < newSf; i++ )
+			tracked[ i + countModified ].apply( track_surface_fs[ i + oldSf ], track_surface_fs );
+	}
+
+	static void applyTrackedChanges( TrackSF& track_surface_fs, const TSChanges& tracked, const std::vector<int>& modified_t_ids )
+	{
+		// If this code will show in the profiler, possible to optimize into a series of in-place moves
+		TrackSF newTrackSf;
+		newTrackSf.resize( modified_t_ids.size() );
+		for( size_t i = 0; i < modified_t_ids.size(); i++ )
+			tracked[ i ].apply( newTrackSf[ i ], track_surface_fs );
+
+		// Move these vectors to the destination
+		for( size_t i = 0; i < modified_t_ids.size(); i++ )
+		{
+			const int id = modified_t_ids[ i ];
+			track_surface_fs[ id ] = std::move( newTrackSf[ i ] );
+		}
+	}
+
+	static void applyTracked( TrackSF& track_surface_fs, const TSChanges& tracked, const std::vector<int>& modified_t_ids )
+	{
+		// Produce new elements of the tracked surface first, this way they view the unmodified values
+		applyTrackedInserts( track_surface_fs, tracked, modified_t_ids.size() );
+
+		// Apply edits to the tracked surface
+		applyTrackedChanges( track_surface_fs, tracked, modified_t_ids );
+	}
+}  // namespace
+
 void floatTetWild::push_new_tets( Mesh& mesh, TrackSF& track_surface_fs, std::vector<Vector3>& points, std::vector<MeshTet>& new_tets, const TSChanges& tracked,
   std::vector<int>& modified_t_ids, bool is_again )
 {
@@ -392,13 +428,10 @@ void floatTetWild::push_new_tets( Mesh& mesh, TrackSF& track_surface_fs, std::ve
 	for( int i = 0; i < points.size(); i++ )
 		mesh.tet_vertices[ old_v_size + i ].pos = points[ i ];
 
-	// Produce new elements of the tracked surface first, this way they consume the unmodified values
-	const size_t newSf = tracked.size() - modified_t_ids.size();
-	const size_t oldSf = track_surface_fs.size();
-	track_surface_fs.resize( oldSf + newSf );
-	for( size_t i = 0; i < newSf; i++ )
-		tracked[ i + modified_t_ids.size() ].apply( track_surface_fs[ i + oldSf ], track_surface_fs );
+	// Apply changes to the tracked surface
+	applyTracked( track_surface_fs, tracked, modified_t_ids );
 
+	// Change mesh topology for the modified elements
 	for( int i = 0; i < modified_t_ids.size(); i++ )
 	{
 		const int id = modified_t_ids[ i ];
@@ -412,27 +445,9 @@ void floatTetWild::push_new_tets( Mesh& mesh, TrackSF& track_surface_fs, std::ve
 			mesh.tet_vertices[ tet.indices[ j ] ].connTets.add( id );
 	}
 
-	// Apply changes to the tracked surface, using a temporary vector for the result
-	// If this code will show in the profiler, possible to optimize into a series of in-place moves
-	TrackSF newTrackSf;
-	newTrackSf.resize( modified_t_ids.size() );
-	for( size_t i = 0; i < modified_t_ids.size(); i++ ) 
-		tracked[ i ].apply( newTrackSf[ i ], track_surface_fs );
-	// Move these vectors to the destination
-	for( size_t i = 0; i < modified_t_ids.size(); i++ ) 
-	{
-		const int id = modified_t_ids[ i ];
-		track_surface_fs[ id ] = std::move( newTrackSf[ i ] );
-	}
-	// Release memory of the newTrackSf vector
-	newTrackSf.clear();
-	newTrackSf.shrink_to_fit();
-
 	for( int i = modified_t_ids.size(); i < new_tets.size(); i++ )
-	{
 		for( int j = 0; j < 4; j++ )
 			mesh.tet_vertices[ new_tets[ i ][ j ] ].connTets.add( mesh.tets.size() + i - modified_t_ids.size() );
-	}
 
 	mesh.tets.insert( mesh.tets.end(), new_tets.begin() + modified_t_ids.size(), new_tets.end() );
 
@@ -484,24 +499,22 @@ namespace
 }  // namespace
 
 void floatTetWild::pushNewTetsParallel( Mesh& mesh, TrackSF& track_surface_fs, std::vector<Vector3>& points, std::vector<MeshTet>& new_tets,
-  TrackSF& new_track_surface_fs, std::vector<int>& modified_t_ids, bool is_again, size_t prevVerts, size_t prevTets )
+  const TSChanges& tracked, std::vector<int>& modified_t_ids, bool is_again, size_t prevVerts, size_t prevTets )
 {
 	std::lock_guard<std::mutex> lock { mesh.locks.mutex };
 
 	// Resize the buffers
-	size_t vertsIndex, tetsIndex, tsfIndex;
+	size_t vertsIndex, tetsIndex;
 	{
 		// Compute count of new things
 		const size_t newVerts = points.size();
 		const size_t newTets = new_tets.size() - modified_t_ids.size();
-		const size_t newSf = new_track_surface_fs.size() - modified_t_ids.size();
 
 		// Ensure the capacity
 		const bool capVerts = haveCapacity( mesh.tet_vertices, newVerts );
 		const bool capTets = haveCapacity( mesh.tets, newTets );
-		const bool capSf = haveCapacity( track_surface_fs, newSf );
 
-		const bool haveAllCapacity = capVerts && capTets && capSf;
+		const bool haveAllCapacity = capVerts && capTets;
 		if( !haveAllCapacity )
 		{
 			// This line kills the concurrency, all threads are keeping shared locks on that shared_mutex
@@ -509,22 +522,21 @@ void floatTetWild::pushNewTetsParallel( Mesh& mesh, TrackSF& track_surface_fs, s
 			// Make sure it's unlikely to happen again
 			ensureCapacity( mesh.tet_vertices, newVerts );
 			ensureCapacity( mesh.tets, newTets );
-			ensureCapacity( track_surface_fs, newSf );
 		}
 
 		vertsIndex = mesh.tet_vertices.size();
 		tetsIndex = mesh.tets.size();
-		tsfIndex = track_surface_fs.size();
 
 		// Resize the vectors
 		mesh.tet_vertices.resize( vertsIndex + newVerts );
 		mesh.tets.resize( tetsIndex + newTets );
-		track_surface_fs.resize( tsfIndex + newSf );
 	}
 
 	// We might need to apply some offsets, to account for other threads adding other things to the mesh
 	offsetNewTets( new_tets, prevVerts, vertsIndex );
 	offsetTetIDs( modified_t_ids, prevTets, tetsIndex );
+
+	applyTracked( track_surface_fs, tracked, modified_t_ids );
 
 	std::shared_lock lockShared { mesh.locks.shared };
 
@@ -532,19 +544,25 @@ void floatTetWild::pushNewTetsParallel( Mesh& mesh, TrackSF& track_surface_fs, s
 	for( size_t i = 0; i < points.size(); i++ )
 		mesh.tet_vertices[ vertsIndex + i ].pos = points[ i ];
 
-	// Changes mesh topology for the modified elements
+	// Produce new elements of the tracked surface first, this way they consume the unmodified values
+	const size_t newSf = tracked.size() - modified_t_ids.size();
+	const size_t oldSf = track_surface_fs.size();
+	track_surface_fs.resize( oldSf + newSf );
+	for( size_t i = 0; i < newSf; i++ )
+		tracked[ i + modified_t_ids.size() ].apply( track_surface_fs[ i + oldSf ], track_surface_fs );
+
+	// Change mesh topology for the modified elements
 	for( size_t i = 0; i < modified_t_ids.size(); i++ )
 	{
 		for( int j = 0; j < 4; j++ )
 			mesh.tet_vertices[ mesh.tets[ modified_t_ids[ i ] ][ j ] ].connTets.remove( modified_t_ids[ i ] );
 
 		mesh.tets[ modified_t_ids[ i ] ] = new_tets[ i ];
-		track_surface_fs[ modified_t_ids[ i ] ] = new_track_surface_fs[ i ];
 		for( int j = 0; j < 4; j++ )
 			mesh.tet_vertices[ mesh.tets[ modified_t_ids[ i ] ][ j ] ].connTets.add( modified_t_ids[ i ] );
 	}
 
-	// Changes mesh topology for the new elements
+	// Change mesh topology for the new elements
 	for( size_t i = modified_t_ids.size(); i < new_tets.size(); i++ )
 	{
 		for( int j = 0; j < 4; j++ )
@@ -553,10 +571,9 @@ void floatTetWild::pushNewTetsParallel( Mesh& mesh, TrackSF& track_surface_fs, s
 
 	// Copy the new elements
 	std::copy( new_tets.begin() + modified_t_ids.size(), new_tets.end(), mesh.tets.begin() + tetsIndex );
-	// Move the tracked surface elements
-	std::move( new_track_surface_fs.begin() + modified_t_ids.size(), new_track_surface_fs.end(), track_surface_fs.begin() + tsfIndex );
 }
 #endif
+
 #include "EdgeCollapsing.h"
 
 void floatTetWild::simplify_subdivision_result( int insert_f_id, int input_v_size, Mesh& mesh, AABBWrapper& tree, TrackSF& track_surface_fs )
