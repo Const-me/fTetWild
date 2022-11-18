@@ -34,7 +34,7 @@ namespace floatTetWild
 	void sort_input_faces(
 	  const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const Mesh& mesh, std::vector<int>& sorted_f_ids );
 
-	void push_new_tets( Mesh& mesh, TrackSF& track_surface_fs, std::vector<Vector3>& points, std::vector<MeshTet>& new_tets, TrackSF& new_track_surface_fs,
+	void push_new_tets( Mesh& mesh, TrackSF& track_surface_fs, std::vector<Vector3>& points, std::vector<MeshTet>& new_tets, const TrackSF& new_track_surface_fs,
 	  std::vector<int>& modified_t_ids, bool is_again );
 
 	void simplify_subdivision_result( int insert_f_id, int input_v_size, Mesh& mesh, AABBWrapper& tree, TrackSF& track_surface_fs );

@@ -229,7 +229,16 @@ bool floatTetWild::insert_one_triangle( int insert_f_id, const std::vector<Vecto
   const std::vector<int>& input_tags, Mesh& mesh, TrackSF& track_surface_fs, AABBWrapper& tree, bool is_again )
 {
 	auto tm = mesh.times.insertOneTriangle.measure();
+#if PARALLEL_TRIANGLES_INSERTION
+	size_t countTets;
+	{
+		std::lock_guard<std::mutex> lock { mesh.locks.mutex };
+		countTets = mesh.tets.size();
+	}
+	std::shared_lock lockShared { mesh.locks.shared };
+#else
 	const size_t countTets = mesh.tets.size();
+#endif
 
 	std::array<Vector3, 3> vs = { { input_vertices[ input_faces[ insert_f_id ][ 0 ] ], input_vertices[ input_faces[ insert_f_id ][ 1 ] ],
 	  input_vertices[ input_faces[ insert_f_id ][ 2 ] ] } };
@@ -311,16 +320,72 @@ bool floatTetWild::insert_one_triangle( int insert_f_id, const std::vector<Vecto
 		mesh.logger().logWarning( "FAIL subdivide_tets" );
 		return false;
 	}
-
+#if PARALLEL_TRIANGLES_INSERTION
+	lockShared.unlock();
+#endif
 	push_new_tets( mesh, track_surface_fs, points, new_tets, new_track_surface_fs, modified_t_ids, is_again );
 
+#if PARALLEL_TRIANGLES_INSERTION
+	lockShared.lock();
+#endif
 	simplify_subdivision_result( insert_f_id, input_vertices.size(), mesh, tree, track_surface_fs );
 	return true;
 }
 
-void floatTetWild::push_new_tets( Mesh& mesh, TrackSF& track_surface_fs, std::vector<Vector3>& points, std::vector<MeshTet>& new_tets,
-  TrackSF& new_track_surface_fs, std::vector<int>& modified_t_ids, bool is_again )
+namespace
 {
+	template<class E>
+	bool haveCapacity( const std::vector<E>& vec, size_t extra )
+	{
+		return vec.size() + extra <= vec.capacity();
+	}
+
+	static size_t newCapacity( size_t oldSize, size_t newSize, size_t oldCap )
+	{
+		constexpr size_t desiredFree = 1024;
+		if( newSize + desiredFree <= oldCap )
+			return oldCap;
+
+		size_t i = newSize + desiredFree * 2;	// add 2k
+		i = ( i / desiredFree ) * desiredFree;	// round down by 1k
+		return i;
+	}
+
+	template<class E>
+	void ensureCapacity( std::vector<E>& vec, size_t extra )
+	{
+		const size_t current = vec.size();
+		size_t newCap = newCapacity( current, current + extra, vec.capacity() );
+		vec.reserve( newCap );
+	}
+}  // namespace
+
+void floatTetWild::push_new_tets( Mesh& mesh, TrackSF& track_surface_fs, std::vector<Vector3>& points, std::vector<MeshTet>& new_tets,
+  const TrackSF& new_track_surface_fs, std::vector<int>& modified_t_ids, bool is_again )
+{
+#if PARALLEL_TRIANGLES_INSERTION
+	std::lock_guard<std::mutex> lock { mesh.locks.mutex };
+
+	const size_t newVerts = points.size();
+	const size_t newTets = new_tets.size() - modified_t_ids.size();
+	const size_t newSf = new_track_surface_fs.size() - modified_t_ids.size();
+
+	const bool capVerts = haveCapacity( mesh.tet_vertices, newVerts );
+	const bool capTets = haveCapacity( mesh.tets, newTets );
+	const bool capSf = haveCapacity( track_surface_fs, newSf );
+
+	const bool haveAllCapacity = capVerts && capTets && capSf;
+	if( !haveAllCapacity )
+	{
+		// This line kills the concurrency, all threads are keeping shared locks on that shared_mutex
+		std::unique_lock lock( mesh.locks.shared );
+		// Make sure it's unlikely to happen again
+		ensureCapacity( mesh.tet_vertices, newVerts );
+		ensureCapacity( mesh.tets, newTets );
+		ensureCapacity( track_surface_fs, newSf );
+	}
+#endif
+
 	const int old_v_size = mesh.tet_vertices.size();
 	mesh.tet_vertices.resize( mesh.tet_vertices.size() + points.size() );
 	for( int i = 0; i < points.size(); i++ )
@@ -504,8 +569,8 @@ namespace
 {
 	using namespace floatTetWild;
 
-	static void findCuttingTetsOmp(
-	  const Mesh& mesh, __m256d min_f, __m256d max_f, std::queue<int>& queue_t_ids, std::vector<bool>& is_visited, FindCuttingTetsBuffers& buffers, size_t countTets )
+	static void findCuttingTetsOmp( const Mesh& mesh, __m256d min_f, __m256d max_f, std::queue<int>& queue_t_ids, std::vector<bool>& is_visited,
+	  FindCuttingTetsBuffers& buffers, size_t countTets )
 	{
 		std::vector<int>& queueSortIDs = buffers.queueSortIDs;
 		queueSortIDs.clear();
