@@ -84,8 +84,6 @@ namespace floatTetWild
 		bool get_intersecting_edges_and_points(
 		  std::vector<Vector3>& points, std::map<std::array<int, 2>, int>& map_edge_to_intersecting_point, std::vector<int>& subdivide_t_ids );
 
-		void get_one_ring_t_ids( std::vector<int>& old_t_ids, std::vector<int>& neighbor_t_ids );
-
 		void revert_totally_snapped_tets( int a, int b );
 
 		inline bool is_v_on_plane( int lv_id )
