@@ -245,7 +245,7 @@
     <ClCompile Include="Utils\Box32.cpp" />
     <ClCompile Include="parallelThreadsImpl.cpp" />
     <ClCompile Include="ParallelInsertion\TrianglePartition.cpp" />
-    <ClCompile Include="ParallelInsertion\parallelInsertion.cpp" />
+    <ClCompile Include="ParallelInsertion\parallelInsertionTwo.cpp" />
     <ClCompile Include="src\BoolVector.cpp" />
     <ClCompile Include="src\TrackedSurfaceChanges.cpp" />
   </ItemGroup>

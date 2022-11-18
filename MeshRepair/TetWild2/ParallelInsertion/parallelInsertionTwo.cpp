@@ -26,7 +26,7 @@ namespace
 
 namespace floatTetWild
 {
-	void parallelInsertion(
+	void parallelInsertionTwo(
 	  const std::vector<Vector3>& vb, const std::vector<Vector3i>& ib, const std::vector<int>& faces, __m256d clearance, const pfnInsertTri& pfn )
 	{
 		// TODO: implement some recursion here, to use more than just 2 threads
