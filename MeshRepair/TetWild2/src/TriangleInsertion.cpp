@@ -137,6 +137,34 @@ namespace
 	{
 		v.erase( std::remove_if( v.begin(), v.end(), lambda ), v.end() );
 	}
+
+	template<class E>
+	bool haveCapacity( const std::vector<E>& vec, size_t extra )
+	{
+		return vec.size() + extra <= vec.capacity();
+	}
+
+	static size_t newCapacity( size_t oldSize, size_t newSize, size_t oldCap )
+	{
+		constexpr size_t desiredFree = 1024;
+		if( newSize + desiredFree <= oldCap )
+			return oldCap;
+
+		size_t i = newSize + desiredFree * 2;	// add 2k
+		i = ( i / desiredFree ) * desiredFree;	// round down by 1k
+		return i;
+	}
+
+	template<class E>
+	void ensureCapacity( std::vector<E>& vec, size_t extra )
+	{
+		const size_t oldSize = vec.size();
+		const size_t newSize = oldSize + extra;
+		const size_t oldCap = vec.capacity();
+		const size_t newCap = newCapacity( oldSize, newSize, oldCap );
+		assert( newCap > newSize );
+		vec.reserve( newCap );
+	}
 }  // namespace
 
 void floatTetWild::insert_triangles_aux( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces,
@@ -174,6 +202,10 @@ void floatTetWild::insert_triangles_aux( const std::vector<Vector3>& input_verti
 #if PARALLEL_TRIANGLES_INSERTION
 	if( mesh.params.num_threads > 1 )
 	{
+		ensureCapacity( mesh.tet_vertices, 0 );
+		ensureCapacity( mesh.tets, 0 );
+		ensureCapacity( track_surface_fs, 0 );
+
 		__m256d ts = mesh.maxTetraSize;
 		__m256d clearance = _mm256_mul_pd( ts, _mm256_set1_pd( 3 ) );
 		parallelInsertion( input_vertices, input_faces, sorted_f_ids, clearance, pfn );
@@ -331,37 +363,6 @@ bool floatTetWild::insert_one_triangle( int insert_f_id, const std::vector<Vecto
 	simplify_subdivision_result( insert_f_id, input_vertices.size(), mesh, tree, track_surface_fs );
 	return true;
 }
-
-namespace
-{
-	template<class E>
-	bool haveCapacity( const std::vector<E>& vec, size_t extra )
-	{
-		return vec.size() + extra <= vec.capacity();
-	}
-
-	static size_t newCapacity( size_t oldSize, size_t newSize, size_t oldCap )
-	{
-		constexpr size_t desiredFree = 1024;
-		if( newSize + desiredFree <= oldCap )
-			return oldCap;
-
-		size_t i = newSize + desiredFree * 2;	// add 2k
-		i = ( i / desiredFree ) * desiredFree;	// round down by 1k
-		return i;
-	}
-
-	template<class E>
-	void ensureCapacity( std::vector<E>& vec, size_t extra )
-	{
-		const size_t oldSize = vec.size();
-		const size_t newSize = oldSize + extra;
-		const size_t oldCap = vec.capacity();
-		const size_t newCap = newCapacity( oldSize, newSize, oldCap );
-		assert( newCap > newSize );
-		vec.reserve( newCap );
-	}
-}  // namespace
 
 void floatTetWild::push_new_tets( Mesh& mesh, TrackSF& track_surface_fs, std::vector<Vector3>& points, std::vector<MeshTet>& new_tets,
   const TrackSF& new_track_surface_fs, std::vector<int>& modified_t_ids, bool is_again )
