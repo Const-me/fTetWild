@@ -144,15 +144,35 @@ namespace
 		return vec.size() + extra <= vec.capacity();
 	}
 
+	static inline size_t addOneK( size_t i )
+	{
+		constexpr size_t oneK = 1024;
+		i += oneK * 2;		 // add 2k
+		i &= ~( oneK - 1 );	 // round down by 1k
+		return i;
+	}
+
+	static inline size_t growExp( size_t i )
+	{
+		if( i < 1024 )
+			return i;
+		// Multiply by approximately 1.618 https://en.wikipedia.org/wiki/Golden_ratio
+		i = ( i * 414 ) / 0x100;
+		// Round down to 3 most significant bits, mostly for lulz
+#ifdef __AVX__
+		const size_t lz = _lzcnt_u64( i );
+		const size_t mask = 0b111ull << ( 61 - lz );
+		return i & mask;
+#else
+#error Not implemented
+#endif
+	}
+
 	static size_t newCapacity( size_t oldSize, size_t newSize, size_t oldCap )
 	{
-		constexpr size_t desiredFree = 1024;
-		if( newSize + desiredFree <= oldCap )
-			return oldCap;
-
-		size_t i = newSize + desiredFree * 2;	// add 2k
-		i = ( i / desiredFree ) * desiredFree;	// round down by 1k
-		return i;
+		size_t inc = addOneK( newSize );
+		size_t e = growExp( newSize );
+		return std::max( inc, e );
 	}
 
 	template<class E>
@@ -1209,7 +1229,8 @@ bool floatTetWild::subdivide_tets( int insert_f_id, const Mesh& mesh, CutMesh& c
 		for( int i = 0; i < config.size(); i++ )
 		{
 			const auto& t = config[ i ];
-			auto& newTet = new_tets.emplace_back( MeshTet( map_lv_to_v_id[ t[ 0 ] ], map_lv_to_v_id[ t[ 1 ] ], map_lv_to_v_id[ t[ 2 ] ], map_lv_to_v_id[ t[ 3 ] ] ) );
+			auto& newTet =
+			  new_tets.emplace_back( MeshTet( map_lv_to_v_id[ t[ 0 ] ], map_lv_to_v_id[ t[ 1 ] ], map_lv_to_v_id[ t[ 2 ] ], map_lv_to_v_id[ t[ 3 ] ] ) );
 			auto& tsf = tracked.emplace_back();
 			tsf.makeEmpty( t_id );
 			for( int j = 0; j < 4; j++ )
