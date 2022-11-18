@@ -257,6 +257,21 @@ void floatTetWild::insert_triangles_aux( const std::vector<Vector3>& input_verti
 	pausee();
 }
 
+namespace
+{
+	template<class E>
+	inline void appendVector( std::vector<E>& rdi, const std::vector<E>& rsi )
+	{
+		rdi.insert( rdi.end(), rsi.begin(), rsi.end() );
+	}
+
+	template<class E>
+	inline void sortVector( std::vector<E>& vec )
+	{
+		std::sort( vec.begin(), vec.end() );
+	}
+}  // namespace
+
 bool floatTetWild::insert_one_triangle( int insert_f_id, const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces,
   const std::vector<int>& input_tags, Mesh& mesh, TrackSF& track_surface_fs, AABBWrapper& tree, bool is_again )
 {
@@ -331,7 +346,7 @@ bool floatTetWild::insert_one_triangle( int insert_f_id, const std::vector<Vecto
 	is_mark_surface.clear();
 	is_mark_surface.resize( cut_t_ids.size(), true );
 
-	cut_t_ids.insert( cut_t_ids.end(), tmp.begin(), tmp.end() );
+	appendVector( cut_t_ids, tmp );
 	is_mark_surface.resize( is_mark_surface.size() + tmp.size(), false );
 
 	std::vector<MeshTet>& new_tets = buffers.new_tets;
@@ -1166,26 +1181,26 @@ bool floatTetWild::subdivide_tets( int insert_f_id, const Mesh& mesh, CutMesh& c
 		for( int i = 0; i < config.size(); i++ )
 		{
 			const auto& t = config[ i ];
-			new_tets.push_back( MeshTet( map_lv_to_v_id[ t[ 0 ] ], map_lv_to_v_id[ t[ 1 ] ], map_lv_to_v_id[ t[ 2 ] ], map_lv_to_v_id[ t[ 3 ] ] ) );
-
-			new_track_surface_fs.emplace_back();
+			auto& newTet = new_tets.emplace_back( MeshTet( map_lv_to_v_id[ t[ 0 ] ], map_lv_to_v_id[ t[ 1 ] ], map_lv_to_v_id[ t[ 2 ] ], map_lv_to_v_id[ t[ 3 ] ] ) );
+			auto& ntsf = new_track_surface_fs.emplace_back();
 			for( int j = 0; j < 4; j++ )
 			{
 				if( new_is_surface_fs[ i ][ j ] && is_mark_sf )
 				{
-					( new_track_surface_fs.back() )[ j ].push_back( insert_f_id );
-
-					covered_tet_fs.push_back( { { new_tets.back()[ ( j + 1 ) % 4 ], new_tets.back()[ ( j + 3 ) % 4 ], new_tets.back()[ ( j + 2 ) % 4 ] } } );
+					ntsf[ j ].push_back( insert_f_id );
+					auto& cff = covered_tet_fs.emplace_back();
+					cff[ 0 ] = newTet.indices[ ( j + 1 ) % 4 ];
+					cff[ 1 ] = newTet.indices[ ( j + 3 ) % 4 ];
+					cff[ 2 ] = newTet.indices[ ( j + 2 ) % 4 ];
 				}
 
 				int old_local_f_id = new_local_f_ids[ i ][ j ];
 				if( old_local_f_id < 0 )
 					continue;
-				( new_track_surface_fs.back() )[ j ].insert( ( new_track_surface_fs.back() )[ j ].end(), track_surface_fs[ t_id ][ old_local_f_id ].begin(),
-				  track_surface_fs[ t_id ][ old_local_f_id ].end() );
-				( new_tets.back() ).is_bbox_fs[ j ] = mesh.tets[ t_id ].is_bbox_fs[ old_local_f_id ];
-				( new_tets.back() ).is_surface_fs[ j ] = mesh.tets[ t_id ].is_surface_fs[ old_local_f_id ];
-				( new_tets.back() ).surface_tags[ j ] = mesh.tets[ t_id ].surface_tags[ old_local_f_id ];
+				appendVector( ntsf[ j ], track_surface_fs[ t_id ][ old_local_f_id ] );
+				newTet.is_bbox_fs[ j ] = mesh.tets[ t_id ].is_bbox_fs[ old_local_f_id ];
+				newTet.is_surface_fs[ j ] = mesh.tets[ t_id ].is_surface_fs[ old_local_f_id ];
+				newTet.surface_tags[ j ] = mesh.tets[ t_id ].surface_tags[ old_local_f_id ];
 			}
 		}
 		modified_t_ids.push_back( t_id );
@@ -1208,15 +1223,15 @@ void floatTetWild::pair_track_surface_fs( const Mesh& mesh, TrackSF& track_surfa
 			if( track_surface_fs[ t_id ][ j ].empty() )
 				continue;
 			//
-			int opp_t_id = get_opp_t_id( t_id, j, mesh );
+			const int opp_t_id = get_opp_t_id( t_id, j, mesh );
 			if( opp_t_id < 0 )
 				continue;
-			int k =
-			  get_local_f_id( opp_t_id, mesh.tets[ t_id ][ ( j + 1 ) % 4 ], mesh.tets[ t_id ][ ( j + 2 ) % 4 ], mesh.tets[ t_id ][ ( j + 3 ) % 4 ], mesh );
+			const auto& tet = mesh.tets[ t_id ].indices;
+			const int k = get_local_f_id( opp_t_id, tet[ ( j + 1 ) % 4 ], tet[ ( j + 2 ) % 4 ], tet[ ( j + 3 ) % 4 ], mesh );
 			is_visited[ opp_t_id ][ k ] = true;
 			//
-			std::sort( track_surface_fs[ t_id ][ j ].begin(), track_surface_fs[ t_id ][ j ].end() );
-			std::sort( track_surface_fs[ opp_t_id ][ k ].begin(), track_surface_fs[ opp_t_id ][ k ].end() );
+			sortVector( track_surface_fs[ t_id ][ j ] );
+			sortVector( track_surface_fs[ opp_t_id ][ k ] );
 			std::vector<int> f_ids;
 			if( track_surface_fs[ t_id ][ j ] != track_surface_fs[ opp_t_id ][ k ] )
 			{
@@ -1249,8 +1264,7 @@ void floatTetWild::find_boundary_edges( const std::vector<Vector3>& input_vertic
 		{
 			// edges
 			std::array<int, 2> e = { { f[ j ], f[ ( j + 1 ) % 3 ] } };
-			if( e[ 0 ] > e[ 1 ] )
-				std::swap( e[ 0 ], e[ 1 ] );
+			sortInt2( e );
 			edges.push_back( e );
 			// conn_tris
 			conn_tris[ input_faces[ i ][ j ] ].push_back( i );
