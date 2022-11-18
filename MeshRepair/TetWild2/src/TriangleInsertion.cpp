@@ -354,8 +354,11 @@ namespace
 	template<class E>
 	void ensureCapacity( std::vector<E>& vec, size_t extra )
 	{
-		const size_t current = vec.size();
-		size_t newCap = newCapacity( current, current + extra, vec.capacity() );
+		const size_t oldSize = vec.size();
+		const size_t newSize = oldSize + extra;
+		const size_t oldCap = vec.capacity();
+		const size_t newCap = newCapacity( oldSize, newSize, oldCap );
+		assert( newCap > newSize );
 		vec.reserve( newCap );
 	}
 }  // namespace
@@ -634,7 +637,7 @@ void floatTetWild::find_cutting_tets( int f_id, const std::vector<Vector3>& inpu
 
 	std::vector<bool>& is_visited = buffers.is_visited;
 	is_visited.clear();
-	is_visited.resize( mesh.tets.size(), false );
+	is_visited.resize( countTets, false );
 
 	std::queue<int>& queue_t_ids = buffers.queue_t_ids;
 
