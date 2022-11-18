@@ -544,13 +544,6 @@ void floatTetWild::pushNewTetsParallel( Mesh& mesh, TrackSF& track_surface_fs, s
 	for( size_t i = 0; i < points.size(); i++ )
 		mesh.tet_vertices[ vertsIndex + i ].pos = points[ i ];
 
-	// Produce new elements of the tracked surface first, this way they consume the unmodified values
-	const size_t newSf = tracked.size() - modified_t_ids.size();
-	const size_t oldSf = track_surface_fs.size();
-	track_surface_fs.resize( oldSf + newSf );
-	for( size_t i = 0; i < newSf; i++ )
-		tracked[ i + modified_t_ids.size() ].apply( track_surface_fs[ i + oldSf ], track_surface_fs );
-
 	// Change mesh topology for the modified elements
 	for( size_t i = 0; i < modified_t_ids.size(); i++ )
 	{
@@ -564,10 +557,8 @@ void floatTetWild::pushNewTetsParallel( Mesh& mesh, TrackSF& track_surface_fs, s
 
 	// Change mesh topology for the new elements
 	for( size_t i = modified_t_ids.size(); i < new_tets.size(); i++ )
-	{
 		for( int j = 0; j < 4; j++ )
 			mesh.tet_vertices[ new_tets[ i ][ j ] ].connTets.add( tetsIndex + i - modified_t_ids.size() );
-	}
 
 	// Copy the new elements
 	std::copy( new_tets.begin() + modified_t_ids.size(), new_tets.end(), mesh.tets.begin() + tetsIndex );
