@@ -164,6 +164,10 @@
     <ClInclude Include="src\VertexConnectedTets.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ParallelInsertion\parallelInsertionPreSplit.cpp">
+      <OpenMPSupport>true</OpenMPSupport>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="ParallelInsertion\parallelInsertionTwo.cpp">
       <OpenMPSupport>true</OpenMPSupport>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
