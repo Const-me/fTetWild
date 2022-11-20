@@ -2105,6 +2105,27 @@ namespace RobustPredicates
 		rhs = _mm256_mul_pd( a2, b1 );
 	}
 
+	__forceinline uint8_t vectorEqual( __m256d a, __m256d b )
+	{
+		// Compare lanes for a != b, with unordered predicate which results in TRUE for NAN input
+		const __m256d eq = _mm256_cmp_pd( a, b, _CMP_NEQ_UQ );
+		return _mm256_testz_pd( eq, eq ) ? 1 : 0;
+	}
+
+	__forceinline bool anyEqualPoint( __m256d a, __m256d b, __m256d c, __m256d d )
+	{
+		// All 4 input vectors were made by AvxMath.loadDouble3(), the unused W lane is 0.0 so we can do full-vector comparisons
+		// Using bitwise | to accumulate because we want this to compile into 6 conditional sets, 5 bitwise ORs, and exactly 1 branch for the complete test
+		// Boolean || would compile into 6 separate unpredictable branches, much slower
+		uint8_t e = vectorEqual( a, b );
+		e |= vectorEqual( a, c );
+		e |= vectorEqual( a, d );
+		e |= vectorEqual( b, c );
+		e |= vectorEqual( b, d );
+		e |= vectorEqual( c, d );
+		return (bool)e;
+	}
+
 	static double orient3d_avx( const double* pa, const double* pb, const double* pc, const double* pd )
 	{
 		using namespace AvxMath;
@@ -2113,10 +2134,14 @@ namespace RobustPredicates
 		__m256d c = loadDouble3( pc );
 		__m256d d = loadDouble3( pd );
 
+		// When any of the 6 edges of the tetrahedron is zero length, the precise result is 0.0 - no need for the expensive shenanigans
+		if( anyEqualPoint( a, b, c, d ) )
+			return 0.0;
+
 		__m256d ad = _mm256_sub_pd( a, d );
 		__m256d bd = _mm256_sub_pd( b, d );
 		__m256d cd = _mm256_sub_pd( c, d );
-		
+
 		__m256d xxx, yyy, zzz;
 		transpose3x3( ad, bd, cd, xxx, yyy, zzz );
 
@@ -2130,11 +2155,15 @@ namespace RobustPredicates
 		rhs = _mm256_and_pd( absMask, rhs );
 		zzz = _mm256_and_pd( absMask, zzz );
 
-		double permanent = vector3DotScalar( _mm256_add_pd( lhs, rhs ), zzz );
-		double errbound = o3derrboundA * permanent;
+		const double permanent = vector3DotScalar( _mm256_add_pd( lhs, rhs ), zzz );
+		const double errbound = o3derrboundA * permanent;
 		if( Absolute( det ) > errbound )
+		{
+			// The FP64 math had sufficient precision to compute the accurate sign of that triple product
 			return det;
+		}
 
+		// Worst case in terms of performance, need these expensive adaptive-precision shenanigans invented by professor Shewchuk back in 1996
 		return orient3dadapt( pa, pb, pc, pd, permanent );
 	}
 
