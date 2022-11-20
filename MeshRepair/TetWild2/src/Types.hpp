@@ -30,5 +30,5 @@ namespace floatTetWild
 	using TrackSF = std::vector<std::array<std::vector<int>, 4>>;
 }  // namespace floatTetWild
 
-// Insert triangles in parallel, incomplete
+// Insert triangles in parallel. Experimental feature, incomplete
 #define PARALLEL_TRIANGLES_INSERTION 0
