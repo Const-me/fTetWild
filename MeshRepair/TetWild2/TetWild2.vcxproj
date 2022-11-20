@@ -95,6 +95,7 @@
     <ClInclude Include="parallelThreadsImpl.h" />
     <ClInclude Include="ParallelInsertion\TrianglePartition.h" />
     <ClInclude Include="src\BoolVector.h" />
+    <ClInclude Include="src\FlatIntMap.h" />
     <ClInclude Include="src\TrackedSurfaceChanges.h" />
     <ClInclude Include="Utils\Box32.h" />
     <ClInclude Include="src\Bitset32.h" />

@@ -6,6 +6,7 @@
 #include "../Utils/Geogram2.h"
 #include <map>
 #include "TrackedSurfaceChanges.h"
+#include "FlatIntMap.h"
 
 namespace floatTetWild
 {
@@ -75,6 +76,7 @@ namespace floatTetWild
 		std::vector<int> n_ids;
 		std::vector<std::pair<int, Vector3>> centroids;
 		std::vector<std::pair<int, Vector3>> tmp_centroids;
+		FlatIntMap map_lv_to_v_id, map_lv_to_c;
 	};
 
 	struct InsertOneTriangleBuffers

@@ -1075,17 +1075,20 @@ bool floatTetWild::subdivide_tets( int insert_f_id, const Mesh& mesh, CutMesh& c
 		std::sort( my_diags.begin(), my_diags.end(), []( const Vector2i& a, const Vector2i& b ) { return compareInt2( a, b ); } );
 
 		/////
-		std::map<int, int> map_lv_to_v_id;
+		// std::map<int, int> map_lv_to_v_id;
+		auto& map_lv_to_v_id = buffers.map_lv_to_v_id;
+		map_lv_to_v_id.clear();
+
 		const int v_size = countVertices;
 		const int vp_size = countVertices + points.size();
 		for( int i = 0; i < 4; i++ )
-			map_lv_to_v_id[ i ] = mesh.tets[ t_id ][ i ];
+			map_lv_to_v_id.setAt( i, mesh.tets[ t_id ][ i ] );
 		cnt = 0;
 		for( int i = 0; i < t_es.size(); i++ )
 		{
 			if( config_bit[ i ] == 0 )
 				continue;
-			map_lv_to_v_id[ 4 + cnt ] = v_size + on_edge_p_ids[ i ].second;
+			map_lv_to_v_id.setAt( 4 + cnt, v_size + on_edge_p_ids[ i ].second );
 			cnt++;
 		}
 
@@ -1126,25 +1129,34 @@ bool floatTetWild::subdivide_tets( int insert_f_id, const Mesh& mesh, CutMesh& c
 			const auto& config = CutTable::get_tet_conf( config_id, diag_config_id );
 			Scalar min_q = -666;
 			int cnt = 0;
-			std::map<int, int> map_lv_to_c;
+
+			auto& map_lv_to_c = buffers.map_lv_to_c;
+			map_lv_to_c.clear();
+
 			for( const auto& tet : config )
 			{
 				std::array<Vector3, 4> vs;
 				for( int j = 0; j < 4; j++ )
 				{
-					if( map_lv_to_v_id.find( tet[ j ] ) == map_lv_to_v_id.end() )
+					int v_id;
+					if( !map_lv_to_v_id.tryLookup( tet[ j ], v_id ) )
 					{
-						if( map_lv_to_c.find( tet[ j ] ) == map_lv_to_c.end() )
+						auto pp = map_lv_to_c.emplace( tet[ j ] );
+						if( pp.second )
 						{
+							// The map didn't have that element before this, the first element of the pair contains the pointer to the newly inserted element
 							get_centroid( config, tet[ j ], vs[ j ] );
-							map_lv_to_c[ tet[ j ] ] = centroids.size();
+							*( pp.first ) = centroids.size();
 							centroids.push_back( std::make_pair( tet[ j ], vs[ j ] ) );
 						}
-						vs[ j ] = centroids[ map_lv_to_c[ tet[ j ] ] ].second;
+						else 
+						{
+							// The map already had that element, the first element of the pair contains the pointer
+							vs[ j ] = centroids[ *pp.first ].second;
+						}
 					}
 					else
 					{
-						int v_id = map_lv_to_v_id[ tet[ j ] ];
 						if( v_id < v_size )
 							vs[ j ] = mesh.tet_vertices[ v_id ].pos;
 						else
@@ -1210,7 +1222,7 @@ bool floatTetWild::subdivide_tets( int insert_f_id, const Mesh& mesh, CutMesh& c
 
 		for( int i = 0; i < centroids.size(); i++ )
 		{
-			map_lv_to_v_id[ centroids[ i ].first ] = vp_size + i;
+			map_lv_to_v_id.setAt( centroids[ i ].first, vp_size + i );
 			points.push_back( centroids[ i ].second );
 		}
 

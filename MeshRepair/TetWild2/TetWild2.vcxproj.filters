@@ -137,6 +137,7 @@
     <ClInclude Include="ParallelInsertion\InsertionLocks.h" />
     <ClInclude Include="src\TrackedSurfaceChanges.h" />
     <ClInclude Include="ParallelInsertion\refineTetraMesh.h" />
+    <ClInclude Include="src\FlatIntMap.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp" />
