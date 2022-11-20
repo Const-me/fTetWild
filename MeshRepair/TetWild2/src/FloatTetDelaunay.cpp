@@ -112,13 +112,10 @@ namespace floatTetWild
 			}
 		}
 
-		namespace
+		inline double lerpFast( double x, double y, double s )
 		{
-			inline double lerpFast( double x, double y, double s )
-			{
-				return x * ( 1.0 - s ) + y * s;
-			}
-		}  // namespace
+			return x * ( 1.0 - s ) + y * s;
+		}
 
 		__m128i computeVoxelPoints(
 		  const Vector3& minScalar, const Vector3& maxScalar, const Parameters& params, const AABBWrapper& tree, std::vector<Vector3>& voxels )
@@ -189,6 +186,26 @@ namespace floatTetWild
 			__m256d sz = _mm256_sub_pd( ax, i );
 			acc = _mm256_max_pd( acc, sz );
 		}
+
+		void setMeshVertices( Mesh& mesh, const std::vector<Vector3>& buffer )
+		{
+			const size_t length = buffer.size();
+			mesh.tet_vertices.resize( length );
+
+			const Vector3* rsi = buffer.data();
+			const Vector3* const rsiEnd = rsi + length;
+			const Vector3* const rsiEndAligned = rsiEnd - ( length & 1 );
+			MeshVertex* rdi = mesh.tet_vertices.data();
+
+			for( ; rsi < rsiEndAligned; rsi++, rdi++ )
+			{
+				__m256d v = _mm256_loadu_pd( rsi->data() );
+				AvxMath::storeDouble3( rdi->pos.data(), v );
+			}
+
+			if( rsi < rsiEnd )
+				rdi->pos = *rsi;
+		}
 	}  // namespace
 
 	void FloatTetDelaunay::tetrahedralize(
@@ -216,16 +233,14 @@ namespace floatTetWild
 		std::copy( input_vertices.begin(), input_vertices.end(), allPoints.begin() );
 		std::copy( voxel_points.begin(), voxel_points.end(), allPoints.begin() + input_vertices.size() );
 
-		auto& tet_vertices = mesh.tet_vertices;
-		tet_vertices.resize( n_pts );
-		for( size_t i = 0; i < n_pts; i++ )
-			tet_vertices[ i ].pos = allPoints[ i ];
-
 		// The Delaunay is implemented in Geogram; we consume the algorithm through the usable wrapper exposed by GeogramDelaunay static library
 		constexpr bool multithreadedDelaunay = false;
 		auto delaunay = iDelaunay::create( multithreadedDelaunay );
 		delaunay->compute( n_pts, (const double*)allPoints.data() );
 
+		setMeshVertices( mesh, allPoints );
+
+		auto& tet_vertices = mesh.tet_vertices;
 		const size_t countElements = delaunay->countElements();
 		auto& tets = mesh.tets;
 		tets.resize( countElements );
