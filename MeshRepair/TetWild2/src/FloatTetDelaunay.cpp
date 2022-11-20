@@ -23,6 +23,10 @@ namespace floatTetWild
 {
 	namespace
 	{
+		// Use the multithreaded version of the Delaunay tetrahetralization algorithm
+		// Geogram library implements both single-threaded and multi-threaded versions of that thing
+		constexpr bool multithreadedDelaunay = true;
+
 		void get_bb_corners( const Parameters& params, const std::vector<Vector3>& vertices, Vector3& min, Vector3& max )
 		{
 			min = vertices.front();
@@ -212,7 +216,6 @@ namespace floatTetWild
 		std::copy( voxel_points.begin(), voxel_points.end(), allPoints.begin() + input_vertices.size() );
 
 		// The Delaunay is implemented in Geogram; we consume the algorithm through the usable wrapper exposed by GeogramDelaunay static library
-		constexpr bool multithreadedDelaunay = false;
 		auto delaunay = iDelaunay::create( multithreadedDelaunay );
 		delaunay->compute( n_pts, (const double*)allPoints.data() );
 
