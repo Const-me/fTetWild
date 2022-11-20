@@ -34,8 +34,8 @@ namespace floatTetWild
 
 	  private:
 		CutMeshBuffers& buffers;
-	  public:
 
+	  public:
 		CutMesh( Mesh& _mesh, const Vector3& _p_n, const std::array<Vector3, 3>& _p_vs, InsertionBuffers& insb )
 			: mesh( _mesh )
 			, p_n( _p_n )
@@ -81,8 +81,7 @@ namespace floatTetWild
 
 		int project_to_plane( int input_vertices_size );
 
-		bool get_intersecting_edges_and_points(
-		  std::vector<Vector3>& points, std::map<std::array<int, 2>, int>& map_edge_to_intersecting_point, std::vector<int>& subdivide_t_ids );
+		bool get_intersecting_edges_and_points( std::vector<Vector3>& points, FlatEdgeMap& map_edge_to_intersecting_point, std::vector<int>& subdivide_t_ids );
 
 		void revert_totally_snapped_tets( int a, int b );
 

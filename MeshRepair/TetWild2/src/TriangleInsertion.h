@@ -43,8 +43,8 @@ namespace floatTetWild
 	void find_cutting_tets( int f_id, const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const std::array<Vector3, 3>& vs,
 	  const Mesh& mesh, std::vector<int>& result, bool is_again, size_t countTets );
 
-	bool subdivide_tets( int insert_f_id, const Mesh& mesh, CutMesh& cut_mesh, std::vector<Vector3>& points,
-	  std::map<std::array<int, 2>, int>& map_edge_to_intersecting_point, std::vector<int>& subdivide_t_ids, std::vector<bool>& is_mark_surface,
+	bool subdivide_tets( int insert_f_id, const Mesh& mesh, CutMesh& cut_mesh, std::vector<Vector3>& points, const FlatEdgeMap& map_edge_to_intersecting_point,
+	  std::vector<int>& subdivide_t_ids, std::vector<bool>& is_mark_surface,
 	  std::vector<MeshTet>& new_tets, TSChanges& tracked, std::vector<int>& modified_t_ids,
 	  size_t countVertices );
 
@@ -62,7 +62,7 @@ namespace floatTetWild
 
 	bool insert_boundary_edges_get_intersecting_edges_and_points( const std::vector<std::vector<std::pair<int, int>>>& covered_fs_infos,
 	  const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const std::array<int, 2>& e, const std::vector<int>& n_f_ids,
-	  TrackSF& track_surface_fs, Mesh& mesh, std::vector<Vector3>& points, std::map<std::array<int, 2>, int>& map_edge_to_intersecting_point,
+	  TrackSF& track_surface_fs, Mesh& mesh, std::vector<Vector3>& points, FlatEdgeMap& map_edge_to_intersecting_point,
 	  std::vector<int>& snapped_v_ids, std::vector<std::array<int, 3>>& cut_fs, bool is_again );
 
 	/// other

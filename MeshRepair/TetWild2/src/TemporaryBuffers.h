@@ -85,8 +85,7 @@ namespace floatTetWild
 		int cnt_snapped = 0;
 
 		std::vector<Vector3> points;
-		// TODO: replace with another container which retains the memory
-		std::map<std::array<int, 2>, int> map_edge_to_intersecting_point;
+		FlatEdgeMap map_edge_to_intersecting_point;
 		std::vector<int> subdivide_t_ids;
 		std::vector<int> tmp;
 		std::vector<bool> is_mark_surface;

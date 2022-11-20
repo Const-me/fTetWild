@@ -455,7 +455,7 @@ void floatTetWild::CutMesh::revert_totally_snapped_tets( int a, int b )
 }
 
 bool floatTetWild::CutMesh::get_intersecting_edges_and_points(
-  std::vector<Vector3>& points, std::map<std::array<int, 2>, int>& map_edge_to_intersecting_point, std::vector<int>& subdivide_t_ids )
+  std::vector<Vector3>& points, FlatEdgeMap& map_edge_to_intersecting_point, std::vector<int>& subdivide_t_ids )
 {
 	std::vector<std::array<int, 2>> edges;
 	for( auto& t : tets )
@@ -496,12 +496,8 @@ bool floatTetWild::CutMesh::get_intersecting_edges_and_points(
 			return false;
 		}
 
+		map_edge_to_intersecting_point.setAt( v1_id, v2_id, (int)points.size() );
 		points.push_back( p );
-		if( v1_id < v2_id )
-			map_edge_to_intersecting_point[ { { v1_id, v2_id } } ] = points.size() - 1;
-		else
-			map_edge_to_intersecting_point[ { { v2_id, v1_id } } ] = points.size() - 1;
-
 		e_v_ids.push_back( v1_id );
 		e_v_ids.push_back( v2_id );
 	}
