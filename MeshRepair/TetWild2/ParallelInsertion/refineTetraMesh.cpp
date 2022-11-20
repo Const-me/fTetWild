@@ -10,6 +10,15 @@ namespace
 
 	using namespace floatTetWild;
 
+	struct RefineContext
+	{
+		const __m256d threshold;
+		std::vector<Vector3>& vertices;
+		iDelaunay& delaunay;
+
+		__m256d refine( bool insertVertices, bool* insertedSome = nullptr ) const;
+	};
+
 	__m256d tetraSizeThreshold( const Vector3& boxMin, const Vector3& boxMax, __m128i voxels )
 	{
 		using namespace AvxMath;
@@ -58,7 +67,7 @@ namespace
 		return _mm256_mul_pd( r, _mm256_set1_pd( 0.25 ) );
 	}
 
-	__m256d refineImpl( const __m256d threshold, iDelaunay& delaunay, std::vector<Vector3>& vertices, bool insertVertices, bool* insertedSome = nullptr )
+	__m256d RefineContext::refine( bool insertVertices, bool* insertedSome ) const
 	{
 		bool anyNewVertex = false;
 		const __m128i* rsi = delaunay.getElements();
@@ -99,16 +108,16 @@ namespace
 
 __m256d floatTetWild::refineTetraMesh( const Vector3& boxMin, const Vector3& boxMax, iDelaunay& delaunay, std::vector<Vector3>& vertices, __m128i voxels )
 {
-	const __m256d threshold = tetraSizeThreshold( boxMin, boxMax, voxels );
+	RefineContext context { tetraSizeThreshold( boxMin, boxMax, voxels ), vertices, delaunay };
 
 	for( size_t pass = 0; pass < maxPasses; pass++ )
 	{
 		bool inserted;
-		__m256d res = refineImpl( threshold, delaunay, vertices, true, &inserted );
+		__m256d res = context.refine( true, &inserted );
 		if( !inserted )
 			return setOneW( res );
 		delaunay.compute( vertices.size(), (const double*)vertices.data() );
 	}
 
-	return setOneW( refineImpl( threshold, delaunay, vertices, false, nullptr ) );
+	return setOneW( context.refine( false, nullptr ) );
 }
