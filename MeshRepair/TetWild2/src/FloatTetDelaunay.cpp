@@ -23,8 +23,8 @@ namespace floatTetWild
 {
 	namespace
 	{
-		// Use the multithreaded version of the Delaunay tetrahetralization algorithm
-		// Geogram library implements both single-threaded and multi-threaded versions of that thing
+		// Use the parallel version of the 3D Delaunay algorithm;
+		// Geogram library implements both single-threaded and multi-threaded versions of that thing.
 		constexpr bool multithreadedDelaunay = true;
 
 		void get_bb_corners( const Parameters& params, const std::vector<Vector3>& vertices, Vector3& min, Vector3& max )
@@ -220,7 +220,7 @@ namespace floatTetWild
 		delaunay->compute( n_pts, (const double*)allPoints.data() );
 
 #if PARALLEL_TRIANGLES_INSERTION
-		mesh.maxTetraSize = refineTetraMesh( mesh.params.bbox_min, mesh.params.bbox_max, *delaunay, allPoints, voxelCount );
+		mesh.maxTetraSize = refineTetraMesh( mesh.params.bbox_min, mesh.params.bbox_max, *delaunay, allPoints, voxelCount, input_faces );
 #endif
 		setMeshVertices( mesh, allPoints );
 
