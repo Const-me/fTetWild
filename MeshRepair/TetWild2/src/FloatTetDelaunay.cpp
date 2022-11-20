@@ -191,35 +191,27 @@ namespace floatTetWild
 		const int n_pts = input_vertices.size() + boxpoints.size() + voxel_points.size();
 		tet_vertices.resize( n_pts );
 
-		size_t index = 0;
-		int offset = 0;
-		for( int i = 0; i < input_vertices.size(); i++ )
-		{
+		size_t offset = 0;
+		for( size_t i = 0; i < input_vertices.size(); i++ )
 			tet_vertices[ offset + i ].pos = input_vertices[ i ];
-		}
-		offset += input_vertices.size();
-		for( int i = 0; i < boxpoints.size(); i++ )
-		{
-			tet_vertices[ i + offset ].pos = boxpoints[ i ];
-		}
-		offset += boxpoints.size();
-		for( int i = 0; i < voxel_points.size(); i++ )
-		{
-			tet_vertices[ i + offset ].pos = voxel_points[ i ];
-		}
 
-		std::vector<double> V_d;
-		V_d.resize( n_pts * 3 );
-		for( int i = 0; i < tet_vertices.size(); i++ )
-		{
-			for( int j = 0; j < 3; j++ )
-				V_d[ i * 3 + j ] = tet_vertices[ i ].pos[ j ];
-		}
+		offset += input_vertices.size();
+		for( size_t i = 0; i < boxpoints.size(); i++ )
+			tet_vertices[ offset + i ].pos = boxpoints[ i ];
+
+		offset += boxpoints.size();
+		for( size_t i = 0; i < voxel_points.size(); i++ )
+			tet_vertices[ offset + i ].pos = voxel_points[ i ];
+
+		std::vector<Vector3> V_d;
+		V_d.resize( n_pts );
+		for( size_t i = 0; i < tet_vertices.size(); i++ )
+			V_d[ i ] = tet_vertices[ i ].pos;
 
 		// The Delaunay is implemented in Geogram; we consume the algorithm through the usable wrapper exposed by GeogramDelaunay static library
 		constexpr bool multithreadedDelaunay = false;
 		auto delaunay = iDelaunay::create( multithreadedDelaunay );
-		delaunay->compute( n_pts, V_d.data() );
+		delaunay->compute( n_pts, (const double*)V_d.data() );
 
 		const size_t countElements = delaunay->countElements();
 		tets.resize( countElements );
@@ -237,7 +229,7 @@ namespace floatTetWild
 		}
 
 #if PARALLEL_TRIANGLES_INSERTION
-		const double* const vertexPointer = V_d.data();
+		const double* const vertexPointer = (const double*)V_d.data();
 		const size_t vertexCount = tet_vertices.size();
 		__m256d maxElementSizeVec = _mm256_setzero_pd();
 
