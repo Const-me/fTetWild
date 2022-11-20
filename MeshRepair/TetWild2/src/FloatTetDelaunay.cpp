@@ -154,7 +154,7 @@ namespace floatTetWild
 					pos[ 1 ] = lerpFast( minScalar[ 1 ], maxScalar[ 1 ], (double)(int)y / voxelDiv[ 1 ] );
 					for( size_t x = 0; x <= vx; x++ )
 					{
-						pos[ 0 ] = lerpFast( minScalar[ 0 ], maxScalar[ 0 ], (double)(int)z / voxelDiv[ 0 ] );
+						pos[ 0 ] = lerpFast( minScalar[ 0 ], maxScalar[ 0 ], (double)(int)x / voxelDiv[ 0 ] );
 						if( tree.get_sq_dist_to_sf( pos ) > sq_distg )
 						{
 							*rdi = pos;
