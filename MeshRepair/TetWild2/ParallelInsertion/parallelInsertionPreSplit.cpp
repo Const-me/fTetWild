@@ -53,21 +53,27 @@ namespace
 					pool.release( faces );
 				recursion( arr[ 0 ], level + 1, false );
 				recursion( arr[ 1 ], level + 1, false );
-				recursion( arr[ 2 ], level, false );
+				if( !arr[ 2 ].empty() )
+					recursion( arr[ 2 ], level, false );
+				else
+					pool.release( arr[ 2 ] );
 			}
 			else
 			{
 				for( ptrdiff_t i = 2; i >= 0; i-- )
 					pool.release( arr[ i ] );
-				addToLevel( level, faces );
+				addToLevel( level, faces, root );
 			}
 		}
 
-		void addToLevel( size_t level, std::vector<int>& faces )
+		void addToLevel( size_t level, std::vector<int>& faces, bool root )
 		{
 			if( level >= vectors.size() )
 				vectors.resize( level + 1 );
-			vectors[ level ].emplace_back( std::move( faces ) );
+			if( root )
+				vectors[ level ].push_back( faces );
+			else
+				vectors[ level ].emplace_back( std::move( faces ) );
 		}
 	};
 
