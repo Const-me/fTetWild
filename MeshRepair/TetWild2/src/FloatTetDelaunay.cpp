@@ -125,7 +125,7 @@ namespace floatTetWild
 			voxels.clear();
 			voxels.reserve( ( n_voxels( 0 ) + 1 ) * ( n_voxels( 1 ) + 1 ) * ( n_voxels( 2 ) + 1 ) );
 
-			//            const double sq_distg = std::min(params.ideal_edge_length / 2, 10 * params.eps);
+			// const double sq_distg = std::min(params.ideal_edge_length / 2, 10 * params.eps);
 			const double sq_distg = 100 * params.eps_2;
 			GEO2::vec3 nearest_point;
 
@@ -173,8 +173,6 @@ namespace floatTetWild
 	  Mesh& mesh, BoolVector& is_face_inserted )
 	{
 		const Parameters& params = mesh.params;
-		auto& tet_vertices = mesh.tet_vertices;
-		auto& tets = mesh.tets;
 
 		is_face_inserted.resize( input_faces.size(), false );
 
@@ -183,37 +181,28 @@ namespace floatTetWild
 		mesh.params.bbox_min = min;
 		mesh.params.bbox_max = max;
 
-		std::vector<Vector3> boxpoints;	 //(8);
-
 		std::vector<Vector3> voxel_points;
 		compute_voxel_points( min, max, params, tree, voxel_points );
 
-		const int n_pts = input_vertices.size() + boxpoints.size() + voxel_points.size();
+		const size_t n_pts = input_vertices.size() + voxel_points.size();
+
+		std::vector<Vector3> allPoints;
+		allPoints.resize( n_pts );
+		std::copy( input_vertices.begin(), input_vertices.end(), allPoints.begin() );
+		std::copy( voxel_points.begin(), voxel_points.end(), allPoints.begin() + input_vertices.size() );
+
+		auto& tet_vertices = mesh.tet_vertices;
 		tet_vertices.resize( n_pts );
-
-		size_t offset = 0;
-		for( size_t i = 0; i < input_vertices.size(); i++ )
-			tet_vertices[ offset + i ].pos = input_vertices[ i ];
-
-		offset += input_vertices.size();
-		for( size_t i = 0; i < boxpoints.size(); i++ )
-			tet_vertices[ offset + i ].pos = boxpoints[ i ];
-
-		offset += boxpoints.size();
-		for( size_t i = 0; i < voxel_points.size(); i++ )
-			tet_vertices[ offset + i ].pos = voxel_points[ i ];
-
-		std::vector<Vector3> V_d;
-		V_d.resize( n_pts );
-		for( size_t i = 0; i < tet_vertices.size(); i++ )
-			V_d[ i ] = tet_vertices[ i ].pos;
+		for( size_t i = 0; i < n_pts; i++ )
+			tet_vertices[ i ].pos = allPoints[ i ];
 
 		// The Delaunay is implemented in Geogram; we consume the algorithm through the usable wrapper exposed by GeogramDelaunay static library
 		constexpr bool multithreadedDelaunay = false;
 		auto delaunay = iDelaunay::create( multithreadedDelaunay );
-		delaunay->compute( n_pts, (const double*)V_d.data() );
+		delaunay->compute( n_pts, (const double*)allPoints.data() );
 
 		const size_t countElements = delaunay->countElements();
+		auto& tets = mesh.tets;
 		tets.resize( countElements );
 		const __m128i* const tet2v = delaunay->getElements();
 		for( size_t i = 0; i < countElements; i++ )
@@ -229,7 +218,7 @@ namespace floatTetWild
 		}
 
 #if PARALLEL_TRIANGLES_INSERTION
-		const double* const vertexPointer = (const double*)V_d.data();
+		const double* const vertexPointer = (const double*)allPoints.data();
 		const size_t vertexCount = tet_vertices.size();
 		__m256d maxElementSizeVec = _mm256_setzero_pd();
 
@@ -251,14 +240,8 @@ namespace floatTetWild
 
 		for( int i = 0; i < mesh.tets.size(); i++ )
 		{
-			auto& t = mesh.tets[ i ];
-			if( is_inverted(
-				  mesh.tet_vertices[ t[ 0 ] ].pos, mesh.tet_vertices[ t[ 1 ] ].pos, mesh.tet_vertices[ t[ 2 ] ].pos, mesh.tet_vertices[ t[ 3 ] ].pos ) )
-			{
-				// cout << "EXIT_INV" << endl;
-				// exit( 0 );
+			if( is_inverted( mesh, i ) )
 				throw std::logic_error( "EXIT_INV" );
-			}
 		}
 
 		// match faces: should be integer with sign

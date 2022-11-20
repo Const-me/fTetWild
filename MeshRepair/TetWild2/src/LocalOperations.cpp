@@ -301,8 +301,9 @@ Scalar floatTetWild::get_mid_energy( const Mesh& mesh )
 
 bool floatTetWild::is_inverted( const Mesh& mesh, int t_id )
 {
-	if( Predicates::orient_3d( mesh.tet_vertices[ mesh.tets[ t_id ][ 0 ] ].pos, mesh.tet_vertices[ mesh.tets[ t_id ][ 1 ] ].pos,
-		  mesh.tet_vertices[ mesh.tets[ t_id ][ 2 ] ].pos, mesh.tet_vertices[ mesh.tets[ t_id ][ 3 ] ].pos ) == eOrientation::Positive )
+	const auto& indices = mesh.tets[ t_id ].indices;
+	if( Predicates::orient_3d( mesh.tet_vertices[ indices[ 0 ] ].pos, mesh.tet_vertices[ indices[ 1 ] ].pos, mesh.tet_vertices[ indices[ 2 ] ].pos,
+		  mesh.tet_vertices[ indices[ 3 ] ].pos ) == eOrientation::Positive )
 		return false;
 	return true;
 }
@@ -818,7 +819,6 @@ namespace
 	}
 }  // namespace
 
-
 Scalar floatTetWild::AMIPS_energy( const std::array<Scalar, 12>& T )
 {
 	Scalar res = AMIPS_energy_aux( T );
@@ -1208,7 +1208,7 @@ namespace
 			return a < b;
 		}
 	};
-}
+}  // namespace
 
 void floatTetWild::vector_unique( std::vector<std::array<int, 2>>& vec )
 {
