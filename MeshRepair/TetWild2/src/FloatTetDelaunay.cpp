@@ -112,37 +112,59 @@ namespace floatTetWild
 			}
 		}
 
-		void compute_voxel_points( const Vector3& min, const Vector3& max, const Parameters& params, const AABBWrapper& tree, std::vector<Vector3>& voxels )
+		namespace
 		{
-			const Vector3 diag = max - min;
-			Vector3i n_voxels = ( diag / ( params.bbox_diag_length * params.box_scale ) ).cast<int>();
+			inline double lerpFast( double x, double y, double s )
+			{
+				return x * ( 1.0 - s ) + y * s;
+			}
+		}  // namespace
 
-			for( int d = 0; d < 3; ++d )
-				n_voxels( d ) = std::max( n_voxels( d ), 1 );
+		__m128i computeVoxelPoints(
+		  const Vector3& minScalar, const Vector3& maxScalar, const Parameters& params, const AABBWrapper& tree, std::vector<Vector3>& voxels )
+		{
+			using namespace AvxMath;
+			const __m256d min = loadDouble3( minScalar.data() );
+			const __m256d max = loadDouble3( maxScalar.data() );
+			const __m256d diag = _mm256_sub_pd( max, min );
 
-			const Vector3 delta = diag.array() / n_voxels.array().cast<Scalar>();
+			__m128i nVoxels = _mm256_cvtpd_epi32( _mm256_div_pd( diag, _mm256_set1_pd( params.bbox_diag_length * params.box_scale ) ) );
+			nVoxels = _mm_max_epi32( nVoxels, _mm_set1_epi32( 1 ) );
+
+			const size_t vz = (uint32_t)_mm_extract_epi32( nVoxels, 2 );
+			const size_t vy = (uint32_t)_mm_extract_epi32( nVoxels, 1 );
+			const size_t vx = (uint32_t)_mm_cvtsi128_si32( nVoxels );
 
 			voxels.clear();
-			voxels.reserve( ( n_voxels( 0 ) + 1 ) * ( n_voxels( 1 ) + 1 ) * ( n_voxels( 2 ) + 1 ) );
+			voxels.resize( ( vx + 1 ) * ( vy + 1 ) * ( vz + 1 ) );
+			Vector3* rdi = voxels.data();
 
-			// const double sq_distg = std::min(params.ideal_edge_length / 2, 10 * params.eps);
 			const double sq_distg = 100 * params.eps_2;
-			GEO2::vec3 nearest_point;
 
-			for( int i = 0; i <= n_voxels( 0 ); ++i )
+			Vector3 voxelDiv;
+			storeDouble3( voxelDiv.data(), _mm256_cvtepi32_pd( nVoxels ) );
+			Vector3 pos;
+
+			for( size_t z = 0; z <= vz; z++ )
 			{
-				const Scalar px = ( i == n_voxels( 0 ) ) ? max( 0 ) : ( min( 0 ) + delta( 0 ) * i );
-				for( int j = 0; j <= n_voxels( 1 ); ++j )
+				pos[ 2 ] = lerpFast( minScalar[ 2 ], maxScalar[ 2 ], (double)(int)z / voxelDiv[ 2 ] );
+
+				for( size_t y = 0; y <= vy; y++ )
 				{
-					const Scalar py = ( j == n_voxels( 1 ) ) ? max( 1 ) : ( min( 1 ) + delta( 1 ) * j );
-					for( int k = 0; k <= n_voxels( 2 ); ++k )
+					pos[ 1 ] = lerpFast( minScalar[ 1 ], maxScalar[ 1 ], (double)(int)y / voxelDiv[ 1 ] );
+					for( size_t x = 0; x <= vx; x++ )
 					{
-						const Scalar pz = ( k == n_voxels( 2 ) ) ? max( 2 ) : ( min( 2 ) + delta( 2 ) * k );
-						if( tree.get_sq_dist_to_sf( Vector3( px, py, pz ) ) > sq_distg )
-							voxels.emplace_back( px, py, pz );
+						pos[ 0 ] = lerpFast( minScalar[ 0 ], maxScalar[ 0 ], (double)(int)z / voxelDiv[ 0 ] );
+						if( tree.get_sq_dist_to_sf( pos ) > sq_distg )
+						{
+							*rdi = pos;
+							rdi++;
+						}
 					}
 				}
 			}
+			voxels.resize( rdi - voxels.data() );
+			return nVoxels;
 		}
 
 		__forceinline __m256d loadVertex( const double* vb, size_t vbSize, int si )
@@ -150,7 +172,7 @@ namespace floatTetWild
 			const size_t ui = (size_t)(uint32_t)si;
 			const double* const p = vb + ui * 3;
 			if( ui + 1 < vbSize )
-				return _mm256_loadu_pd( p );	//< This branch is extremely likely to be taken, and saves quite a few instructions
+				return _mm256_loadu_pd( p );  //< This branch is extremely likely to be taken, and saves quite a few instructions
 			else
 				return AvxMath::loadDouble3( p );
 		}
@@ -169,8 +191,8 @@ namespace floatTetWild
 		}
 	}  // namespace
 
-	void FloatTetDelaunay::tetrahedralize( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const AABBWrapper& tree,
-	  Mesh& mesh, BoolVector& is_face_inserted )
+	void FloatTetDelaunay::tetrahedralize(
+	  const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const AABBWrapper& tree, Mesh& mesh, BoolVector& is_face_inserted )
 	{
 		const Parameters& params = mesh.params;
 
@@ -182,8 +204,11 @@ namespace floatTetWild
 		mesh.params.bbox_max = max;
 
 		std::vector<Vector3> voxel_points;
-		compute_voxel_points( min, max, params, tree, voxel_points );
-
+#if PARALLEL_TRIANGLES_INSERTION
+		const __m128i voxelCount = computeVoxelPoints( min, max, params, tree, voxel_points );
+#else
+		computeVoxelPoints( min, max, params, tree, voxel_points );
+#endif
 		const size_t n_pts = input_vertices.size() + voxel_points.size();
 
 		std::vector<Vector3> allPoints;

@@ -133,6 +133,15 @@ namespace AvxMath
 		return _mm256_add_pd( x, y );
 	}
 
+	// Performs a linear interpolation using the incorrect but fast formula:  x * ( 1 - s ) + y * s
+	inline __m256d lerpFast( __m256d x, __m256d y, __m256d s )
+	{
+		__m256d s0 = _mm256_sub_pd( _mm256_set1_pd( 1.0 ), s );
+		x = _mm256_mul_pd( x, s0 );
+		y = _mm256_mul_pd( y, s );
+		return _mm256_add_pd( x, y );
+	}
+
 	inline __m256d vectorBroadcast( __m128d x )
 	{
 #ifdef __AVX2__
@@ -181,5 +190,15 @@ namespace AvxMath
 	{
 		__m256d div = _mm256_set1_pd( vector3Length( v ) );
 		return _mm256_div_pd( v, div );
+	}
+
+	// Compute ( a * b ) + c, using FMA in AVX2 builds
+	inline __m256d vectorMultiplyAdd( __m256d a, __m256d b, __m256d c )
+	{
+#ifdef __AVX2__
+		return _mm256_fmadd_pd( a, b, c );
+#else
+		return _mm256_add_pd( _mm256_mul_pd( a, b ), c );
+#endif
 	}
 }  // namespace AvxMath
