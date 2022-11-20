@@ -1,3 +1,4 @@
+// Modified to use OpenMP thread pool when enabled, or no multithreading at all
 /*
  *  Copyright (c) 2012-2014, Bruno Levy
  *  All rights reserved.
@@ -365,6 +366,23 @@ namespace GEO {
 
             start_time_ = SystemStopwatch::now();
         }
+
+		void initOpenMP()
+		{
+			const int ompThreads = omp_get_max_threads();
+			if( ompThreads > 1 ) 
+			{
+				set_thread_manager( new OMPThreadManager );
+				enable_multithreading( true );
+				set_max_threads( ompThreads );
+			}
+			else 
+			{
+				set_thread_manager( new MonoThreadingThreadManager );
+				enable_multithreading( false );
+				set_max_threads( 1 );
+			}
+		}
 
         void show_stats() {
 

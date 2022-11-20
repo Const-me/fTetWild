@@ -33,12 +33,23 @@ namespace
 			return (const __m128i*)impl.cell_to_v();
 		}
 	};
+
+	struct InitRAII
+	{
+		InitRAII()
+		{
+			GEO::Process::initOpenMP();
+		}
+	};
 }  // namespace
 
 std::unique_ptr<iDelaunay> iDelaunay::create( bool multithreaded )
 {
 	if( multithreaded )
+	{
+		static InitRAII __init;
 		return std::make_unique<Impl<GEO::ParallelDelaunay3d>>();
+	}
 	else
 		return std::make_unique<Impl<GEO::Delaunay3d>>();
 }

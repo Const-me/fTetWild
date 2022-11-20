@@ -373,7 +373,7 @@ namespace GEO {
          */
         void GEOGRAM_API terminate();
 
-
+		void initOpenMP();
 	/**
 	 * \brief Sleeps for a period of time.
 	 * \param[in] microseconds the time to sleep,
