@@ -83,7 +83,7 @@ bool TrianglePartition::tryPartition(
 	const __m256d inputBoxRel = _mm256_div_pd( inputBoxSize, clearance );
 	const __m256d max4 = vector3BroadcastMaximum( inputBoxRel );
 
-	if( _mm256_cvtsd_f64( max4 ) < 2.0 )
+	if( _mm256_cvtsd_f64( max4 ) < 1.5 )
 		return false;  // Unlikely to succeed, the box is too small in relation to the clearance
 
 	// Figure out direction of the partition

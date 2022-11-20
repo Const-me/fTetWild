@@ -225,8 +225,11 @@ void floatTetWild::insert_triangles_aux( const std::vector<Vector3>& input_verti
 		ensureCapacity( mesh.tet_vertices, 0 );
 		ensureCapacity( mesh.tets, 0 );
 
+		// A good clearance value is 2.0 * maximum element size + a little extra for safety
+		// Parallel insertion relies on the fact different threads are modifying different elements
 		__m256d ts = mesh.maxTetraSize;
-		__m256d clearance = _mm256_mul_pd( ts, _mm256_set1_pd( 3 ) );
+		constexpr double parallelClearance = 2.0 + 1.0 / 16.0;
+		__m256d clearance = _mm256_mul_pd( ts, _mm256_set1_pd( parallelClearance ) );
 		parallelInsertion( input_vertices, input_faces, sorted_f_ids, clearance, pfn );
 	}
 	else
