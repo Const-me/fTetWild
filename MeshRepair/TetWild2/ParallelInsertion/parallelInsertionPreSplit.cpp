@@ -50,18 +50,28 @@ namespace
 			if( part.tryPartition( vb, ib, faces, clearance, arr ) )
 			{
 				if( !root )
+				{
+					// We no longer need the input array; unless it's the parameter to parallelInsertionPreSplit(), release to the pool
 					pool.release( faces );
+				}
 				recursion( arr[ 0 ], level + 1, false );
 				recursion( arr[ 1 ], level + 1, false );
 				if( !arr[ 2 ].empty() )
-					recursion( arr[ 2 ], level, false );
+				{
+					// We can't compute different pieces of the arr[ 2 ] in parallel with arr[ 0 ] / arr[ 1 ], they gonna modify same elements of the mesh
+					// It is possible to implement this better, though.
+					// Need to build a tree of these dependent pieces, then extract parallelizeable chunks from the tree
+					addToLevel( level, arr[ 2 ], false );
+				}
 				else
 					pool.release( arr[ 2 ] );
 			}
 			else
 			{
+				// Partition failed, release all 3 temporary arrays to the pool
 				for( ptrdiff_t i = 2; i >= 0; i-- )
 					pool.release( arr[ i ] );
+				// Schedule the whole array at the current level
 				addToLevel( level, faces, root );
 			}
 		}
@@ -97,8 +107,9 @@ namespace
 					pfn( t );
 			}
 		}
-		for( int i : vectors[ 0 ][ 0 ] )
-			pfn( i );
+		if( !vectors[ 0 ].empty() )
+			for( int i : vectors[ 0 ][ 0 ] )
+				pfn( i );
 	}
 }  // namespace
 
@@ -109,7 +120,7 @@ namespace floatTetWild
 	{
 		NestedVectors vectors;
 		preSplit( vb, ib, faces, clearance, vectors );
-		assert( vectors[ 0 ].size() == 1 );
+		assert( vectors[ 0 ].size() <= 1 );
 
 		if( vectors.size() > 1 )
 			insertionOmp( vectors, pfn );
