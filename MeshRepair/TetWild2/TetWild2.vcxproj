@@ -90,6 +90,7 @@
   <ItemGroup>
     <ClInclude Include="ParallelInsertion\InsertionLocks.h" />
     <ClInclude Include="ParallelInsertion\parallelInsertion.h" />
+    <ClInclude Include="ParallelInsertion\refineTetraMesh.h" />
     <ClInclude Include="parallelThreadsCount.h" />
     <ClInclude Include="parallelThreadsImpl.h" />
     <ClInclude Include="ParallelInsertion\TrianglePartition.h" />
@@ -172,6 +173,7 @@
       <OpenMPSupport>true</OpenMPSupport>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="ParallelInsertion\refineTetraMesh.cpp" />
     <ClCompile Include="parallelThreadsImpl.cpp" />
     <ClCompile Include="ParallelInsertion\TrianglePartition.cpp" />
     <ClCompile Include="src\BoolVector.cpp" />
