@@ -29,9 +29,6 @@ namespace floatTetWild
 	void insert_triangles_aux( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const std::vector<int>& input_tags,
 	  Mesh& mesh, BoolVector& is_face_inserted, AABBWrapper& tree, bool is_again );
 
-	void sort_input_faces(
-	  const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const Mesh& mesh, std::vector<int>& sorted_f_ids );
-
 	void push_new_tets( Mesh& mesh, TrackSF& track_surface_fs, std::vector<Vector3>& points, std::vector<MeshTet>& new_tets, const TSChanges& tracked,
 	  std::vector<int>& modified_t_ids, bool is_again );
 

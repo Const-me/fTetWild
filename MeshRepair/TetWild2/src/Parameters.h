@@ -23,7 +23,6 @@ namespace floatTetWild
 		{
 		}
 
-		bool not_sort_input = false;
 		bool correct_surface_orientation = false;
 		bool is_quiet = false;
 		int log_level = 3;	// 2;

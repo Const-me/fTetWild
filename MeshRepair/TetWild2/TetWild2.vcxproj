@@ -117,7 +117,6 @@
     <ClInclude Include="Utils\Logger.h" />
     <ClInclude Include="loggerApi.h" />
     <ClInclude Include="src\LocalOperations2.h" />
-    <ClInclude Include="Utils\randomShuffle.h" />
     <ClInclude Include="src\CutTable2.h" />
     <ClInclude Include="src\EdgesSet.h" />
     <ClInclude Include="Utils\designTimeUtils.h" />
@@ -189,7 +188,6 @@
     <ClCompile Include="Utils\TimeMeasure.cpp" />
     <ClCompile Include="Utils\Logger.cpp" />
     <ClCompile Include="src\LocalOperations2.cpp" />
-    <ClCompile Include="Utils\randomShuffle.cpp" />
     <ClCompile Include="src\CutTable2.cpp" />
     <ClCompile Include="src\EdgesSet.cpp" />
     <ClCompile Include="Utils\cutTableDataCompare.cpp" />

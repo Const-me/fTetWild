@@ -107,7 +107,6 @@
     <ClInclude Include="src\CutTable2.h" />
     <ClInclude Include="Utils\triangleIntersection.h" />
     <ClInclude Include="Utils\SimdVector.h" />
-    <ClInclude Include="Utils\randomShuffle.h" />
     <ClInclude Include="src\LocalOperations2.h" />
     <ClInclude Include="loggerApi.h" />
     <ClInclude Include="Utils\Logger.h" />
@@ -231,7 +230,6 @@
     <ClCompile Include="src\CutTable2.cpp" />
     <ClCompile Include="Utils\cutTableDataCompare.cpp" />
     <ClCompile Include="Utils\triangleIntersection.cpp" />
-    <ClCompile Include="Utils\randomShuffle.cpp" />
     <ClCompile Include="src\LocalOperations2.cpp" />
     <ClCompile Include="Utils\Logger.cpp" />
     <ClCompile Include="Utils\TimeMeasure.cpp" />

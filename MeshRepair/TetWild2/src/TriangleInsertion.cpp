@@ -17,7 +17,6 @@
 #include "intersections.h"
 #include "MeshImprovement.h"  //fortest
 #include <igl/Timer.h>
-#include <Utils/randomShuffle.h>
 #include <bitset>
 #include <numeric>
 #include <unordered_map>
@@ -80,25 +79,6 @@ void floatTetWild::match_surface_fs( const Mesh& mesh, const std::vector<Vector3
 			}
 		}
 	}
-}
-
-void floatTetWild::sort_input_faces(
-  const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const Mesh& mesh, std::vector<int>& sorted_f_ids )
-{
-	std::vector<Scalar> weights( input_faces.size() );
-	sorted_f_ids.resize( input_faces.size() );
-	for( int i = 0; i < input_faces.size(); i++ )
-	{
-		sorted_f_ids[ i ] = i;
-		Vector3 u = input_vertices[ input_faces[ i ][ 1 ] ] - input_vertices[ input_faces[ i ][ 0 ] ];
-		Vector3 v = input_vertices[ input_faces[ i ][ 2 ] ] - input_vertices[ input_faces[ i ][ 0 ] ];
-		weights[ i ] = u.cross( v ).squaredNorm();
-	}
-
-	if( mesh.params.not_sort_input )
-		return;
-
-	randomShuffle( sorted_f_ids );
 }
 
 void floatTetWild::insert_triangles( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const std::vector<int>& input_tags,
@@ -185,6 +165,16 @@ namespace
 		assert( newCap > newSize );
 		vec.reserve( newCap );
 	}
+
+	void insertSequential( size_t count, const BoolVector& inserted, const pfnInsertTri& pfn )
+	{
+		for( size_t i = 0; i < count; i++ )
+		{
+			if( inserted[ i ] )
+				continue;
+			pfn( (int)i );
+		}
+	}
 }  // namespace
 
 void floatTetWild::insert_triangles_aux( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces,
@@ -202,10 +192,6 @@ void floatTetWild::insert_triangles_aux( const std::vector<Vector3>& input_verti
 
 	int cnt_matched = is_face_inserted.countTrue();
 	mesh.logger().logInfo( "matched #f = %i, uninserted #f = %i", cnt_matched, (int)is_face_inserted.size() - cnt_matched );
-
-	std::vector<int> sorted_f_ids;
-	sort_input_faces( input_vertices, input_faces, mesh, sorted_f_ids );
-	removeIf( sorted_f_ids, [ & ]( int i ) { return is_face_inserted[ i ]; } );
 
 	std::atomic_int cnt_fail = 0;
 	std::atomic_int cnt_total = 0;
@@ -225,6 +211,13 @@ void floatTetWild::insert_triangles_aux( const std::vector<Vector3>& input_verti
 		ensureCapacity( mesh.tet_vertices, 0 );
 		ensureCapacity( mesh.tets, 0 );
 
+		std::vector<int> sorted_f_ids;
+		for( size_t i = 0; i < input_faces.size(); i++ )
+		{
+			if( !is_face_inserted[ i ] )
+				sorted_f_ids.push_back( (int)i );
+		}
+
 		// A good clearance value is 2.0 * maximum element size + a little extra for safety
 		// Parallel insertion relies on the fact different threads are modifying different elements
 		__m256d ts = mesh.maxTetraSize;
@@ -233,13 +226,9 @@ void floatTetWild::insert_triangles_aux( const std::vector<Vector3>& input_verti
 		parallelInsertion( input_vertices, input_faces, sorted_f_ids, clearance, pfn );
 	}
 	else
-	{
-		for( int i : sorted_f_ids )
-			pfn( i );
-	}
+		insertSequential( input_faces.size(), is_face_inserted, pfn );
 #else
-	for( int i : sorted_f_ids )
-		pfn( i );
+	insertSequential( input_faces.size(), is_face_inserted, pfn );
 #endif
 
 	mesh.logger().logInfo( "insert_one_triangle * n done, #v = %zu, #t = %zu", mesh.tet_vertices.size(), mesh.tets.size() );
