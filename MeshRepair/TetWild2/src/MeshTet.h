@@ -122,7 +122,13 @@ namespace floatTetWild
 		}
 
 		std::array<int8_t, 4> is_surface_fs = { { NOT_SURFACE, NOT_SURFACE, NOT_SURFACE, NOT_SURFACE } };
+
+		// For every face of the tetrahedron, this value tells whether the face is co-planar with some surface of the bounding box of the domain.
+		// -1 means the face is inside, [ 0 .. 5 ] means the face is on the bounding box
+		// The tetrahedron's faces are numbered [ 0, 1, 2 ], [ 1, 2, 3 ], [ 2, 3, 0 ], [ 3, 0, 1 ]
+		// The bounding box faces are numbered -X, +X, -Y, +Y, -Z, +Z
 		std::array<int8_t, 4> is_bbox_fs = { { NOT_BBOX, NOT_BBOX, NOT_BBOX, NOT_BBOX } };
+
 		std::array<int8_t, 4> surface_tags = { { 0, 0, 0, 0 } };
 		bool is_removed = false;
 		bool is_outside = false;
