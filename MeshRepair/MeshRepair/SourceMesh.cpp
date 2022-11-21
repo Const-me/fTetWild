@@ -28,7 +28,7 @@ HRESULT SourceMesh::createMesh( uint32_t countVertices, const float* vb, uint32_
 		return E_OUTOFMEMORY;
 	}
 
-#if 1
+#if 0
 	// Compare with my custom mesh loading, and Morton reordering
 	TriangleMesh testMesh;
 	testMesh.assignVertices( countVertices, vb );
