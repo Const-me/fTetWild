@@ -79,7 +79,8 @@ HRESULT testRepair()
 	using ComLight::CComPtr;
 	using namespace MeshRepair;
 	CComPtr<iMeshRepair> repair;
-	ConsoleLogSink consoleLogSink;
+	constexpr eLogLevel consoleLogLevel = eLogLevel::Debug;
+	ConsoleLogSink consoleLogSink { consoleLogLevel };
 	const eGlobalFlags globalFlags = eGlobalFlags::UseOpenMP;
 	CHECK( createMeshRepair( globalFlags, consoleLogSink, &repair ) );
 
