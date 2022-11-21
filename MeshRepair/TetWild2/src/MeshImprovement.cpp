@@ -130,12 +130,11 @@ void floatTetWild::optimization( const std::vector<Vector3>& input_vertices, con
 		{  // Scalar check
 			if( cnt_increase_epsilon > 0 && cnt_increase_epsilon == mesh.params.stage - 1 )
 			{
-				//                mesh.params.eps += mesh.params.eps_input / mesh.params.stage;
+				// mesh.params.eps += mesh.params.eps_input / mesh.params.stage;
 				mesh.params.eps += mesh.params.eps_delta;
 				mesh.params.eps_2 = mesh.params.eps * mesh.params.eps;
 				cnt_increase_epsilon--;
 				mesh.logger().logWarning( "enlarge envelope, eps = %g", mesh.params.eps );
-				//                pausee();
 			}
 		}
 
@@ -149,14 +148,11 @@ void floatTetWild::optimization( const std::vector<Vector3>& input_vertices, con
 				is_just_after_update = true;
 				if( cnt_increase_epsilon > 0 )
 				{
-					//                    mesh.params.eps += mesh.params.eps_input / mesh.params.stage;
+					// mesh.params.eps += mesh.params.eps_input / mesh.params.stage;
 					mesh.params.eps += mesh.params.eps_delta;
 					mesh.params.eps_2 = mesh.params.eps * mesh.params.eps;
 					cnt_increase_epsilon--;
 					mesh.logger().logDebug( "enlarge envelope, eps = %g", mesh.params.eps );
-#ifdef NEW_ENVELOPE
-					tree.sf_tree_exact.init( input_vertices, input_faces, mesh.params.eps );
-#endif
 				}
 			}
 		}
@@ -169,27 +165,6 @@ void floatTetWild::optimization( const std::vector<Vector3>& input_vertices, con
 			if( quality_queue[ it ][ 0 ] - quality_queue[ it - N ][ 0 ] >= SCALAR_ZERO &&
 				quality_queue[ it ][ 1 ] - quality_queue[ it - N ][ 1 ] >= SCALAR_ZERO )
 				break;
-
-			//            bool is_break = true;
-			//            for (int j = 0; j < N; j++) {
-			//                if (quality_queue[it - j][0] - quality_queue[it - j - 1][0] < 0) {
-			//                    is_break = false;
-			//                    break;
-			//                }
-			//            }
-			//            if (is_break)
-			//                break;
-
-			//            bool is_loop = true;
-			//            for (int i = 0; i < M; i++) {
-			//                if (quality_queue[it - i][0] - quality_queue[it - i - 1][0] < -1e-4
-			//                    || quality_queue[it - i][1] - quality_queue[it - i - 1][1] < -1e-4) {
-			//                    is_loop = false;
-			//                    break;
-			//                }
-			//            }
-			//            if (is_loop)
-			//                break;
 		}
 	}
 
