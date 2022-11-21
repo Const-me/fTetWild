@@ -88,6 +88,7 @@ namespace
 
 void floatTetWild::vertex_smoothing( Mesh& mesh, const AABBWrapper& tree )
 {
+	auto tm = mesh.times.vertexSmoothing.measure();
 	SmoothingCounters counters;
 	const size_t vertexCount = mesh.tet_vertices.size();
 

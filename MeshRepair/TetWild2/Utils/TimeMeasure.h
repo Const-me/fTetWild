@@ -40,12 +40,17 @@ class TimeMeasures
 	// Print collected counters to the log
 	void logInfo( const Logger& log ) const;
 
-	// edge_collapsing_aux
-	TimeMeasure edgeCollapsingAux; 
+	// insert_triangles
+	TimeMeasure insertTriangles;
+	// edge_splitting
+	TimeMeasure edgeSplitting; 
+	// edge_collapsing
+	TimeMeasure edgeCollapsing; 
+	// vertex_smoothing
+	TimeMeasure vertexSmoothing;
+
 	// collapse_an_edge
 	TimeMeasure collapseAnEdge;
-	// insert_triangles_aux
-	TimeMeasure insertTrianglesAux;
 	// insert_one_triangle
 	TimeMeasure insertOneTriangle;
 	// find_cutting_tets

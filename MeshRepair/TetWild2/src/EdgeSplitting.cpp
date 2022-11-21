@@ -14,6 +14,7 @@ constexpr uint8_t TET_MODIFIED = 100;
 
 void floatTetWild::edge_splitting( Mesh& mesh, const AABBWrapper& tree )
 {
+	auto tm = mesh.times.edgeSplitting.measure();
 	auto& tets = mesh.tets;
 	auto& tet_vertices = mesh.tet_vertices;
 

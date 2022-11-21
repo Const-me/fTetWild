@@ -83,6 +83,7 @@ void floatTetWild::match_surface_fs( const Mesh& mesh, const std::vector<Vector3
 void floatTetWild::insert_triangles( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const std::vector<int>& input_tags,
   Mesh& mesh, BoolVector& is_face_inserted, AABBWrapper& tree, bool is_again )
 {
+	auto tm = mesh.times.insertTriangles.measure();
 	insert_triangles_aux( input_vertices, input_faces, input_tags, mesh, is_face_inserted, tree, is_again );
 }
 
@@ -179,8 +180,6 @@ namespace
 void floatTetWild::insert_triangles_aux( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces,
   const std::vector<int>& input_tags, Mesh& mesh, BoolVector& is_face_inserted, AABBWrapper& tree, bool is_again )
 {
-	auto tm = mesh.times.insertTrianglesAux.measure();
-
 	BoolVector old_is_face_inserted = is_face_inserted;	 /// is_face_inserted has been initialized in main
 
 	mesh.logger().logDebug( "triangle insertion start, #f = %zu, #v = %zu, #t = %zu", input_faces.size(), mesh.tet_vertices.size(), mesh.tets.size() );
