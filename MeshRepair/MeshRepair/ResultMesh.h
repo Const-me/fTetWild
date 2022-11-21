@@ -1,7 +1,7 @@
 #pragma once
 #include "API/library.h"
-#include <Eigen/Dense>
 #include "../ComLightLib/comLightServer.h"
+#include "../TetWild2/src/Types.hpp"
 
 namespace MeshRepair
 {
@@ -14,10 +14,8 @@ namespace MeshRepair
 		HRESULT COMLIGHTCALL getVertexBufferFP32( float* rdi ) const noexcept override final;
 		HRESULT COMLIGHTCALL getVertexBufferFP64( double* rdi ) const noexcept override final;
 
-	public:
-
-		Eigen::MatrixXd V_sf;
-		Eigen::MatrixXi F_sf;
+	  public:
+		floatTetWild::VertexBuffer V_sf;
+		floatTetWild::SurfaceIndexBuffer F_sf;
 	};
-
 }  // namespace MeshRepair

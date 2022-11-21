@@ -4,8 +4,10 @@ using namespace MeshRepair;
 
 HRESULT ResultMesh::ensureGoodMesh() const
 {
-	if( V_sf.cols() != 3 || F_sf.cols() != 3 || V_sf.rows() == 0 || F_sf.rows() == 0 )
+	if( V_sf.rows() == 0 || F_sf.rows() == 0 )
 		return OLE_E_BLANK;
+	if( 3 != V_sf.rowStride() || 3 != F_sf.rowStride() )
+		return E_UNEXPECTED;
 
 	// If you have meshes with >2G vertices or triangles, refactor the library API replacing sizes with uint64_t
 	if( V_sf.rows() > INT_MAX || F_sf.rows() > INT_MAX )
@@ -27,28 +29,8 @@ HRESULT COMLIGHTCALL ResultMesh::getSize( uint32_t& vertices, uint32_t& triangle
 HRESULT COMLIGHTCALL ResultMesh::getIndexBuffer( uint32_t* rdi ) const noexcept
 {
 	CHECK( ensureGoodMesh() );
-
-	const int* px = &F_sf( 0, 0 );
-	const int* py = &F_sf( 0, 1 );
-	const int* pz = &F_sf( 0, 2 );
-	const int* const pxEnd = px + ( F_sf.rows() - 1 );
-
-	for( ; px < pxEnd; px++, py++, pz++, rdi += 3 )
-	{
-		// Most modern CPUs can do twice as many loads per cycle, compared to stores.
-		// Optimizing for smaller count of stores.
-		__m128i v = _mm_loadu_si32( px );
-		v = _mm_insert_epi32( v, *py, 1 );
-		v = _mm_insert_epi32( v, *pz, 2 );
-		_mm_storeu_si128( (__m128i*)rdi, v );
-	}
-
-	// For the last element we can't store 16 unaligned bytes instead of 12, would corrupt memory.
-	{
-		rdi[ 0 ] = *(const uint32_t*)px;
-		rdi[ 1 ] = *(const uint32_t*)py;
-		rdi[ 2 ] = *(const uint32_t*)pz;
-	}
+	const size_t countTriangles = F_sf.rows();
+	memcpy( rdi, F_sf.data(), countTriangles * 12 );
 	return S_OK;
 }
 
@@ -56,34 +38,28 @@ HRESULT COMLIGHTCALL ResultMesh::getVertexBufferFP32( float* rdi ) const noexcep
 {
 	CHECK( ensureGoodMesh() );
 
-	const double* px = &V_sf( 0, 0 );
-	const double* py = &V_sf( 0, 1 );
-	const double* pz = &V_sf( 0, 2 );
-	const double* const pxEnd = px + ( V_sf.rows() - 1 );
+	const size_t countVertices = V_sf.rows();
+	const size_t countValues = countVertices * 3;
 
-	for( ; px < pxEnd; px++, py++, pz++, rdi += 3 )
+	const double* rsi = V_sf.data();
+	const double* const rsiEnd = rsi + countValues;
+	const double* const rsiEndAligned = rsi + ( countValues / 4 ) * 4;
+
+	for( ; rsi < rsiEndAligned; rsi += 4, rdi += 4 )
 	{
-		__m128d d = _mm_load_sd( px );
-		d = _mm_loadh_pd( d, py );
-		__m128 f = _mm_cvtpd_ps( d );
-
-		d = _mm_load_sd( pz );
-		__m128 fz = _mm_cvtpd_ps( d );
-		f = _mm_movelh_ps( f, fz );
-		_mm_storeu_ps( rdi, f );
+		__m256d vd = _mm256_loadu_pd( rsi );
+		__m128 vf = _mm256_cvtpd_ps( vd );
+		_mm_storeu_ps( rdi, vf );
 	}
 
-	// For the last element we can't store 16 unaligned bytes instead of 12, would corrupt memory.
+#pragma loop( no_vector )
+	for( ; rsi < rsiEnd; rsi++, rdi++ )
 	{
-		__m128d d = _mm_load_sd( px );
-		d = _mm_loadh_pd( d, py );
-		__m128 f = _mm_cvtpd_ps( d );
-		_mm_store_sd( (double*)rdi, _mm_castps_pd( f ) );
-
-		d = _mm_load_sd( pz );
-		f = _mm_cvtpd_ps( d );
-		_mm_store_ss( rdi + 2, f );
+		double d = *rsi;
+		float f = (float)d;
+		*rdi = f;
 	}
+
 	return S_OK;
 }
 
@@ -91,18 +67,9 @@ HRESULT COMLIGHTCALL ResultMesh::getVertexBufferFP64( double* rdi ) const noexce
 {
 	CHECK( ensureGoodMesh() );
 
-	const double* px = &V_sf( 0, 0 );
-	const double* py = &V_sf( 0, 1 );
-	const double* pz = &V_sf( 0, 2 );
-	const double* const pxEnd = px + V_sf.rows();
-
-	for( ; px < pxEnd; px++, py++, pz++, rdi += 3 )
-	{
-		__m128d d = _mm_load_sd( px );
-		d = _mm_loadh_pd( d, py );
-		_mm_storeu_pd( rdi, d );
-		rdi[ 2 ] = *pz;
-	}
+	const size_t countVertices = V_sf.rows();
+	const size_t countValues = countVertices * 3;
+	memcpy( rdi, V_sf.data(), countValues * 8 );
 
 	return S_OK;
 }

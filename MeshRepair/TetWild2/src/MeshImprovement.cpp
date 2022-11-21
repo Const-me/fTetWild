@@ -1682,7 +1682,7 @@ void floatTetWild::manifold_vertices( Mesh& mesh )
 	}
 }
 
-void floatTetWild::get_surface( Mesh& mesh, Eigen::MatrixXd& V, Eigen::MatrixXi& F )
+void floatTetWild::get_surface( Mesh& mesh, VertexBuffer& V, SurfaceIndexBuffer& F )
 {
 	auto& tets = mesh.tets;
 	auto& tet_vertices = mesh.tet_vertices;
@@ -1764,7 +1764,7 @@ void floatTetWild::get_surface( Mesh& mesh, Eigen::MatrixXd& V, Eigen::MatrixXi&
 
 #include <igl/is_vertex_manifold.h>
 
-void floatTetWild::manifold_surface( Mesh& mesh, Eigen::MatrixXd& V, Eigen::MatrixXi& F )
+void floatTetWild::manifold_surface( Mesh& mesh, VertexBuffer& V, SurfaceIndexBuffer& F )
 {
 	auto& tets = mesh.tets;
 	auto& tet_vertices = mesh.tet_vertices;

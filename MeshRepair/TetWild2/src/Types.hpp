@@ -7,7 +7,7 @@
 //
 
 #pragma once
-#include <Eigen/Dense>
+#include "../includeEigen.h"
 
 namespace floatTetWild
 {
@@ -28,6 +28,15 @@ namespace floatTetWild
 	typedef Eigen::Matrix<int, 2, 1> Vector2i;
 
 	using TrackSF = std::vector<std::array<std::vector<int>, 4>>;
+
+	// Row-major FP64 matrix with 3 columns
+	using VertexBuffer = Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor | Eigen::DontAlign>;
+
+	// Row-major int32 matrix with 3 columns
+	using SurfaceIndexBuffer = Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor | Eigen::DontAlign>;
+
+	// Row-major int32 matrix with 4 columns
+	using VolumeIndexBuffer = Eigen::Matrix<int, Eigen::Dynamic, 4, Eigen::RowMajor | Eigen::DontAlign>;
 }  // namespace floatTetWild
 
 // Insert triangles in parallel. Experimental feature, incomplete
