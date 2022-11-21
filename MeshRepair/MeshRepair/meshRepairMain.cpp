@@ -7,8 +7,9 @@
 #include "../TetWild2/src/TriangleInsertion.h"
 #include "../TetWild2/src/MeshImprovement.h"
 #include "ResultMesh.h"
-#include "Utils/writeStl.h"
+// #include "Utils/writeStl.h"
 #include "../TetWild2/parallelThreadsImpl.h"
+#include "Utils/downcastMesh.h"
 
 using namespace floatTetWild;
 
@@ -81,18 +82,36 @@ HRESULT meshRepairMain( MeshRepair::SourceMesh& rsi, MeshRepair::eGlobalFlags gl
 			}
 		}
 
-		using namespace ComLight;
-		CComPtr<Object<MeshRepair::ResultMesh>> result;
-		CHECK( Object<MeshRepair::ResultMesh>::create( result ) );
-
+		VertexBuffer V_sf;
+		SurfaceIndexBuffer F_sf;
 		if( params.manifold_surface )
-			manifold_surface( mesh, result->V_sf, result->F_sf );
+			manifold_surface( mesh, V_sf, F_sf );
 		else
-			get_surface( mesh, result->V_sf, result->F_sf );
+			get_surface( mesh, V_sf, F_sf );
 
 		mesh.times.logInfo( mesh.logger() );
 
-		result.detach( rdi );
+		using namespace ComLight;
+		if( 0 == ( parameters.flags & MeshRepair::eRepairFlags::DowncastMeshFp32 ) ) 
+		{
+			CComPtr<Object<MeshRepair::ResultMesh>> result;
+			CHECK( Object<MeshRepair::ResultMesh>::create( result ) );
+			result->V_sf = std::move( V_sf );
+			result->F_sf = std::move( F_sf );
+			result.detach( rdi );
+		}
+		else 
+		{
+			std::vector<std::array<float, 3>> vb32;
+			std::vector<std::array<uint32_t, 3>> ib32;
+			downcastMesh( V_sf, F_sf, vb32, ib32 );
+
+			CComPtr<Object<MeshRepair::ResultMesh32>> result;
+			CHECK( Object<MeshRepair::ResultMesh32>::create( result ) );
+			result->vertexBuffer = std::move( vb32 );
+			result->indexBuffer = std::move( ib32 );
+			result.detach( rdi );
+		}
 		return S_OK;
 	}
 	catch( const std::bad_alloc& )

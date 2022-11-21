@@ -11,6 +11,7 @@
     <ClCompile Include="Utils\writeStl.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
+    <ClCompile Include="Utils\downcastMesh.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="API\Parameters.h">
@@ -31,6 +32,7 @@
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="API\eGlobalFlags.h" />
+    <ClInclude Include="Utils\downcastMesh.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="API">

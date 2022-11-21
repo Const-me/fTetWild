@@ -44,11 +44,11 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir)..\GeogramDelaunay;$(ProjectDir)..\ThirdParty;$(SolutionDir)..\..\mpir\sandybridge\Inc;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir);$(ProjectDir)..\GeogramDelaunay;$(ProjectDir)..\ThirdParty;$(SolutionDir)..\..\mpir\sandybridge\Inc;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)tbb\Debug;$(SolutionDir)..\..\mpir\sandybridge\Bin;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(ProjectDir)..\GeogramDelaunay;$(ProjectDir)..\ThirdParty;$(SolutionDir)..\..\mpir\sandybridge\Inc;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir);$(ProjectDir)..\GeogramDelaunay;$(ProjectDir)..\ThirdParty;$(SolutionDir)..\..\mpir\sandybridge\Inc;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)tbb\Release;$(SolutionDir)..\..\mpir\sandybridge\Bin;$(LibraryPath)</LibraryPath>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
@@ -99,6 +99,7 @@
     <ClInclude Include="API\library.h" />
     <ClInclude Include="API\Parameters.h" />
     <ClInclude Include="convertParameters.h" />
+    <ClInclude Include="Utils\downcastMesh.h" />
     <ClInclude Include="meshRepairMain.h" />
     <ClInclude Include="ResultMesh.h" />
     <ClInclude Include="SourceMesh.h" />
@@ -108,6 +109,7 @@
   <ItemGroup>
     <ClCompile Include="convertParameters.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="Utils\downcastMesh.cpp" />
     <ClCompile Include="MeshRepair.cpp" />
     <ClCompile Include="meshRepairMain.cpp" />
     <ClCompile Include="ResultMesh.cpp" />

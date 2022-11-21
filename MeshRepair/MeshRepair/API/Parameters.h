@@ -22,6 +22,8 @@ namespace MeshRepair
 		UseInputForWN = 0x40,
 		// The idealEdgeLength and epsilon fields are absolute numbers; by default, they're relative to the bounding box diagonal
 		LengthsAreAbsolute = 0x80,
+		// After making the output mesh, downcast vertices to FP32, and re-index the mesh to remove newly degenerate triangles
+		DowncastMeshFp32 = 0x100,
 	};
 
 	struct Parameters
@@ -40,7 +42,7 @@ namespace MeshRepair
 		double stopEnergy = 10;
 
 		// See eRepairFlags for the values
-		uint32_t flags = 0;
+		uint32_t flags = eRepairFlags::DowncastMeshFp32;
 
 		bool hasFlag( eRepairFlags f ) const
 		{
