@@ -19,8 +19,8 @@ namespace floatTetWild
 	class CutMesh
 	{
 	  public:
-		std::vector<int> v_ids;
-		std::map<int, int> map_v_ids;
+		SortedIntSet v_ids;
+		FlatIntMap map_v_ids;
 		std::vector<std::array<int, 4>> tets;
 
 		std::vector<double> to_plane_dists;

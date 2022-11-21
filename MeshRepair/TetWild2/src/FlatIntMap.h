@@ -45,6 +45,14 @@ namespace floatTetWild
 			return true;
 		}
 
+		bool contains( int key ) const
+		{
+			auto it = std::lower_bound( vec.begin(), vec.end(), key, FindKey {} );
+			if( it == vec.end() || it->key != key )
+				return false;
+			return true;
+		}
+
 		int operator[]( int key ) const
 		{
 			auto it = std::lower_bound( vec.begin(), vec.end(), key, FindKey {} );
@@ -64,6 +72,25 @@ namespace floatTetWild
 
 			it = vec.insert( it, Entry { key, -1 } );
 			return std::make_pair( &it->value, true );
+		}
+
+		size_t size() const
+		{
+			return vec.size();
+		}
+
+		inline const std::pair<int, int>* begin() const
+		{
+			if( !vec.empty() )
+				return (const std::pair<int, int>*)vec.data();
+			return nullptr;
+		}
+
+		inline const std::pair<int, int>* end() const
+		{
+			if( !vec.empty() )
+				return (const std::pair<int, int>*)( vec.data() + vec.size() );
+			return nullptr;
 		}
 	};
 
@@ -154,6 +181,49 @@ namespace floatTetWild
 				const std::array<int, 2>& arr = *(const std::array<int, 2>*)&key;
 				lambda( arr );
 			}
+		}
+	};
+
+	class SortedIntSet
+	{
+		std::vector<int> vec;
+#ifdef _DEBUG
+		bool sorted = true;
+#endif
+
+	  public:
+		void clear()
+		{
+			vec.clear();
+#ifdef _DEBUG
+			sorted = true;
+#endif
+		}
+
+		void addSorted( int i )
+		{
+#ifdef _DEBUG
+			assert( sorted );
+#endif
+			auto it = std::lower_bound( vec.begin(), vec.end(), i );
+			if( it == vec.end() || *it != i )
+				vec.insert( it, i );
+		}
+		void addUnsorted( int i )
+		{
+			vec.push_back( i );
+#ifdef _DEBUG
+			sorted = false;
+#endif
+		}
+
+		size_t size() const
+		{
+			return vec.size();
+		}
+		int operator[]( size_t i ) const
+		{
+			return vec[ i ];
 		}
 	};
 }  // namespace floatTetWild

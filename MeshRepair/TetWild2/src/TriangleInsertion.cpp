@@ -1021,7 +1021,7 @@ bool floatTetWild::subdivide_tets( int insert_f_id, const Mesh& mesh, CutMesh& c
 					int cnt_on = 0;
 					for( int k = 0; k < 3; k++ )
 					{
-						myassert( cut_mesh.map_v_ids.find( mesh.tets[ t_id ][ ( j + k + 1 ) % 4 ] ) != cut_mesh.map_v_ids.end(),
+						myassert( cut_mesh.map_v_ids.contains( mesh.tets[ t_id ][ ( j + k + 1 ) % 4 ] ),
 						  "cut_mesh.map_v_ids.find(mesh.tets[t_id][(j + k + 1) % 4]) != cut_mesh.map_v_ids.end()!!" );	// fortest
 						if( cut_mesh.is_v_on_plane( cut_mesh.map_v_ids[ mesh.tets[ t_id ][ ( j + k + 1 ) % 4 ] ] ) )
 						{

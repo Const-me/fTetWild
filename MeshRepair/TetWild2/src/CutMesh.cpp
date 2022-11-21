@@ -20,16 +20,13 @@
 
 void floatTetWild::CutMesh::construct( const std::vector<int>& cut_t_ids )
 {
-	v_ids.reserve( cut_t_ids.size() * 4 );
+	v_ids.clear();
 	for( int t_id : cut_t_ids )
-	{
 		for( int j = 0; j < 4; j++ )
-			v_ids.push_back( mesh.tets[ t_id ][ j ] );
-	}
-	vector_unique( v_ids );
+			v_ids.addSorted( mesh.tets[ t_id ][ j ] );
 
 	for( int i = 0; i < v_ids.size(); i++ )
-		map_v_ids[ v_ids[ i ] ] = i;
+		map_v_ids.setAt( v_ids[ i ], i );
 
 	tets.resize( cut_t_ids.size() );
 	for( int i = 0; i < cut_t_ids.size(); i++ )
@@ -170,7 +167,8 @@ void floatTetWild::CutMesh::expand( std::vector<int>& cut_t_ids )
 			for( int j = 0; j < 4; j++ )
 			{
 				int v_id = mesh.tets[ new_opp_t_ids[ i ].back() ][ j ];
-				if( map_v_ids.find( v_id ) != map_v_ids.end() && is_v_on_plane( map_v_ids[ v_id ] ) )
+				int foundVert;
+				if( map_v_ids.tryLookup( v_id, foundVert ) && is_v_on_plane( foundVert ) )
 					cnt_on++;
 			}
 			if( cnt_on != 3 )
@@ -199,13 +197,14 @@ void floatTetWild::CutMesh::expand( std::vector<int>& cut_t_ids )
 			const int old_v_ids_size = v_ids.size();
 			for( int j = 0; j < 4; j++ )
 			{
-				int v_id = mesh.tets[ new_opp_t_ids[ i ].back() ][ j ];
+				const int v_id = mesh.tets[ new_opp_t_ids[ i ].back() ][ j ];
 				int lv_id;
-				if( map_v_ids.find( v_id ) == map_v_ids.end() )
+				auto placed = map_v_ids.emplace( v_id );
+				if( placed.second )
 				{
-					v_ids.push_back( v_id );
-					lv_id = v_ids.size() - 1;
-					map_v_ids[ v_id ] = lv_id;
+					lv_id = (int)v_ids.size();
+					v_ids.addUnsorted( v_id );
+					*placed.first = lv_id;
 					double dist = get_to_plane_dist( mesh.tet_vertices[ v_id ].pos );
 					const eOrientation ori = Predicates::orient_3d( p_vs[ 0 ], p_vs[ 1 ], p_vs[ 2 ], mesh.tet_vertices[ v_id ].pos );
 					if( ( ori == eOrientation::Negative && dist < 0 )  // todo: change get_to_plane_dist return value sign
@@ -222,8 +221,8 @@ void floatTetWild::CutMesh::expand( std::vector<int>& cut_t_ids )
 					conn_tets.emplace_back();
 				}
 				else
-					lv_id = map_v_ids[ v_id ];
-				t[ j ] = map_v_ids[ v_id ];
+					lv_id = *placed.first;
+				t[ j ] = lv_id;
 				conn_tets[ lv_id ].push_back( t_id );
 			}
 
@@ -310,10 +309,11 @@ void floatTetWild::CutMesh::expand_new( std::vector<int>& cut_t_ids, size_t coun
 				for( int j = 0; j < 4; j++ )
 				{
 					int tmp_gv_id = mesh.tets[ gt_id ][ j ];
-					if( map_v_ids.find( tmp_gv_id ) != map_v_ids.end() )
+					int found;
+					if( map_v_ids.tryLookup( tmp_gv_id, found ) )
 					{
 						cnt++;
-						if( is_v_on_plane( map_v_ids[ tmp_gv_id ] ) )
+						if( is_v_on_plane( found ) )
 							cnt_on++;
 					}
 				}
@@ -362,13 +362,14 @@ void floatTetWild::CutMesh::expand_new( std::vector<int>& cut_t_ids, size_t coun
 				{
 					int new_gv_id = mesh.tets[ gt_id ][ j ];
 					int new_lv_id;
-					if( map_v_ids.find( new_gv_id ) == map_v_ids.end() )
+					auto placement = map_v_ids.emplace( new_gv_id );
+					if( placement.second )
 					{
-						//
-						v_ids.push_back( new_gv_id );
+						new_lv_id = v_ids.size();
+						*placement.first = new_lv_id;
+
+						v_ids.addUnsorted( new_gv_id );
 						is_interior.push_back( false );
-						new_lv_id = v_ids.size() - 1;
-						map_v_ids[ new_gv_id ] = new_lv_id;
 						//
 						double dist = get_to_plane_dist( mesh.tet_vertices[ new_gv_id ].pos );
 						const eOrientation ori = Predicates::orient_3d( p_vs[ 0 ], p_vs[ 1 ], p_vs[ 2 ], mesh.tet_vertices[ new_gv_id ].pos );
@@ -385,7 +386,7 @@ void floatTetWild::CutMesh::expand_new( std::vector<int>& cut_t_ids, size_t coun
 						is_projected.push_back( false );
 					}
 					else
-						new_lv_id = map_v_ids[ new_gv_id ];
+						new_lv_id = *placement.first;
 					t[ j ] = new_lv_id;
 				}
 			}
