@@ -10,7 +10,6 @@
 #include "LocalOperations.h"
 #include "../external/Predicates.h"
 #include "../external/Rational.h"
-#include <igl/Timer.h>
 #include "LocalOperations2.h"
 #include <Utils/lowLevel.h>
 

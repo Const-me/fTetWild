@@ -16,7 +16,6 @@
 #include "Parameters.h"
 #include "TriangleInsertion.h"
 #include "Statistics.h"
-#include <igl/Timer.h>
 #include <igl/winding_number.h>
 #include "../Utils/Geogram2.h"
 #include "../Utils/NearestSearch.h"
@@ -244,68 +243,53 @@ void floatTetWild::cleanup_empty_slots( Mesh& mesh, double percentage )
 
 void floatTetWild::operation( Mesh& mesh, AABBWrapper& tree, const std::array<int, 4>& ops )
 {
-	igl::Timer igl_timer;
 	int v_num, t_num;
 	double max_energy, avg_energy;
-	double time;
-
 	for( int i = 0; i < ops[ 0 ]; i++ )
 	{
-		igl_timer.start();
-		mesh.logger().logInfo( "edge splitting..." );
+		mesh.logger().logDebug( "edge splitting..." );
 		untangle( mesh );
 		edge_splitting( mesh, tree );
-		time = igl_timer.getElapsedTime();
-		mesh.logger().logInfo( "edge splitting done, in %g seconds", time );
+		mesh.logger().logDebug( "edge splitting done" );
 		v_num = mesh.get_v_num();
 		t_num = mesh.get_t_num();
 		get_max_avg_energy( mesh, max_energy, avg_energy );
 		mesh.logger().logDebug( "#v = %i, #t = %i, max_energy = %g, avg_energy = %g", v_num, t_num, max_energy, avg_energy );
-		stats().record( StateInfo::splitting_id, time, v_num, t_num, max_energy, avg_energy );
 	}
 
 	for( int i = 0; i < ops[ 1 ]; i++ )
 	{
-		igl_timer.start();
-		mesh.logger().logInfo( "edge collapsing..." );
+		mesh.logger().logDebug( "edge collapsing..." );
 		untangle( mesh );
 		edge_collapsing( mesh, tree );
-		time = igl_timer.getElapsedTime();
-		mesh.logger().logInfo( "edge collapsing done, in %g seconds", time );
+		mesh.logger().logDebug( "edge collapsing done" );
 		v_num = mesh.get_v_num();
 		t_num = mesh.get_t_num();
 		get_max_avg_energy( mesh, max_energy, avg_energy );
 		mesh.logger().logDebug( "#v = %i, #t = %i, max_energy = %g, avg_energy = %g", v_num, t_num, max_energy, avg_energy );
-		stats().record( StateInfo::collapsing_id, time, v_num, t_num, max_energy, avg_energy );
 	}
 
 	for( int i = 0; i < ops[ 2 ]; i++ )
 	{
-		igl_timer.start();
-		mesh.logger().logInfo( "edge swapping..." );
+		mesh.logger().logDebug( "edge swapping..." );
 		untangle( mesh );
 		edge_swapping( mesh );
-		time = igl_timer.getElapsedTime();
-		mesh.logger().logInfo( "edge swapping done, in %g seconds", time );
+		mesh.logger().logDebug( "edge swapping done" );
 		v_num = mesh.get_v_num();
 		t_num = mesh.get_t_num();
 		get_max_avg_energy( mesh, max_energy, avg_energy );
 		mesh.logger().logDebug( "#v = %i, #t = %i, max_energy = %g, avg_energy = %g", v_num, t_num, max_energy, avg_energy );
-		stats().record( StateInfo::swapping_id, time, v_num, t_num, max_energy, avg_energy );
 	}
 
 	for( int i = 0; i < ops[ 3 ]; i++ )
 	{
-		igl_timer.start();
 		mesh.logger().logInfo( "vertex smoothing..." );
 		vertex_smoothing( mesh, tree );
-		time = igl_timer.getElapsedTime();
-		mesh.logger().logInfo( "vertex smoothing done, in %g seconds", time );
+		mesh.logger().logInfo( "vertex smoothing done" );
 		v_num = mesh.get_v_num();
 		t_num = mesh.get_t_num();
 		get_max_avg_energy( mesh, max_energy, avg_energy );
 		mesh.logger().logDebug( "#v = %i, #t = %i, max_energy = %g, avg_energy = %g", v_num, t_num, max_energy, avg_energy );
-		stats().record( StateInfo::smoothing_id, time, v_num, t_num, max_energy, avg_energy );
 	}
 }
 
@@ -314,18 +298,12 @@ void floatTetWild::operation( const std::vector<Vector3>& input_vertices, const 
 {
 	operation( mesh, tree, { { ops[ 0 ], ops[ 1 ], ops[ 2 ], ops[ 3 ] } } );
 
-	igl::Timer igl_timer;
 	if( !mesh.is_input_all_inserted )
 	{
-		pausee();
-
 		for( int i = 0; i < ops[ 4 ]; i++ )
 		{
-			igl_timer.start();
 			insert_triangles( input_vertices, input_faces, input_tags, mesh, is_face_inserted, tree, true );
 			init( mesh, tree );
-			stats().record( StateInfo::cutting_id, igl_timer.getElapsedTimeInSec(), mesh.get_v_num(), mesh.get_t_num(), mesh.get_max_energy(),
-			  mesh.get_avg_energy(), is_face_inserted.countFalse() );
 
 			if( mesh.is_input_all_inserted && mesh.is_closed )
 			{
@@ -344,17 +322,9 @@ void floatTetWild::operation( const std::vector<Vector3>& input_vertices, const 
 						continue;
 					if( !mesh.tet_vertices[ v_id ].isBoundary())
 						continue;
-#ifdef NEW_ENVELOPE
-					if( tree.is_out_tmp_b_envelope_exact( mesh.tet_vertices[ v_id ].pos ) )
-					{
-						mesh.tet_vertices[ v_id ].is_on_boundary = false;
-						mesh.tet_vertices[ v_id ].is_on_cut = false;
-					}
-#else
 					GEO2::index_t prev_facet;
 					if( tree.is_out_tmp_b_envelope( mesh.tet_vertices[ v_id ].pos, mesh.params.eps_2, prev_facet ) )
 						mesh.tet_vertices[ v_id ].clearFlag( eVertexFlags::Boundary | eVertexFlags::Cut );
-#endif
 				}
 			}
 		}

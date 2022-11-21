@@ -16,7 +16,6 @@
 #include "LocalOperations.h"
 #include "../external/Predicates.h"
 #include "intersections.h"
-#include <igl/Timer.h>
 
 void floatTetWild::CutMesh::construct( const std::vector<int>& cut_t_ids )
 {

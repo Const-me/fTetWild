@@ -10,16 +10,7 @@
 #include "Simplification.h"
 #include "LocalOperations.h"
 #include <igl/remove_duplicate_vertices.h>
-#include <igl/Timer.h>
 #include <igl/unique_rows.h>
-#ifdef FLOAT_TETWILD_USE_TBB
-#include <tbb/task_scheduler_init.h>
-#include <tbb/parallel_for.h>
-#include <tbb/atomic.h>
-#include <tbb/concurrent_vector.h>
-#include <tbb/parallel_sort.h>
-#include <tbb/concurrent_unordered_set.h>
-#endif
 
 void floatTetWild::simplify( std::vector<Vector3>& input_vertices, std::vector<Vector3i>& input_faces, std::vector<int>& input_tags, const AABBWrapper& tree,
   const Parameters& params, bool skip_simplify )
@@ -37,14 +28,11 @@ void floatTetWild::simplify( std::vector<Vector3>& input_vertices, std::vector<V
 			conn_fs[ input_faces[ i ][ j ] ].insert( i );
 	}
 
-	igl::Timer timer;
-	timer.start();
 	collapsing( input_vertices, input_faces, tree, params, v_is_removed, f_is_removed, conn_fs );
-	params.logger.logDebug( "collapsing %g", timer.getElapsedTime() );
+	params.logger.logDebug( "collapsing" );
 
-	timer.start();
 	swapping( input_vertices, input_faces, tree, params, v_is_removed, f_is_removed, conn_fs );
-	params.logger.logDebug( "swapping ", timer.getElapsedTime() );
+	params.logger.logDebug( "swapping" );
 
 	// clean up vs, fs
 	// v

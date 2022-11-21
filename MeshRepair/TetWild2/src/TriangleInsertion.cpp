@@ -16,7 +16,6 @@
 #include "CutTable2.h"
 #include "intersections.h"
 #include "MeshImprovement.h"  //fortest
-#include <igl/Timer.h>
 #include <bitset>
 #include <numeric>
 #include <unordered_map>
@@ -1420,8 +1419,6 @@ bool floatTetWild::insert_boundary_edges( const std::vector<Vector3>& input_vert
   AABBWrapper& tree, BoolVector& is_face_inserted, bool is_again, std::vector<std::array<int, 3>>& known_surface_fs,
   std::vector<std::array<int, 3>>& known_not_surface_fs )
 {
-	igl::Timer timer;
-
 	auto mark_known_surface_fs = [ & ]( const std::array<int, 3>& f, int tag )
 	{
 		std::vector<int> n_t_ids;
@@ -1456,7 +1453,6 @@ bool floatTetWild::insert_boundary_edges( const std::vector<Vector3>& input_vert
 		}
 	};
 
-	timer.start();
 	std::vector<std::vector<std::pair<int, int>>> covered_fs_infos( input_faces.size() );
 	for( int i = 0; i < track_surface_fs.size(); i++ )
 	{
@@ -1468,15 +1464,9 @@ bool floatTetWild::insert_boundary_edges( const std::vector<Vector3>& input_vert
 				covered_fs_infos[ f_id ].push_back( std::make_pair( i, j ) );
 		}
 	}
-	mesh.logger().logInfo( "time1 = %g", timer.getElapsedTime() );
 
 	bool is_all_inserted = true;
 	int cnt = 0;
-	double time2 = 0;  // fortest
-	double time3 = 0;
-	double time4 = 0;
-	double time5 = 0;
-	double time6 = 0;
 	for( int I = 0; I < b_edge_infos.size(); I++ )
 	{
 		const auto& e = b_edge_infos[ I ].first;
@@ -1489,9 +1479,8 @@ bool floatTetWild::insert_boundary_edges( const std::vector<Vector3>& input_vert
 			mesh.tet_vertices[ e[ 0 ] ].setFlag( eVertexFlags::Cut, is_on_cut );
 			mesh.tet_vertices[ e[ 1 ] ].setFlag( eVertexFlags::Cut, is_on_cut );
 		}
-		//        b_edges.push_back(e);
+		// b_edges.push_back(e);
 
-		timer.start();
 		/// double check neighbors
 		for( int i = 0; i < n_f_ids.size(); i++ )
 		{
@@ -1502,14 +1491,12 @@ bool floatTetWild::insert_boundary_edges( const std::vector<Vector3>& input_vert
 				break;
 			}
 		}
-		time2 += timer.getElapsedTime();
 		if( n_f_ids.empty() )
 		{
 			mesh.logger().logWarning( "FAIL n_f_ids.empty()" );
 			continue;
 		}
 
-		timer.start();
 		/// compute intersection
 		std::vector<Vector3> points;
 		FlatEdgeMap map_edge_to_intersecting_point;
@@ -1523,10 +1510,8 @@ bool floatTetWild::insert_boundary_edges( const std::vector<Vector3>& input_vert
 			is_all_inserted = false;
 
 			mesh.logger().logWarning( "FAIL insert_boundary_edges_get_intersecting_edges_and_points" );
-			time3 += timer.getElapsedTime();
 			continue;
 		}
-		time3 += timer.getElapsedTime();
 		if( points.empty() )
 		{  /// if all snapped
 			record_boundary_info( points, snapped_v_ids, e, is_on_cut );
@@ -1534,7 +1519,6 @@ bool floatTetWild::insert_boundary_edges( const std::vector<Vector3>& input_vert
 			continue;
 		}
 
-		timer.start();
 		/// subdivision
 		std::vector<int> cut_t_ids;
 		map_edge_to_intersecting_point.enumerate(
@@ -1583,31 +1567,18 @@ bool floatTetWild::insert_boundary_edges( const std::vector<Vector3>& input_vert
 			}
 
 			is_all_inserted = false;  // unless now
-			time4 += timer.getElapsedTime();
 			continue;
 		}
-		time4 += timer.getElapsedTime();
 
-		//
-		timer.start();
 		push_new_tets( mesh, track_surface_fs, points, new_tets, tracked, modified_t_ids, is_again );
-		time5 += timer.getElapsedTime();
 
-		//
 		/// mark boundary vertices
 		/// notice, here we assume points list is inserted in the end of mesh.tet_vertices
-		timer.start();
 		record_boundary_info( points, snapped_v_ids, e, is_on_cut );
-		time6 += timer.getElapsedTime();
 		cnt++;
 	}
 
 	mesh.logger().logInfo( "uninsert boundary #e = %i/%zu", (int)b_edge_infos.size() - cnt, b_edge_infos.size() );
-	mesh.logger().logInfo( "time2 = %g", time2 );
-	mesh.logger().logInfo( "time3 = %g", time3 );
-	mesh.logger().logInfo( "time4 = %g", time4 );
-	mesh.logger().logInfo( "time5 = %g", time5 );
-	mesh.logger().logInfo( "time6 = %g", time6 );
 	return is_all_inserted;
 }
 

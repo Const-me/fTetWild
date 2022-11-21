@@ -8,7 +8,6 @@
 
 #include "stdafx.h"
 #include "FloatTetDelaunay.h"
-#include <igl/Timer.h>
 #include <iterator>
 #include <algorithm>
 #include <bitset>
