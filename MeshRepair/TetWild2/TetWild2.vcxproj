@@ -108,7 +108,6 @@
     <ClInclude Include="src\FacetRecursionStack.h" />
     <ClInclude Include="src\MeshTet.h" />
     <ClInclude Include="src\MeshVertex.h" />
-    <ClInclude Include="src\Random.hpp" />
     <ClInclude Include="Utils\AASort\AASort.h" />
     <ClInclude Include="Utils\AASort\AASortTranspose.h" />
     <ClInclude Include="Utils\AASort\AASortUtils.hpp" />
