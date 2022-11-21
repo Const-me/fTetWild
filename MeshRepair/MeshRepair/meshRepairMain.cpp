@@ -39,8 +39,7 @@ HRESULT meshRepairMain( MeshRepair::SourceMesh& rsi, MeshRepair::eGlobalFlags gl
 			params.eps_rel /= boxDiagonal;
 		}
 
-		if( !params.init( boxDiagonal ) )
-			return E_INVALIDARG;
+		params.init( boxDiagonal );
 
 		// preprocessing
 		simplify( rsi.input_vertices, rsi.input_faces, rsi.input_tags, tree, params, skip_simplify );

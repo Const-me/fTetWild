@@ -81,7 +81,7 @@ namespace floatTetWild
 		Scalar eps_2_simplification;
 		Scalar dd_simplification;
 
-		bool init( Scalar bbox_diag_l )
+		void init( Scalar bbox_diag_l )
 		{
 			if( stage > 5 )
 				stage = 5;
@@ -118,7 +118,6 @@ namespace floatTetWild
 			collapse_threshold = ideal_edge_length * ( 4 / 5.0 );
 			split_threshold_2 = split_threshold * split_threshold;
 			collapse_threshold_2 = collapse_threshold * collapse_threshold;
-			return true;
 		}
 
 		const Logger logger;
