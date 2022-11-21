@@ -457,29 +457,20 @@ void floatTetWild::CutMesh::revert_totally_snapped_tets( int a, int b )
 bool floatTetWild::CutMesh::get_intersecting_edges_and_points(
   std::vector<Vector3>& points, FlatEdgeMap& map_edge_to_intersecting_point, std::vector<int>& subdivide_t_ids )
 {
-	std::vector<std::array<int, 2>> edges;
+	tmpEdges.clear();
 	for( auto& t : tets )
 	{
 		for( int j = 0; j < 3; j++ )
 		{
-			std::array<int, 2> e;
-			if( t[ 0 ] < t[ j + 1 ] )
-				e = { { t[ 0 ], t[ j + 1 ] } };
-			else
-				e = { { t[ j + 1 ], t[ 0 ] } };
-			edges.push_back( e );
-			e = { { t[ j + 1 ], t[ mod3( j + 1 ) + 1 ] } };
-			if( e[ 0 ] > e[ 1 ] )
-				std::swap( e[ 0 ], e[ 1 ] );
-			edges.push_back( e );
+			tmpEdges.add( t[ 0 ], t[ j + 1 ] );
+			tmpEdges.add( t[ j + 1 ], t[ mod3( j + 1 ) + 1 ] );
 		}
 	}
-	vector_unique( edges );
 
 	std::vector<int> e_v_ids;
-	for( int i = 0; i < edges.size(); i++ )
+	for( int i = 0; i < tmpEdges.size(); i++ )
 	{
-		const auto& e = edges[ i ];
+		const auto& e = tmpEdges[ i ];
 		if( is_v_on_plane( e[ 0 ] ) || is_v_on_plane( e[ 1 ] ) )
 			continue;
 		if( to_plane_dists[ e[ 0 ] ] * to_plane_dists[ e[ 1 ] ] >= 0 )

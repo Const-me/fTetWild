@@ -105,6 +105,7 @@ namespace floatTetWild
 		std::vector<double> to_plane_dists;
 		std::vector<bool> is_snapped;
 		std::vector<bool> is_projected;
+		SortedEdgesSet tmpEdges;
 	};
 
 	struct alignas( 64 ) InsertionBuffers

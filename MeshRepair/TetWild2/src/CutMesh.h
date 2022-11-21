@@ -33,6 +33,7 @@ namespace floatTetWild
 		const Logger& logger;
 
 	  private:
+		SortedEdgesSet tmpEdges;
 		CutMeshBuffers& buffers;
 
 	  public:
@@ -60,6 +61,8 @@ namespace floatTetWild
 
 			is_projected = std::move( buffers.is_projected );
 			is_projected.clear();
+
+			tmpEdges = std::move( buffers.tmpEdges );
 		}
 
 		~CutMesh()
@@ -70,6 +73,7 @@ namespace floatTetWild
 			buffers.to_plane_dists = std::move( to_plane_dists );
 			buffers.is_snapped = std::move( is_snapped );
 			buffers.is_projected = std::move( is_projected );
+			buffers.tmpEdges = std::move( tmpEdges );
 		}
 
 		void construct( const std::vector<int>& cut_t_ids );
