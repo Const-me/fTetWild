@@ -10,6 +10,8 @@ namespace floatTetWild
 	// This specialized collection is functionally equivalent to std::vector<bool>, optimized for very specific use cases.
 	// Exposes an API to safely set these bits from multiple threads concurrently, without locks.
 	// Exposes an API to move indices of the set bits to std::queue<int>, without iterating over the complete collection. Sorting is automatic.
+	// Overall, this thing is only good for long collections with relatively few set bits.
+	// For a dense collection of bits, that outer index adds overhead without any profit.
 	class BoolVectorEx
 	{
 		// A block of 512 bits; the size in bytes and alignment are both 64, that's cache line size
@@ -53,6 +55,7 @@ namespace floatTetWild
 	  public:
 		void initEmpty( size_t len );
 
+		// Set a value at the specified index
 		void setAt( size_t i )
 		{
 			assert( i < length );
@@ -60,6 +63,7 @@ namespace floatTetWild
 			setBit<false>( outer.data(), i / 512 );
 		}
 
+		// Set a value at the specified index, concurrently from multiple threads at once
 		void setAtomic( size_t i )
 		{
 			assert( i < length );
@@ -73,6 +77,8 @@ namespace floatTetWild
 			return getBit( inner.data(), i );
 		}
 
+		// Enumerate indices of the set values, push these integers to the queue.
+		// The queue will then contain unique and sorted numbers.
 		void enqueueSet( std::queue<int>& queue ) const;
 	};
 }  // namespace floatTetWild

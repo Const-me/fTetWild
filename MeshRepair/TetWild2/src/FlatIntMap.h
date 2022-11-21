@@ -3,7 +3,7 @@
 
 namespace floatTetWild
 {
-	// Implements API similar to a subset of std::map<int,int> on top of a sorted vector
+	// Implements API similar to std::map<int,int> on top of a sorted vector
 	// The elements are at sequential addresses, this structure is cache friendly, and when reused it retains the memory.
 	class FlatIntMap
 	{
@@ -94,8 +94,9 @@ namespace floatTetWild
 		}
 	};
 
-	// Implements API similar to a subset of std::map<std::array<int,2>,int> on top of a sorted vector
-	// In addition to that, the keys are treated as unsorted: [ 3, 7 ] and [ 7, 3 ] keys are equivalent, they will resolve into the same value
+	// Implements API similar to std::map<std::array<int,2>,int> on top of a sorted vector
+	// In addition to that, the keys are treated as unsorted: [ 3, 7 ] and [ 7, 3 ] keys are equivalent,
+	// i.e. this collection will resolve both keys into the same value
 	class FlatEdgeMap
 	{
 		struct alignas( 16 ) Entry
@@ -184,6 +185,8 @@ namespace floatTetWild
 		}
 	};
 
+	// Despite the name, the sorting is optional.
+	// Implemented for a weird use case in CutMesh class, where it first populates a sorted vector, then appends extra unsorted values to the end.
 	class SortedIntSet
 	{
 		std::vector<int> vec;
