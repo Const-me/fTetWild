@@ -23,19 +23,12 @@
 
 void floatTetWild::init( Mesh& mesh, AABBWrapper& tree )
 {
-	mesh.logger().logInfo( "initializing..." );
-	//    for (auto &t: mesh.tets) {
-	//        if (t.is_removed)
-	//            continue;
-	//        t.quality = get_quality(mesh, t);
-	//    }
-
 	for( auto& v : mesh.tet_vertices )
 	{
 		if( v.isRemoved() )
 			continue;
 		v.clearFlag( eVertexFlags::Surface | eVertexFlags::BoundingBox );
-		//        v.is_on_boundary = false;
+		// v.is_on_boundary = false;
 	}
 	int cnt = 0;
 	for( auto& t : mesh.tets )
@@ -44,7 +37,7 @@ void floatTetWild::init( Mesh& mesh, AABBWrapper& tree )
 			continue;
 		for( int j = 0; j < 4; j++ )
 		{
-			//            if (t.is_surface_fs[j] != NOT_SURFACE) {
+			// if (t.is_surface_fs[j] != NOT_SURFACE) {
 			if( t.is_surface_fs[ j ] <= 0 )
 			{
 				mesh.tet_vertices[ t[ mod4( j + 1 ) ] ].setFlag( eVertexFlags::Surface );
@@ -60,21 +53,6 @@ void floatTetWild::init( Mesh& mesh, AABBWrapper& tree )
 			}
 		}
 	}
-
-	/*
-	if( mesh.params.log_level < 3 )
-	{
-		int v_num, t_num;
-		double max_energy, avg_energy;
-		v_num = mesh.get_v_num();
-		t_num = mesh.get_t_num();
-		get_max_avg_energy( mesh, max_energy, avg_energy );
-		cout << "#v = " << v_num << endl;
-		cout << "#t = " << t_num << endl;
-		cout << "max_energy = " << max_energy << endl;
-		cout << "avg_energy = " << avg_energy << endl;
-	}
-	*/
 }
 
 void floatTetWild::optimization( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const std::vector<int>& input_tags,
@@ -167,7 +145,7 @@ void floatTetWild::optimization( const std::vector<Vector3>& input_vertices, con
 	}
 
 	////postprocessing
-	mesh.logger().logInfo( "//////////////// postprocessing ////////////////" );
+	mesh.logger().logInfo( "Postprocessing.." );
 	for( auto& v : mesh.tet_vertices )
 	{
 		if( v.isRemoved() )
@@ -282,9 +260,9 @@ void floatTetWild::operation( Mesh& mesh, AABBWrapper& tree, const std::array<in
 
 	for( int i = 0; i < ops[ 3 ]; i++ )
 	{
-		mesh.logger().logInfo( "vertex smoothing..." );
+		mesh.logger().logDebug( "vertex smoothing..." );
 		vertex_smoothing( mesh, tree );
-		mesh.logger().logInfo( "vertex smoothing done" );
+		mesh.logger().logDebug( "vertex smoothing done" );
 		v_num = mesh.get_v_num();
 		t_num = mesh.get_t_num();
 		get_max_avg_energy( mesh, max_energy, avg_energy );
@@ -1083,7 +1061,7 @@ void floatTetWild::untangle( Mesh& mesh )
 			}
 		}
 	}
-	mesh.logger().logInfo( "Fixed %i tangled elements", cnt );
+	mesh.logger().logDebug( "Fixed %i tangled elements", cnt );
 }
 
 void floatTetWild::smooth_open_boundary( Mesh& mesh, const AABBWrapper& tree )

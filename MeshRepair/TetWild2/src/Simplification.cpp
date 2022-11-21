@@ -85,8 +85,7 @@ void floatTetWild::simplify( std::vector<Vector3>& input_vertices, std::vector<V
 
 	remove_duplicates( input_vertices, input_faces, input_tags, params );
 
-	params.logger.logInfo( "#v = %zu", (size_t)input_vertices.size() );
-	params.logger.logInfo( "#f = %zu", (size_t)input_faces.size() );
+	params.logger.logDebug( "Simplification complete: %zu vertices, %zu triangles", (size_t)input_vertices.size(), (size_t)input_faces.size() );
 }
 
 bool floatTetWild::remove_duplicates(
@@ -132,9 +131,8 @@ bool floatTetWild::remove_duplicates(
 	if( V_in.rows() == 0 || F_in.rows() == 0 )
 		return false;
 
-	params.logger.logInfo( "remove duplicates: " );
-	params.logger.logInfo( "#v: %zu -> %zu", (size_t)input_vertices.size(), (size_t)V_in.rows() );
-	params.logger.logInfo( "#f: %zu -> %zu", (size_t)input_faces.size(), (size_t)F_in.rows() );
+	params.logger.logDebug( "Remove duplicates: vertices %zu -> %zu, triangles %zu -> %zu", (size_t)input_vertices.size(), (size_t)V_in.rows(),
+	  (size_t)input_faces.size(), (size_t)F_in.rows() );
 
 	input_vertices.resize( V_in.rows() );
 	input_faces.clear();

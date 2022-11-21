@@ -10,6 +10,7 @@
 // #include "../TetWild2/Utils/Geogram2.h"
 // #include "../TetWild2/Utils/lowLevel.h"
 #include "../TetWild2/parallelThreadsImpl.h"
+#include "../TetWild2/Utils/Logger.h"
 
 namespace MeshRepair
 {
@@ -78,6 +79,8 @@ namespace MeshRepair
 	{
 		if( nullptr == rdi )
 			return E_POINTER;
+		Logger logger { this->logger };
+		logger.logInfo( "iMeshRepair.createIndexedMeshFP32" );
 
 		using namespace ComLight;
 		CComPtr<Object<SourceMesh>> result;
@@ -85,6 +88,7 @@ namespace MeshRepair
 		SetThreadsCountRaii raii( globalFlags );
 		CHECK( result->createMesh( countVertices, vb, countTriangles, ib ) );
 		result.detach( rdi );
+		logger.logInfo( "Created an input mesh" );
 		return S_OK;
 	}
 

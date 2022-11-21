@@ -25,6 +25,7 @@ HRESULT meshRepairMain( MeshRepair::SourceMesh& rsi, MeshRepair::eGlobalFlags gl
 	// writeStl( rsi.input_vertices, rsi.input_faces, LR"(C:\Temp\2remove\MeshRepair\Temp-01.stl)" );
 
 	Mesh mesh { logger };
+	mesh.logger().logInfo( "Starting mesh repair" );
 	try
 	{
 		Parameters& params = mesh.params;
@@ -42,26 +43,27 @@ HRESULT meshRepairMain( MeshRepair::SourceMesh& rsi, MeshRepair::eGlobalFlags gl
 
 		params.init( boxDiagonal );
 
-		// preprocessing
+		mesh.logger().logInfo( "Preprocessing.." );
 		simplify( rsi.input_vertices, rsi.input_faces, rsi.input_tags, tree, params, skip_simplify );
 		tree.init_b_mesh_and_tree( rsi.input_vertices, rsi.input_faces, mesh );
 
-		// tetrahedralizing
+		mesh.logger().logInfo( "Creating initial volume mesh.." );
 		BoolVector is_face_inserted;
 		is_face_inserted.resize( rsi.input_faces.size(), false );
 		FloatTetDelaunay::tetrahedralize( rsi.input_vertices, rsi.input_faces, tree, mesh, is_face_inserted );
 
-		// cutting
+		mesh.logger().logInfo( "Inserting triangles.." );
 		insert_triangles( rsi.input_vertices, rsi.input_faces, rsi.input_tags, mesh, is_face_inserted, tree, false );
 
-		// mesh optimization
+		mesh.logger().logInfo( "Optimization passes.." );
 		optimization( rsi.input_vertices, rsi.input_faces, rsi.input_tags, is_face_inserted, mesh, tree, { { 1, 1, 1, 1 } } );
 
-		// correct_tracked_surface_orientation
+		mesh.logger().logInfo( "Correcting tracked surface orientation.." );
 		correct_tracked_surface_orientation( mesh, tree );
 
 		if( params.smooth_open_boundary )
 		{
+			mesh.logger().logInfo( "Smoothing the open boundary.." );
 			smooth_open_boundary( mesh, tree );
 			for( auto& t : mesh.tets )
 			{
@@ -73,6 +75,7 @@ HRESULT meshRepairMain( MeshRepair::SourceMesh& rsi, MeshRepair::eGlobalFlags gl
 		{
 			if( !params.disable_filtering )
 			{
+				mesh.logger().logInfo( "Filtering out outside elements.." );
 				if( params.use_floodfill )
 					filter_outside_floodfill( mesh );
 				else if( params.use_input_for_wn )
@@ -85,9 +88,15 @@ HRESULT meshRepairMain( MeshRepair::SourceMesh& rsi, MeshRepair::eGlobalFlags gl
 		VertexBuffer V_sf;
 		SurfaceIndexBuffer F_sf;
 		if( params.manifold_surface )
+		{
+			mesh.logger().logInfo( "Generating manifold surface.." );
 			manifold_surface( mesh, V_sf, F_sf );
+		}
 		else
+		{
+			mesh.logger().logInfo( "Gathering surface mesh.." );
 			get_surface( mesh, V_sf, F_sf );
+		}
 
 		mesh.times.logInfo( mesh.logger() );
 
@@ -102,6 +111,7 @@ HRESULT meshRepairMain( MeshRepair::SourceMesh& rsi, MeshRepair::eGlobalFlags gl
 		}
 		else 
 		{
+			mesh.logger().logInfo( "Generating FP32 indexed mesh.." );
 			std::vector<std::array<float, 3>> vb32;
 			std::vector<std::array<uint32_t, 3>> ib32;
 			downcastMesh( V_sf, F_sf, vb32, ib32 );
@@ -112,6 +122,7 @@ HRESULT meshRepairMain( MeshRepair::SourceMesh& rsi, MeshRepair::eGlobalFlags gl
 			result->indexBuffer = std::move( ib32 );
 			result.detach( rdi );
 		}
+		mesh.logger().logInfo( "Mesh repair complete." );
 		return S_OK;
 	}
 	catch( const std::bad_alloc& )
