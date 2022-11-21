@@ -138,6 +138,7 @@
     <ClInclude Include="src\TrackedSurfaceChanges.h" />
     <ClInclude Include="ParallelInsertion\refineTetraMesh.h" />
     <ClInclude Include="src\FlatIntMap.h" />
+    <ClInclude Include="src\BoolVectorEx.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp" />
@@ -250,6 +251,7 @@
     <ClCompile Include="src\TrackedSurfaceChanges.cpp" />
     <ClCompile Include="ParallelInsertion\parallelInsertionPreSplit.cpp" />
     <ClCompile Include="ParallelInsertion\refineTetraMesh.cpp" />
+    <ClCompile Include="src\BoolVectorEx.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="external">

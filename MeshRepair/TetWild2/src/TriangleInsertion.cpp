@@ -732,12 +732,9 @@ namespace
 {
 	using namespace floatTetWild;
 
-	static void findCuttingTetsOmp( const Mesh& mesh, __m256d min_f, __m256d max_f, std::queue<int>& queue_t_ids, std::vector<bool>& is_visited,
+	static void findCuttingTetsOmp( const Mesh& mesh, __m256d min_f, __m256d max_f, BoolVectorEx& is_visited,
 	  FindCuttingTetsBuffers& buffers, size_t countTets )
 	{
-		std::vector<int>& queueSortIDs = buffers.queueSortIDs;
-		queueSortIDs.clear();
-
 		const int64_t length = (int64_t)countTets;
 #pragma omp parallel for
 		for( int64_t t_id = 0; t_id < length; t_id++ )
@@ -753,21 +750,11 @@ namespace
 			if( !is_bbox_intersected( min_f, max_f, min_t, max_t ) )
 				continue;
 
-#pragma omp critical
-			{
-				queueSortIDs.push_back( (int)t_id );
-			}
-		}
-
-		std::sort( queueSortIDs.begin(), queueSortIDs.end() );
-		for( int i : queueSortIDs )
-		{
-			queue_t_ids.push( i );
-			is_visited[ i ] = true;
+			is_visited.setAtomic( (int)t_id );
 		}
 	}
 
-	static void findCuttingTets( const Mesh& mesh, __m256d min_f, __m256d max_f, std::queue<int>& queue_t_ids, std::vector<bool>& is_visited, size_t countTets )
+	static void findCuttingTets( const Mesh& mesh, __m256d min_f, __m256d max_f, BoolVectorEx& is_visited, size_t countTets )
 	{
 		for( size_t t_id = 0; t_id < countTets; t_id++ )
 		{
@@ -782,8 +769,7 @@ namespace
 			if( !is_bbox_intersected( min_f, max_f, min_t, max_t ) )
 				continue;
 
-			queue_t_ids.push( t_id );
-			is_visited[ t_id ] = true;
+			is_visited.setAt( t_id );
 		}
 	}
 }  // namespace
@@ -795,28 +781,18 @@ void floatTetWild::find_cutting_tets( int f_id, const std::vector<Vector3>& inpu
 
 	FindCuttingTetsBuffers& buffers = mesh.insertionBuffers().findCuttingTets;
 
-	std::vector<bool>& is_visited = buffers.is_visited;
-	is_visited.clear();
-	is_visited.resize( countTets, false );
+	BoolVectorEx& is_visited = buffers.isVisited;
+	is_visited.initEmpty( countTets );
 
 	std::queue<int>& queue_t_ids = buffers.queue_t_ids;
 
 	if( !is_again )
 	{
-		std::vector<int>& n_t_ids = buffers.n_t_ids;
-		n_t_ids.clear();
-
 		for( int j = 0; j < 3; j++ )
 		{
 			const auto& conn_tets = mesh.tet_vertices[ input_faces[ f_id ][ j ] ].connTets;
-			n_t_ids.insert( n_t_ids.end(), conn_tets.begin(), conn_tets.end() );
-		}
-		vector_unique( n_t_ids );
-
-		for( int t_id : n_t_ids )
-		{
-			is_visited[ t_id ] = true;
-			queue_t_ids.push( t_id );
+			for( int i : conn_tets )
+				is_visited.setAt( i );
 		}
 	}
 	else
@@ -825,14 +801,16 @@ void floatTetWild::find_cutting_tets( int f_id, const std::vector<Vector3>& inpu
 		get_bbox_face(
 		  input_vertices[ input_faces[ f_id ][ 0 ] ], input_vertices[ input_faces[ f_id ][ 1 ] ], input_vertices[ input_faces[ f_id ][ 2 ] ], min_f, max_f );
 #if PARALLEL_TRIANGLES_INSERTION
-		findCuttingTets( mesh, min_f, max_f, queue_t_ids, is_visited, countTets );
+		findCuttingTets( mesh, min_f, max_f, is_visited, countTets );
 #else
 		if( mesh.params.num_threads > 1 )
-			findCuttingTetsOmp( mesh, min_f, max_f, queue_t_ids, is_visited, buffers, countTets );
+			findCuttingTetsOmp( mesh, min_f, max_f, is_visited, buffers, countTets );
 		else
-			findCuttingTets( mesh, min_f, max_f, queue_t_ids, is_visited, countTets );
+			findCuttingTets( mesh, min_f, max_f, is_visited, countTets );
 #endif
 	}
+
+	is_visited.enqueueSet( queue_t_ids );
 
 	while( !queue_t_ids.empty() )
 	{
@@ -861,7 +839,7 @@ void floatTetWild::find_cutting_tets( int f_id, const std::vector<Vector3>& inpu
 					{
 						if( !is_visited[ n_t_id ] )
 						{
-							is_visited[ n_t_id ] = true;
+							is_visited.setAt( n_t_id );
 							queue_t_ids.push( n_t_id );
 						}
 					}
@@ -957,7 +935,7 @@ void floatTetWild::find_cutting_tets( int f_id, const std::vector<Vector3>& inpu
 			{
 				if( !is_visited[ n_t_id ] )
 				{
-					is_visited[ n_t_id ] = true;
+					is_visited.setAt( n_t_id );
 					queue_t_ids.push( n_t_id );
 				}
 			}

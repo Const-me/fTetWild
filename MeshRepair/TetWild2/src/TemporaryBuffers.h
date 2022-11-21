@@ -7,6 +7,7 @@
 #include <map>
 #include "TrackedSurfaceChanges.h"
 #include "FlatIntMap.h"
+#include "BoolVectorEx.h"
 
 namespace floatTetWild
 {
@@ -51,11 +52,8 @@ namespace floatTetWild
 	struct FindCuttingTetsBuffers
 	{
 		std::vector<int> cut_t_ids;
-		std::vector<bool> is_visited;
+		BoolVectorEx isVisited;
 		std::queue<int> queue_t_ids;
-		std::vector<int> n_t_ids;
-		// Used by findCuttingTetsOmp, to sort triangles produced by different threads
-		std::vector<int> queueSortIDs;
 	};
 
 	struct IsBoundaryEdgeBuffers
