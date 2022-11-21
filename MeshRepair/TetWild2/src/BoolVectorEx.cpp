@@ -35,11 +35,11 @@ void BoolVectorEx::initEmpty( size_t len )
 			} while( 0 != v );
 		}
 
-		const size_t prevInner = inner.size();
+		size_t prevInner = inner.size();
 		const size_t countInner = ( len + 511 ) / 512;
 		inner.resize( countInner );
-		if( countInner > prevInner )
-			memset( &inner[ prevInner ], 0, ( countInner - prevInner ) * 64 );
+		for( ; prevInner < countInner; prevInner++ )
+			writeZeros( &inner[ prevInner ] );
 
 		const size_t countOuter = ( countInner + 63 ) / 64;
 		outer.resize( countOuter, 0 );
