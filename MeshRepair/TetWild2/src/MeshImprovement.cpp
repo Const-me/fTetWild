@@ -569,8 +569,6 @@ int floatTetWild::get_max_p( const Mesh& mesh )
 	return max_p;
 }
 
-#include "../external/Predicates.h"
-
 void floatTetWild::apply_coarsening( Mesh& mesh, AABBWrapper& tree )
 {
 	mesh.is_coarsening = true;

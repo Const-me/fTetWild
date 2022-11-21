@@ -269,7 +269,7 @@ Scalar floatTetWild::get_quality( const Vector3& v0, const Vector3& v1, const Ve
 	return AMIPS_energy( T );
 }
 
-void floatTetWild::get_max_avg_energy( const Mesh& mesh, Scalar& max_energy, Scalar& avg_energy )
+void __declspec( noinline ) floatTetWild::get_max_avg_energy( const Mesh& mesh, Scalar& max_energy, Scalar& avg_energy )
 {
 	max_energy = 0;
 	avg_energy = 0;
