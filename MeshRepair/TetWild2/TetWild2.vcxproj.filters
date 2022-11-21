@@ -65,9 +65,6 @@
     <ClInclude Include="src\Simplification.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\Statistics.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="src\TriangleInsertion.h">
       <Filter>src</Filter>
     </ClInclude>

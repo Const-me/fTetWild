@@ -156,7 +156,6 @@
     <ClInclude Include="src\MeshImprovement.h" />
     <ClInclude Include="src\Parameters.h" />
     <ClInclude Include="src\Simplification.h" />
-    <ClInclude Include="src\Statistics.h" />
     <ClInclude Include="src\TriangleInsertion.h" />
     <ClInclude Include="src\Types.hpp" />
     <ClInclude Include="src\VertexSmoothing.h" />

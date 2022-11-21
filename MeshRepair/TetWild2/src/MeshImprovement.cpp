@@ -15,7 +15,6 @@
 #include "VertexSmoothing.h"
 #include "Parameters.h"
 #include "TriangleInsertion.h"
-#include "Statistics.h"
 #include <igl/winding_number.h>
 #include "../Utils/Geogram2.h"
 #include "../Utils/NearestSearch.h"
