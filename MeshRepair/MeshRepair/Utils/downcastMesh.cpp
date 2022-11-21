@@ -126,7 +126,12 @@ void downcastMesh( const floatTetWild::VertexBuffer& vertices, const floatTetWil
 	const size_t countTriangles = faces.rows();
 	if( undupe.size() == countVerts )
 	{
-		// Downcasting didn't produce duplicate vertices in the mesh.
+		// Downcasting didn't produce duplicate vertices in the mesh
+		undupe.clear();
+		remap.clear();
+		remap.shrink_to_fit();
+
+		// Downcast the whole vertex buffer with AVX instructions
 		vb32.resize( countVerts );
 		downcastFloats( (float*)vb32.data(), countVerts * 3, vertices.data() );
 
