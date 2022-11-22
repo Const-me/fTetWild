@@ -27,6 +27,7 @@
     <ClInclude Include="ResultMesh.h" />
     <ClInclude Include="API\eGlobalFlags.h" />
     <ClInclude Include="Utils\downcastMesh.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="API">
@@ -44,5 +45,8 @@
   <ItemGroup>
     <Natvis Include="eigen.natvis" />
     <Natvis Include="simd.natvis" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc" />
   </ItemGroup>
 </Project>
