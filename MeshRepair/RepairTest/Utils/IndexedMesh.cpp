@@ -105,7 +105,10 @@ HRESULT IndexedMesh::loadBinaryStl( LPCTSTR path )
 	CHECK( mapping.MapFile( file ) );
 	const char* ptr = mapping;
 	if( 0 == StrCmpNIA( ptr, "solid", 5 ) )
+	{
+		fprintf( stderr, "The input file is a text STL, not supported by the tool\n" );
 		return E_INVALIDARG;  // We don't support text STL files
+	}
 
 	ptr += 80;
 	const uint32_t countTriangles = *(const uint32_t*)( ptr );

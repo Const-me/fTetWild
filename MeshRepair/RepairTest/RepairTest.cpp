@@ -13,7 +13,7 @@ static CString resultPath( LPCTSTR source )
 	LPCTSTR ext = PathFindExtensionW( source );
 	if( nullptr == ext || 0 == *ext )
 	{
-		printf( "Please supply a complete file name, including the .stl extension\n" );
+		fprintf( stderr, "Please supply a complete file name, including the .stl extension\n" );
 		throw E_INVALIDARG;
 	}
 
@@ -129,11 +129,11 @@ int wmain( int argc, wchar_t* argv[] )
 	}
 	if( SUCCEEDED( hr ) )
 	{
-		wprintf( L"Repaired a mesh, the result saved to %s\n", cstr( result ) );
+		wprintf( L"Repaired the mesh. The output saved to %s\n", cstr( result ) );
 		return 0;
 	}
 
 	CString msg = formatMessage( hr );
-	wprintf( L"Mesh repair failed: %s\n", cstr( msg ) );
+	fwprintf( stderr, L"Mesh repair failed: %s\n", cstr( msg ) );
 	return (int)hr;
 }
