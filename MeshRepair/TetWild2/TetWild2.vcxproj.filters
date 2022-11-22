@@ -17,9 +17,6 @@
     <ClInclude Include="external\FastWindingNumber.hpp">
       <Filter>external</Filter>
     </ClInclude>
-    <ClInclude Include="external\get_mem.h">
-      <Filter>external</Filter>
-    </ClInclude>
     <ClInclude Include="external\Predicates.h">
       <Filter>external</Filter>
     </ClInclude>
@@ -147,12 +144,6 @@
       <Filter>external</Filter>
     </ClCompile>
     <ClCompile Include="external\FastWindingNumber.cpp">
-      <Filter>external</Filter>
-    </ClCompile>
-    <ClCompile Include="external\get_mem.cpp">
-      <Filter>external</Filter>
-    </ClCompile>
-    <ClCompile Include="external\getRSS.c">
       <Filter>external</Filter>
     </ClCompile>
     <ClCompile Include="external\Predicates.cpp">

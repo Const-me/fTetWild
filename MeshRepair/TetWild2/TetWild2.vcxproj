@@ -123,7 +123,6 @@
     <ClInclude Include="Utils\designTimeUtils.h" />
     <ClInclude Include="external\bfs_orient.h" />
     <ClInclude Include="external\FastWindingNumber.hpp" />
-    <ClInclude Include="external\get_mem.h" />
     <ClInclude Include="external\mesh_AABB.h" />
     <ClInclude Include="external\Predicates.h" />
     <ClInclude Include="external\Rational.h" />
@@ -195,10 +194,6 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="external\FastWindingNumber.cpp" />
-    <ClCompile Include="external\getRSS.c">
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="external\get_mem.cpp" />
     <ClCompile Include="external\mesh_AABB.cpp" />
     <ClCompile Include="external\Predicates.cpp" />
     <ClCompile Include="Utils\cutTableDataPrint.cpp" />
