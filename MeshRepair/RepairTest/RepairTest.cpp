@@ -3,7 +3,7 @@
 #include "../MeshRepair/API/library.h"
 #include "Utils/Timer.h"
 #include "Utils/ConsoleLogSink.h"
-#include <atlstr.h>
+#include "Utils/formatMessage.h"
 
 // static const LPCTSTR stlSource = LR"(C:\Temp\2remove\MeshRepair\model.stl)";
 static const LPCTSTR stlSource = LR"(C:\Temp\2remove\MeshRepair\dragon.stl)";
@@ -12,7 +12,11 @@ static CString resultPath( LPCTSTR source )
 {
 	LPCTSTR ext = PathFindExtensionW( source );
 	if( nullptr == ext || 0 == *ext )
-		__debugbreak();
+	{
+		printf( "Please supply a complete file name, including the .stl extension\n" );
+		throw E_INVALIDARG;
+	}
+
 	CString res { source, (int)( ext - source ) };
 	res += L"-result.stl";
 	return res;
@@ -70,11 +74,11 @@ HRESULT testStlIO()
 	return S_OK;
 }
 
-HRESULT testRepair()
+HRESULT repairMesh( LPCTSTR stl, CString& res )
 {
 	IndexedMesh mesh;
-	CHECK( mesh.loadBinaryStl( stlSource ) );
-	CString res = resultPath( stlSource );
+	CHECK( mesh.loadBinaryStl( stl ) );
+	res = resultPath( stl );
 
 	using ComLight::CComPtr;
 	using namespace MeshRepair;
@@ -105,10 +109,30 @@ HRESULT testRepair()
 	return S_OK;
 }
 
-int main()
+int wmain( int argc, wchar_t* argv[] )
 {
-	// testStlIO();
-	testRepair();
-	printf( "Hello World!\n" );
-	return 0;
+	if( argc != 2 )
+	{
+		printf( "Usage: RepairTest input.stl\n" );
+		return 1;
+	}
+	HRESULT hr = E_UNEXPECTED;
+	CString result;
+	try
+	{
+		hr = repairMesh( argv[ 1 ], result );
+	}
+	catch( HRESULT h )
+	{
+		hr = h;
+	}
+	if( SUCCEEDED( hr ) )
+	{
+		wprintf( L"Repaired a mesh, the result saved to %s\n", cstr( result ) );
+		return 0;
+	}
+
+	CString msg = formatMessage( hr );
+	wprintf( L"Mesh repair failed: %s\n", cstr( msg ) );
+	return (int)hr;
 }

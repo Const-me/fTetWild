@@ -18,6 +18,7 @@
     <ClCompile Include="Utils\Timer.cpp" />
     <ClCompile Include="Utils\ConsoleLogSink.cpp" />
     <ClCompile Include="Utils\ConsoleLogSink.win32.cpp" />
+    <ClCompile Include="Utils\formatMessage.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -29,5 +30,6 @@
     </ClInclude>
     <ClInclude Include="Utils\Timer.h" />
     <ClInclude Include="Utils\ConsoleLogSink.h" />
+    <ClInclude Include="Utils\formatMessage.h" />
   </ItemGroup>
 </Project>
