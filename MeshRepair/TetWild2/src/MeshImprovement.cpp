@@ -86,7 +86,7 @@ void floatTetWild::optimization( const std::vector<Vector3>& input_vertices, con
 		if( max_energy <= mesh.params.stop_energy && mesh.is_input_all_inserted )
 			break;
 
-		if( mesh.params.stop_p > 0 )
+		if constexpr( mesh.params.stop_p > 0 )
 		{
 			int p = get_max_p( mesh );
 			mesh.logger().logDebug( "p = %i", p );

@@ -56,7 +56,9 @@ namespace floatTetWild
 
 		unsigned int num_threads = std::numeric_limits<unsigned int>::max();
 
-		int stop_p = -1;
+		// The documentation of the command-line parameter says "for debugging usage only"
+		// Making it constexpr allows linker to drop large chunk of code in get_max_p() function
+		static constexpr int stop_p = -1;
 
 		Vector3 bbox_min;
 		Vector3 bbox_max;
