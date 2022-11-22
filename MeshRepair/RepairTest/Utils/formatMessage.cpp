@@ -27,6 +27,6 @@ CString formatMessage( HRESULT hr )
 
 	// Fallback message
 	CStringW unknown;
-	unknown.Format( L"Unknown error code %i (0x%08X)", (int)hr, (int)hr );
+	unknown.Format( L"Unknown status code %i (0x%08X)", (int)hr, (int)hr );
 	return unknown;
 }
