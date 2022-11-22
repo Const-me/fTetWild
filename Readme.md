@@ -1,5 +1,7 @@
 ﻿This repository contains heavily refactored code of [fTetWild project](https://github.com/wildmeshing/fTetWild).
 
+The original readme document was renamed into `README.orig.md` in this repository.
+
 My main goal was making a Windows DLL which implements a reliable surface mesh repair.
 
 Other goals were improving performance and quality of that code.
@@ -12,14 +14,14 @@ The complete API of the DLL is in the `MeshRepair/MeshRepair/API` subfolder of t
 
 The API surface is tiny: a single DLL entry point `createMeshRepair`, 3 COM interfaces, and a couple of helper structures.
 
-The I/O was out of scope of the library.<br/>
+I/O was out of scope of the library.<br/>
 A user is expected to supply a mesh as a pair of vertex/index buffers in system RAM, and the results are available as another pair of these buffers.
 
 The API of the DLL was designed to be equally usable from C++ and C# programming languages.
 
 # Performance
 
-About the performance, I’ve benchmarked on the [Stanford dragon](https://en.wikipedia.org/wiki/Stanford_dragon) 3D model with default settings.
+I’ve benchmarked on [Stanford dragon](https://en.wikipedia.org/wiki/Stanford_dragon) 3D model with default settings.
 
 The computer I’m using at the time of writing has AMD [Ryzen 7 5700G](https://www.amd.com/en/products/apu/amd-ryzen-7-5700g) processor.
 
@@ -32,7 +34,7 @@ Only a few isolated pieces offload work to the thread pool. I’ve tried to para
 
 # Dependencies
 
-The original version used complicated cmake scripts to download many dependencies from the internets.
+The original version wa using complicated cmake scripts to download many dependencies from the internets.
 
 Due to the smaller scope (no IO), I have dropped many of them, and copy-pasted most of the required ones into this repository, except one.
 
@@ -47,7 +49,7 @@ Modified it heavily.<br/>
 That library resembles a framework, not a library.
 This project only needs Delaunay tetrahedralization algorithm, and a few low-level geometric primitives. I have included these parts only.
 
-3. [libigl 2.4.0](https://github.com/libigl/libigl), MPL2 license. This repository includes just a few small pieces. I have modified it substantially to use OpenMP thread pool for parallelism.
+3. [libigl 2.4.0](https://github.com/libigl/libigl), MPL2 license. This repository includes just a few small pieces. I have modified it to use OpenMP thread pool for parallelism.
 
 4. [MPIR](https://github.com/BrianGladman/mpir) Due to the LGPL license of that one, I have not included that library into this repository.<br/>
 I have used current master version.<br/>
@@ -70,27 +72,28 @@ Dropped dependencies:
 
 Build the MPIR somehow
 
-The Visual Studio solution expects that library in the following directory: `$(SolutionDir)..\..\mpir\sandybridge\Inc`<br/>
+The Visual Studio solution expects the headers in the following directory: `$(SolutionDir)..\..\mpir\sandybridge\Inc`<br/>
 
 And the static libraries are expected to be there, again relative to the `MeshRepair.sln` file:<br/>
 `$(SolutionDir)..\..\mpir\sandybridge\Bin`<br/>
-Note it requires both C and C++ versions, i.e. mpir.lib and mpirxx.lib files.
+Note it needs both C and C++ versions, i.e. both `mpir.lib` and `mpirxx.lib` files.
 
-Open `MeshRepair/MeshRepair.sln` solution with Visual Studio, I have used version 2022.
+Open `MeshRepair/MeshRepair.sln` solution with Visual Studio 2022 or newer.<br/>
+I have used the freeware community edition, version 17.3.5
 
-Build the `RepairTest` projevct of that solution.<br/>
+Build the `RepairTest` project of that solution.<br/>
 This should produce `MeshRepair.dll` implementing the repair algorithm,
-and `RepairTest.exe` which consumes that DLL to implement a stand-alone repair tool.
-The test tool only supports [binary STL](https://en.wikipedia.org/wiki/STL_%28file_format%29#Binary_STL) format of the models.
+and `RepairTest.exe` which consumes that DLL to implement a stand alone mesh repair tool.
+The tool only supports [binary STL](https://en.wikipedia.org/wiki/STL_%28file_format%29#Binary_STL) format of the models.
 
-Copy the `mpir.dll` into the output folder, and run the `RepairTest.exe` tool.
+Copy `mpir.dll` into the output folder, and run the `RepairTest.exe` tool.
 
 # Runtime Requirements
 
-I only needed AVX2 build of the library.<br/>
+I only needed AVX2 build of this library.<br/>
 If you need AVX1 version, the downgrade going to be relatively easy.<br/>
-If you need an SSE only version, will be hard to downgrade.
+If you need an SSE only version, or ARM64 version, gonna be hard to downgrade, too many AVX intrinsics.
 
 This project no longer uses cmake, but if you need a Linux version of this code, the port should be straightforward.<br/>
-The DLL doesn’t do any IO, doesn’t call any OS APIs, only uses OpenMP multithreading, and C++/17 standard library.<br/>
-For COM implementation the library uses [ComLightInterop](https://github.com/Const-me/ComLightInterop), which works just fine on Linux.
+The DLL doesn’t do any IO, doesn’t call any OS APIs directly, only uses OpenMP multithreading, and C++/17 standard library.<br/>
+For COM implementation the library uses [ComLightInterop](https://github.com/Const-me/ComLightInterop), which works fine on Linux.
