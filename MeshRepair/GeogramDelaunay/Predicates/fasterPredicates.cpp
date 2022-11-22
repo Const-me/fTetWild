@@ -23,6 +23,8 @@ namespace GEO
 	namespace PCK
 	{
 		constexpr int FPG_UNCERTAIN_VALUE = 0;
+
+		// The original header is only used for testing
 #include <geogram/numerics/predicates/orient3d.h>
 
 		Sign orient_3d_exact( const double* p0, const double* p1, const double* p2, const double* p3 )
@@ -87,6 +89,67 @@ namespace GEO
 			__debugbreak();
 			orient3d_fast( p0, p1, p2, p3 );
 			orient_3d_orig( p0, p1, p2, p3 );
+			return orig;
+#endif
+		}
+
+		// The original header is only used for testing
+#include <geogram/numerics/predicates/orient2d.h>
+
+		static Sign orient_2d_exact( const double* p0, const double* p1, const double* p2 )
+		{
+			PCK_STAT( cnt_orient2d_exact++ );
+
+			const expansion& a11 = expansion_diff( p1[ 0 ], p0[ 0 ] );
+			const expansion& a12 = expansion_diff( p1[ 1 ], p0[ 1 ] );
+
+			const expansion& a21 = expansion_diff( p2[ 0 ], p0[ 0 ] );
+			const expansion& a22 = expansion_diff( p2[ 1 ], p0[ 1 ] );
+
+			const expansion& Delta = expansion_det2x2( a11, a12, a21, a22 );
+
+			PCK_STAT( len_orient2d = std::max( len_orient2d, Delta.length() ) );
+
+			return Delta.sign();
+		}
+
+		static Sign orient_2d_orig( const double* p0, const double* p1, const double* p2 )
+		{
+			PCK_STAT( cnt_orient2d_total++ );
+			Sign result = Sign( orient_2d_filter( p0, p1, p2 ) );
+			if( result == 0 )
+			{
+				result = orient_2d_exact( p0, p1, p2 );
+			}
+			return result;
+		}
+
+		inline Sign makeSign( double r )
+		{
+			if( r < 0 )
+				return Sign::NEGATIVE;
+			else if( r > 0 )
+				return Sign::POSITIVE;
+			else
+				return Sign::ZERO;
+		}
+
+		inline Sign orient2d_fast( const double* p0, const double* p1, const double* p2 )
+		{
+			const double r = RobustPredicates::orient2d( p0, p1, p2 );
+			return makeSign( r );
+		}
+
+		Sign orient_2d( const double* p0, const double* p1, const double* p2 )
+		{
+#if 1
+			return orient2d_fast( p0, p1, p2 );
+#else
+			Sign fast = orient2d_fast( p0, p1, p2 );
+			Sign orig = orient_2d_orig( p0, p1, p2 );
+			if( orig == fast )
+				return fast;
+			__debugbreak();
 			return orig;
 #endif
 		}
