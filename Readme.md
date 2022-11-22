@@ -76,7 +76,14 @@ And the static libraries are expected to be there, again relative to the `MeshRe
 `$(SolutionDir)..\..\mpir\sandybridge\Bin`<br/>
 Note it requires both C and C++ versions, i.e. mpir.lib and mpirxx.lib files.
 
-Open and build `MeshRepair/MeshRepair.sln` solution with Visual Studio, I have used version 2022.
+Open `MeshRepair/MeshRepair.sln` solution with Visual Studio, I have used version 2022.
+
+Build the `RepairTest` projevct of that solution.<br/>
+This should produce `MeshRepair.dll` implementing the repair algorithm,
+and `RepairTest.exe` which consumes that DLL to implement a stand-alone repair tool.
+The test tool only supports [binary STL](https://en.wikipedia.org/wiki/STL_%28file_format%29#Binary_STL) format of the models.
+
+Copy the `mpir.dll` into the output folder, and run the `RepairTest.exe` tool.
 
 # Runtime Requirements
 
