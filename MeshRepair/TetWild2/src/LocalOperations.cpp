@@ -232,40 +232,53 @@ bool floatTetWild::is_point_out_boundary_envelope( const Mesh& mesh, const Vecto
 	return tree.is_out_tmp_b_envelope( p, mesh.params.eps_2, prev_facet );
 }
 
+namespace
+{
+	inline void collect2verts( double* rdi, const double* p0, const double* p1 )
+	{
+		// p0.xy
+		__m128d v = _mm_loadu_pd( p0 );
+		_mm_storeu_pd( rdi, v );
+		// p0.z, p1.x
+		v = _mm_load_sd( p0 + 2 );
+		v = _mm_loadh_pd( v, p1 );
+		_mm_storeu_pd( rdi + 2, v );
+		// p1.yz
+		v = _mm_loadu_pd( p1 + 1 );
+		_mm_storeu_pd( rdi + 4, v );
+	}
+
+	inline void collect4verts( std::array<double, 12>& arr, const double* p0, const double* p1, const double* p2, const double* p3 )
+	{
+		collect2verts( &arr[ 0 ], p0, p1 );
+		collect2verts( &arr[ 6 ], p2, p3 );
+	}
+}  // namespace
+
 Scalar floatTetWild::get_quality( const Mesh& mesh, const MeshTet& t )
 {
 	std::array<Scalar, 12> T;
-	for( int i = 0; i < 4; i++ )
-	{
-		for( int j = 0; j < 3; j++ )
-			T[ i * 3 + j ] = mesh.tet_vertices[ t[ i ] ].pos[ j ];
-	}
-
+	const auto& indices = t.indices;
+	collect4verts( T, mesh.tet_vertices[ indices[ 0 ] ].pos.data(), mesh.tet_vertices[ indices[ 1 ] ].pos.data(), mesh.tet_vertices[ indices[ 2 ] ].pos.data(),
+	  mesh.tet_vertices[ indices[ 3 ] ].pos.data() );
 	return AMIPS_energy( T );
 }
 
 Scalar floatTetWild::get_quality( const Mesh& mesh, int t_id )
 {
+	return get_quality( mesh, mesh.tets[ t_id ] );
+}
+
+Scalar floatTetWild::get_quality( const Vector3& v0, const Vector3& v1, const Vector3& v2, const Vector3& v3 )
+{
 	std::array<Scalar, 12> T;
-	for( int i = 0; i < 4; i++ )
-	{
-		for( int j = 0; j < 3; j++ )
-			T[ i * 3 + j ] = mesh.tet_vertices[ mesh.tets[ t_id ][ i ] ].pos[ j ];
-	}
+	collect4verts( T, v0.data(), v1.data(), v2.data(), v3.data() );
 	return AMIPS_energy( T );
 }
 
 Scalar floatTetWild::get_quality( const MeshVertex& v0, const MeshVertex& v1, const MeshVertex& v2, const MeshVertex& v3 )
 {
-	std::array<Scalar, 12> T = { { v0.pos[ 0 ], v0.pos[ 1 ], v0.pos[ 2 ], v1.pos[ 0 ], v1.pos[ 1 ], v1.pos[ 2 ], v2.pos[ 0 ], v2.pos[ 1 ], v2.pos[ 2 ],
-	  v3.pos[ 0 ], v3.pos[ 1 ], v3.pos[ 2 ] } };
-	return AMIPS_energy( T );
-}
-
-Scalar floatTetWild::get_quality( const Vector3& v0, const Vector3& v1, const Vector3& v2, const Vector3& v3 )
-{
-	std::array<Scalar, 12> T = { { v0[ 0 ], v0[ 1 ], v0[ 2 ], v1[ 0 ], v1[ 1 ], v1[ 2 ], v2[ 0 ], v2[ 1 ], v2[ 2 ], v3[ 0 ], v3[ 1 ], v3[ 2 ] } };
-	return AMIPS_energy( T );
+	return get_quality( v0.pos, v1.pos, v2.pos, v3.pos );
 }
 
 void __declspec( noinline ) floatTetWild::get_max_avg_energy( const Mesh& mesh, Scalar& max_energy, Scalar& avg_energy )
@@ -936,14 +949,19 @@ namespace
 Scalar floatTetWild::AMIPS_energy_aux( const std::array<Scalar, 12>& T )
 {
 #if 1
-	return AMIPS_energy_aux_v3( T );
+	return AMIPS_energy_aux_v4( T );
 #else
 	const double v1 = AMIPS_energy_aux_v1( T );
-	const double v2 = AMIPS_energy_aux_v3( T );
+	const double v3 = AMIPS_energy_aux_v3( T );
+	const double v2 = AMIPS_energy_aux_v4( T );
 	// if( v1 != v2 ) __debugbreak(); return v2;
-	constexpr double eps = 1E-5;
+	constexpr double eps = 1E-4;
 	if( !areEqualRel( v1, v2, eps ) )
-		__debugbreak();
+	{
+		if( v2 <= 1e8 )
+			__debugbreak();
+		// When it exceeds 1E+8, the calling code in AMIPS_energy() will use the rational numbers anyway
+	}
 	return v2;
 #endif
 }

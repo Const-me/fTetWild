@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "LocalOperations2.h"
 #include "../Utils/lowLevel.h"
+#include "../Utils/AvxMath.h"
 // clang-format off
 namespace
 {
@@ -109,6 +110,78 @@ double floatTetWild::AMIPS_energy_aux_v3( const std::array<double, 12>& arr )
 
 	mul *= -0.5;
 	// const double res = mul / std::pow( tmpDiv * tmpDiv, 1.0 / 3.0 );
+	const double res = mul / floatTetWild::cbrt( tmpDiv * tmpDiv );
+	return res;
+}
+
+namespace
+{
+	struct sMagicNumbers
+	{
+		const double m1 = magic1;
+		const double m2 = magic2;
+		const double m3 = magic3;
+		const double m4 = magic4;
+		const double four = 4.0;
+		const double munisHalf = -0.5;
+	};
+
+	static const alignas( 64 ) sMagicNumbers s_magic;
+
+	// Compute c - ( a * b ) with FMA
+	inline __m256d fnmadd(__m256d a, __m256d b, __m256d c )
+	{
+#ifdef __AVX2__
+		return _mm256_fnmadd_pd( a, b, c );
+#else
+		return _mm256_sub_pd( c, _mm256_mul_pd( a, b ) );
+#endif
+	}
+}
+
+double floatTetWild::AMIPS_energy_aux_v4( const std::array<double, 12>& arr )
+{
+	// Load slices of 3 elements into 4 vectors
+	const __m256d v0 = _mm256_loadu_pd( &arr[ 0 ] );
+	const __m256d v3 = _mm256_loadu_pd( &arr[ 3 ] );
+	const __m256d v6 = _mm256_loadu_pd( &arr[ 6 ] );
+	const __m256d v9 = AvxMath::loadDouble3( &arr[ 9 ] );
+
+	const __m256d m1 = _mm256_broadcast_sd( &s_magic.m1 );
+	const __m256d m2 = _mm256_broadcast_sd( &s_magic.m2 );
+
+	const __m256d t1_1 = _mm256_mul_pd( v0, m1 );
+	const __m256d t1_2 = _mm256_mul_pd( v3, m2 );
+	const __m256d t1_3 = _mm256_mul_pd( v9, m1 );
+	const __m256d t1 = _mm256_add_pd( _mm256_sub_pd( t1_1, t1_2 ), t1_3 );
+
+	const __m256d m3 = _mm256_broadcast_sd( &s_magic.m3 );
+	const __m256d m4 = _mm256_broadcast_sd( &s_magic.m4 );
+
+	const __m256d t2_1 = _mm256_mul_pd( v0, m3 );
+	const __m256d t2_2 = _mm256_mul_pd( v3, m3 );
+	const __m256d t2_3 = _mm256_mul_pd( v6, m4 );
+	const __m256d t2_4 = _mm256_mul_pd( v9, m3 );
+	const __m256d t2_12 = _mm256_add_pd( t2_1, t2_1 );
+	const __m256d t2_34 = _mm256_sub_pd( t2_4, t2_3 );
+	const __m256d t2 = _mm256_add_pd( t2_12, t2_34 );
+
+	const __m256d div1 = _mm256_sub_pd( v0, v9 );
+	const __m256d div2 = AvxMath::vector3Cross( t1, t2 );
+	const double tmpDiv = AvxMath::vector3DotScalar( div1, div2 );
+
+	const __m256d sum0 = _mm256_add_pd( _mm256_add_pd( v0, v3 ), _mm256_add_pd( v6, v9 ) );
+	const __m256d four = _mm256_broadcast_sd( &s_magic.four );
+
+	const __m256d mul0 = _mm256_mul_pd( v0, fnmadd( four, v0, sum0 ) );
+	const __m256d mul3 = _mm256_mul_pd( v3, fnmadd( four, v3, sum0 ) );
+	const __m256d mul6 = _mm256_mul_pd( v6, fnmadd( four, v6, sum0 ) );
+	const __m256d mul9 = _mm256_mul_pd( v9, fnmadd( four, v9, sum0 ) );
+
+	const __m256d mulTemp = _mm256_add_pd( _mm256_add_pd( mul0, mul3 ), _mm256_add_pd( mul6, mul9 ) );
+	double mul = AvxMath::vector3HorizontalSum( mulTemp );
+	mul *= s_magic.munisHalf;
+
 	const double res = mul / floatTetWild::cbrt( tmpDiv * tmpDiv );
 	return res;
 }
