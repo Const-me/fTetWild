@@ -77,9 +77,7 @@
     </ClInclude>
     <ClInclude Include="Utils\miscUtils.h" />
     <ClInclude Include="Utils\BoundingBox.hpp" />
-    <ClInclude Include="Utils\GeometricPrimitives.h" />
     <ClInclude Include="Utils\NearestSearch.h" />
-    <ClInclude Include="Utils\orient3D.h" />
     <ClInclude Include="Utils\designTimeUtils.h" />
     <ClInclude Include="Utils\KdTree\kd_tree.h">
       <Filter>Utils\KdTree</Filter>

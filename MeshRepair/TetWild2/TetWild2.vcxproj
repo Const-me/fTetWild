@@ -129,11 +129,9 @@
     <ClInclude Include="external\Rational.h" />
     <ClInclude Include="external\WindingNumber.h" />
     <ClInclude Include="Utils\cutTableData.h" />
-    <ClInclude Include="Utils\orient3D.h" />
     <ClInclude Include="Utils\KdTree\kd_tree.h" />
     <ClInclude Include="Utils\KdTree\nn_search.h" />
     <ClInclude Include="Utils\NearestSearch.h" />
-    <ClInclude Include="Utils\GeometricPrimitives.h" />
     <ClInclude Include="Utils\Mesh\MeshBase.h" />
     <ClInclude Include="Utils\BoundingBox.hpp" />
     <ClInclude Include="Utils\miscUtils.h" />

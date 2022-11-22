@@ -1,13 +1,6 @@
 #pragma once
-#define CUSTOM_CODEZ 0
-#if CUSTOM_CODEZ
-#include "GeometricPrimitives.h"
-#include "NearestSearch.h"
-#include "orient3D.h"
-#else
 #include <geogram/basic/geometry.h>
 #include <geogram/numerics/predicates.h>
-#endif
 #ifdef __AVX__
 #include "AvxMath.h"
 #else
@@ -20,7 +13,6 @@ namespace GEO2
 	using index_t = uint32_t;
 
 	constexpr uint32_t NO_FACET = ~( (uint32_t)0 );
-#if !CUSTOM_CODEZ
 	using GEO::Box;
 	using GEO::cross;
 	using GEO::distance;
@@ -64,5 +56,4 @@ namespace GEO2
 		__m256d dist = _mm256_sub_pd( bv, a );
 		return vector3DotScalar( dist, dist );
 	}
-#endif
 }  // namespace GEO2
