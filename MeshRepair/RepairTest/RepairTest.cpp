@@ -93,6 +93,7 @@ HRESULT repairMesh( LPCTSTR stl, CString& res )
 
 	// The defaults are reasonable
 	Parameters params;
+	// params.flags |= eRepairFlags::SkipSimplify;
 
 	// The default epsilon is 1E-3
 	// With 1E-4 it takes about 13 minutes, for the dragon https://en.wikipedia.org/wiki/Stanford_dragon

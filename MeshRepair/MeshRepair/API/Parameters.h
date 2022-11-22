@@ -20,10 +20,12 @@ namespace MeshRepair
 		UseGeneralWN = 0x20,
 		// Use input surface for winding number
 		UseInputForWN = 0x40,
+		// Skip simplification of the input surface mesh. Makes the result more accurate, at the cost of performance.
+		SkipSimplify = 0x80,
 		// The idealEdgeLength and epsilon fields are absolute numbers; by default, they're relative to the bounding box diagonal
-		LengthsAreAbsolute = 0x80,
+		LengthsAreAbsolute = 0x100,
 		// After making the output mesh, downcast vertices to FP32, and re-index the mesh to remove newly degenerate triangles
-		DowncastMeshFp32 = 0x100,
+		DowncastMeshFp32 = 0x200,
 	};
 
 	struct Parameters

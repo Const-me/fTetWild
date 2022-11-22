@@ -13,12 +13,6 @@
 
 using namespace floatTetWild;
 
-namespace
-{
-	constexpr bool skip_simplify = false;
-}  // namespace
-
-
 HRESULT meshRepairMain( MeshRepair::SourceMesh& rsi, MeshRepair::eGlobalFlags globalFlags, const MeshRepair::Parameters& parameters,
   const MeshRepair::sLoggerSetup& logger, MeshRepair::iResultMesh** rdi ) noexcept
 {
@@ -26,6 +20,7 @@ HRESULT meshRepairMain( MeshRepair::SourceMesh& rsi, MeshRepair::eGlobalFlags gl
 
 	Mesh mesh { logger };
 	mesh.logger().logInfo( "Starting mesh repair" );
+	using MeshRepair::eRepairFlags;
 	try
 	{
 		Parameters& params = mesh.params;
@@ -35,7 +30,7 @@ HRESULT meshRepairMain( MeshRepair::SourceMesh& rsi, MeshRepair::eGlobalFlags gl
 
 		AABBWrapper tree( rsi.mesh, mesh.facetRecursionStacks );
 		const double boxDiagonal = tree.get_sf_diag();
-		if( parameters.hasFlag( MeshRepair::eRepairFlags::LengthsAreAbsolute ) )
+		if( parameters.hasFlag( eRepairFlags::LengthsAreAbsolute ) )
 		{
 			params.ideal_edge_length /= boxDiagonal;
 			params.eps_rel /= boxDiagonal;
@@ -44,7 +39,8 @@ HRESULT meshRepairMain( MeshRepair::SourceMesh& rsi, MeshRepair::eGlobalFlags gl
 		params.init( boxDiagonal );
 
 		mesh.logger().logInfo( "Preprocessing.." );
-		simplify( rsi.input_vertices, rsi.input_faces, rsi.input_tags, tree, params, skip_simplify );
+		const bool skipSimplify = parameters.hasFlag( eRepairFlags::SkipSimplify );
+		simplify( rsi.input_vertices, rsi.input_faces, rsi.input_tags, tree, params, skipSimplify );
 		tree.init_b_mesh_and_tree( rsi.input_vertices, rsi.input_faces, mesh );
 
 		mesh.logger().logInfo( "Creating initial volume mesh.." );
