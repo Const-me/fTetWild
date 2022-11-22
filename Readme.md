@@ -97,3 +97,5 @@ If you need an SSE only version, or ARM64 version, gonna be hard to downgrade, t
 This project no longer uses cmake, but if you need a Linux version of this code, the port should be straightforward.<br/>
 The DLL doesn’t do any IO, doesn’t call any OS APIs directly, only uses OpenMP multithreading, and C++/17 standard library.<br/>
 For COM implementation the library uses [ComLightInterop](https://github.com/Const-me/ComLightInterop), which works fine on Linux.
+
+If you don’t want to build anything only want to test, to run the released binaries you gonna need to install [vc_redist.x64.exe](https://aka.ms/vs/17/release/vc_redist.x64.exe)
