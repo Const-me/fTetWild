@@ -14,9 +14,6 @@
     <ClInclude Include="external\bfs_orient.h">
       <Filter>external</Filter>
     </ClInclude>
-    <ClInclude Include="external\Exception.h">
-      <Filter>external</Filter>
-    </ClInclude>
     <ClInclude Include="external\FastWindingNumber.hpp">
       <Filter>external</Filter>
     </ClInclude>

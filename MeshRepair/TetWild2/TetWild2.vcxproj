@@ -122,7 +122,6 @@
     <ClInclude Include="src\EdgesSet.h" />
     <ClInclude Include="Utils\designTimeUtils.h" />
     <ClInclude Include="external\bfs_orient.h" />
-    <ClInclude Include="external\Exception.h" />
     <ClInclude Include="external\FastWindingNumber.hpp" />
     <ClInclude Include="external\get_mem.h" />
     <ClInclude Include="external\mesh_AABB.h" />
