@@ -244,7 +244,6 @@ floatTetWild::eCollapseStatus floatTetWild::collapse_an_edge(
 	n1_t_ids.clear();
 
 	tet_vertices[ v1_id ].connTets.sort();
-	std::sort( n12_t_ids.begin(), n12_t_ids.end() );
 	std::set_difference(
 	  tet_vertices[ v1_id ].connTets.begin(), tet_vertices[ v1_id ].connTets.end(), n12_t_ids.begin(), n12_t_ids.end(), std::back_inserter( n1_t_ids ) );
 

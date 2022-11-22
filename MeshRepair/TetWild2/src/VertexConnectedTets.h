@@ -95,6 +95,12 @@ namespace floatTetWild
 		}
 	};
 
+	// Find elements present in both VertexConnectedTets collections, append to the output vector
+	// The integers are added in the sorted order
 	void setIntersection( const VertexConnectedTets& a, const VertexConnectedTets& b, std::vector<int>& result );
+
+	// Find the elements present in all 3 VertexConnectedTets collections, append to the output vector
+	// The integers are added in the sorted order
 	void setIntersection( const VertexConnectedTets& a, const VertexConnectedTets& b, const VertexConnectedTets& c, std::vector<int>& result );
+
 }  // namespace floatTetWild
