@@ -15,7 +15,7 @@
 
 namespace floatTetWild
 {
-	const bool use_old_energy = false;
+	constexpr bool use_old_energy = false;
 }  // namespace floatTetWild
 using floatTetWild::Scalar;
 
@@ -800,18 +800,11 @@ namespace
 	{
 		return floatTetWild::cbrt( x );
 	}
-}  // namespace
 
-Scalar floatTetWild::AMIPS_energy( const std::array<Scalar, 12>& T )
-{
-	Scalar res = AMIPS_energy_aux( T );
-	if( use_old_energy )
+	static double AMIPS_energy_rational( const std::array<double, 12>& T )
 	{
-		return res;
-	}
+		using namespace floatTetWild;
 
-	if( res > 1e8 )
-	{
 		if( is_degenerate(
 			  Vector3( T[ 0 ], T[ 1 ], T[ 2 ] ), Vector3( T[ 3 ], T[ 4 ], T[ 5 ] ), Vector3( T[ 6 ], T[ 7 ], T[ 8 ] ), Vector3( T[ 9 ], T[ 10 ], T[ 11 ] ) ) )
 		{
@@ -849,8 +842,40 @@ Scalar floatTetWild::AMIPS_energy( const std::array<Scalar, 12>& T )
 			3 );
 		return cubicRoot( res_r.to_double() );
 	}
+}  // namespace
+
+#define DBG_COMPARE_ENEGRIES 0
+
+Scalar floatTetWild::AMIPS_energy( const std::array<Scalar, 12>& T )
+{
+	const double aux = AMIPS_energy_aux( T );
+	if constexpr( use_old_energy )
+		return aux;
+
+#if !DBG_COMPARE_ENEGRIES
+	if( aux > 1e8 )
+		return AMIPS_energy_rational( T );
 	else
-		return res;
+		return aux;
+#else
+	const double rational = AMIPS_energy_rational( T );
+	if( aux > 1e8 )
+		return rational;
+
+	static thread_local double maxAbs = 0, maxRel = 0;
+	double abs = std::abs( aux - rational );
+	const double avg = ( aux + rational ) * 0.5;
+	double rel = abs / std::abs( avg );
+	if( abs > maxAbs || rel > maxRel )
+		printf( "Rational %g, FP %g, abs.error %g, rel. error %g\n", rational, aux, abs, rel );
+	maxAbs = std::max( maxAbs, abs );
+	maxRel = std::max( maxRel, rel );
+
+	if( aux > 1e8 )
+		return rational;
+	else
+		return aux;
+#endif
 }
 
 static Scalar AMIPS_energy_aux_v1( const std::array<Scalar, 12>& T )
