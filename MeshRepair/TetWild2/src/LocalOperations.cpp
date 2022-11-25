@@ -844,7 +844,7 @@ namespace
 	}
 }  // namespace
 
-#define DBG_COMPARE_ENEGRIES 0
+#define DBG_COMPARE_ENERGIES 0
 
 Scalar floatTetWild::AMIPS_energy( const std::array<Scalar, 12>& T )
 {
@@ -852,7 +852,7 @@ Scalar floatTetWild::AMIPS_energy( const std::array<Scalar, 12>& T )
 	if constexpr( use_old_energy )
 		return aux;
 
-#if !DBG_COMPARE_ENEGRIES
+#if !DBG_COMPARE_ENERGIES
 	if( aux > 1e8 )
 		return AMIPS_energy_rational( T );
 	else
@@ -945,7 +945,7 @@ namespace
 Scalar floatTetWild::AMIPS_energy_aux( const std::array<Scalar, 12>& T )
 {
 #if 1
-	return AMIPS_energy_aux_v4( T );
+	return AMIPS_energy_aux_v5( T );
 #else
 	const double v1 = AMIPS_energy_aux_v1( T );
 	const double v3 = AMIPS_energy_aux_v3( T );

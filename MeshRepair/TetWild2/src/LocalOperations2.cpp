@@ -122,6 +122,7 @@ namespace
 		const double m2 = magic2;
 		const double m3 = magic3;
 		const double m4 = magic4;
+		const double oneFourth = 0.25;
 		const double four = 4.0;
 		const double munisHalf = -0.5;
 	};
@@ -181,6 +182,71 @@ double floatTetWild::AMIPS_energy_aux_v4( const std::array<double, 12>& arr )
 	const __m256d mulTemp = _mm256_add_pd( _mm256_add_pd( mul0, mul3 ), _mm256_add_pd( mul6, mul9 ) );
 	double mul = AvxMath::vector3HorizontalSum( mulTemp );
 	mul *= s_magic.munisHalf;
+
+	const double res = mul / floatTetWild::cbrt( tmpDiv * tmpDiv );
+	return res;
+}
+
+double floatTetWild::AMIPS_energy_aux_v5( const std::array<double, 12>& arr )
+{
+	// Load vertices into 4 vectors
+	__m256d v0 = _mm256_loadu_pd( &arr[ 0 ] );
+	__m256d v3 = _mm256_loadu_pd( &arr[ 3 ] );
+	__m256d v6 = _mm256_loadu_pd( &arr[ 6 ] );
+	__m256d v9 = AvxMath::loadDouble3( &arr[ 9 ] );
+
+	{
+		// Compute barycenter of the vertices
+		const __m256d s03 = _mm256_add_pd( v0, v3 );
+		const __m256d s69 = _mm256_add_pd( v6, v9 );
+		const __m256d s = _mm256_add_pd( s03, s69 );
+		const __m256d bc = _mm256_mul_pd( s, _mm256_broadcast_sd( &s_magic.oneFourth ) );
+		// Translate the input vertices, making them relative to the barycenter
+		v0 = _mm256_sub_pd( v0, bc );
+		v3 = _mm256_sub_pd( v3, bc );
+		v6 = _mm256_sub_pd( v6, bc );
+		v9 = _mm256_sub_pd( v9, bc );
+	}
+
+	const __m256d m1 = _mm256_broadcast_sd( &s_magic.m1 );
+	const __m256d m2 = _mm256_broadcast_sd( &s_magic.m2 );
+
+	const __m256d t1_1 = _mm256_mul_pd( v0, m1 );
+	const __m256d t1_2 = _mm256_mul_pd( v3, m2 );
+	const __m256d t1_3 = _mm256_mul_pd( v9, m1 );
+	const __m256d t1 = _mm256_add_pd( _mm256_sub_pd( t1_1, t1_2 ), t1_3 );
+
+	const __m256d m3 = _mm256_broadcast_sd( &s_magic.m3 );
+	const __m256d m4 = _mm256_broadcast_sd( &s_magic.m4 );
+
+	const __m256d t2_1 = _mm256_mul_pd( v0, m3 );
+	const __m256d t2_2 = _mm256_mul_pd( v3, m3 );
+	const __m256d t2_3 = _mm256_mul_pd( v6, m4 );
+	const __m256d t2_4 = _mm256_mul_pd( v9, m3 );
+	const __m256d t2_12 = _mm256_add_pd( t2_1, t2_1 );
+	const __m256d t2_34 = _mm256_sub_pd( t2_4, t2_3 );
+	const __m256d t2 = _mm256_add_pd( t2_12, t2_34 );
+
+	const __m256d div1 = _mm256_sub_pd( v0, v9 );
+	const __m256d div2 = AvxMath::vector3Cross( t1, t2 );
+	const double tmpDiv = AvxMath::vector3DotScalar( div1, div2 );
+
+	// The original code computes sum( x * ( sum0 - 4 * x ) )
+	// Because we translated vertices to the barycenter, sum0 is 0.0 for all 3 coordinates, we only need to compute -4.0 * sum( x^2 )
+	const __m256d mul0 = _mm256_mul_pd( v0, v0 );
+	const __m256d mul3 = _mm256_mul_pd( v3, v3 );
+	const __m256d mul6 = _mm256_mul_pd( v6, v6 );
+	const __m256d mul9 = _mm256_mul_pd( v9, v9 );
+
+	// Compute vertical sum first
+	const __m256d mulTemp = _mm256_add_pd( _mm256_add_pd( mul0, mul3 ), _mm256_add_pd( mul6, mul9 ) );
+	// Compute horizontal sum of 3 lanes of the vector
+	double mul = AvxMath::vector3HorizontalSum( mulTemp );
+
+	// The original version then multiplied by -0.5
+	// So far, the `mul` is just sum of squares, without the -4.0 multiplier
+	// -4.0 * -0.5 = +2.0, and multiplication by 2 can be reduced to addition, slightly faster, and most importantly saves a RAM load
+	mul += mul;
 
 	const double res = mul / floatTetWild::cbrt( tmpDiv * tmpDiv );
 	return res;
