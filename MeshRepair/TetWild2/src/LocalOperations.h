@@ -88,14 +88,7 @@ namespace floatTetWild
 		v.erase( it );
 		return true;
 	}
-	/*
-	template<typename T>
-	void vector_print( const std::vector<T>& v, std::string s = " " )
-	{
-		for( auto i : v )
-			cout << i << s;
-		cout << endl;
-	} */
+
 	template<typename T>
 	bool vector_contains( const std::vector<T>& v, const T& t )
 	{
@@ -131,7 +124,6 @@ namespace floatTetWild
 	void pausee( std::string msg = "" );
 
 	Scalar AMIPS_energy_aux( const std::array<Scalar, 12>& T );
-	bool is_energy_unstable( const std::array<Scalar, 12>& T, Scalar res );
 	Scalar AMIPS_energy( const std::array<Scalar, 12>& T );
 	void AMIPS_jacobian( const std::array<Scalar, 12>& T, Vector3& result_0 );
 	void AMIPS_hessian( const std::array<Scalar, 12>& T, Matrix3& result_0 );
