@@ -254,7 +254,7 @@ namespace
 	inline __m256d customProduct( __m256d a, __m256d b )
 	{
 		// The normal cross product formula is a.yzx * b.zxy - a.zxy * b.yzx
-		// That mysterios Hessian formula instead computes a.yxx * b.zzy - a.zzy * b.yxx
+		// That mysterios Hessian formula instead computes a.yxx * b.zzy - a.zzy * b.yxx, systematically so, in quite a few places
 		const __m256d a0 = permute_yxx( a );
 		const __m256d b0 = permute_zzy( b );
 		const __m256d a1 = permute_zzy( a );
@@ -262,6 +262,14 @@ namespace
 		const __m256d cp1 = mul( a0, b0 );
 		const __m256d cp2 = mul( a1, b1 );
 		return sub( cp1, cp2 );
+	}
+
+	inline double hadd12( __m256d a, __m256d b, __m256d c, __m256d d )
+	{
+		const __m256d ab = _mm256_add_pd( a, b );
+		const __m256d cd = _mm256_add_pd( c, d );
+		const __m256d v = _mm256_add_pd( ab, cd );
+		return AvxMath::vector3HorizontalSum( v );
 	}
 }  // namespace
 
@@ -330,25 +338,20 @@ void floatTetWild::AMIPS_hessian_v3( const std::array<double, 12>& arr, Matrix3&
 	const __m256d t11 = add( v1, v2 );
 	STORE( t11 );
 
-	const double t12_x = v3_x + t11_x - 3 * v0_x;
-	const double t12_y = v3_y + t11_y - 3 * v0_y;
-	const double t12_z = v3_z + t11_z - 3 * v0_z;
+	const __m256d three = _mm256_set1_pd( 3 );
+	// v3 + t11 - 3.0 * v0
+	const __m256d t12 = sub( add( t11, v3 ), mul( three, v0 ) );
 
-	const double t13_x = v0_x + t11_x - 3 * v3_x;
-	const double t13_y = v0_y + t11_y - 3 * v3_y;
-	const double t13_z = v0_z + t11_z - 3 * v3_z;
+	// v0 + t11 - 3.0 * v3
+	const __m256d t13 = sub( add( t11, v0 ), mul( three, v3 ) );
 
-	const double t14_x = v0_x + v1_x + v3_x - 3 * v2_x;
-	const double t14_y = v0_y + v1_y + v3_y - 3 * v2_y;
-	const double t14_z = v0_z + v3_z + v1_z - 3 * v2_z;
+	// v0 + v1 + v3 - 3.0 * v2
+	const __m256d t14 = sub( add( add( v0, v1 ), v3 ), mul( three, v2 ) );
 
-	const double t15_x = v0_x + v2_x + v3_x - 3 * v1_x;
-	const double t15_y = v0_y + v2_y + v3_y - 3 * v1_y;
-	const double t15_z = v0_z + v2_z + v3_z - 3 * v1_z;
+	// v0 + v2 + v3 - 3.0 * v1
+	const __m256d t15 = sub( add( add( v0, v2 ), v3 ), mul( three, v1 ) );
 
-	const double product1 = ( v0_z * t12_z + v0_y * t12_y + v1_y * t15_y + v2_y * t14_y + v3_y * t13_y + v3_z * t13_z + v2_x * t14_x + v1_z * t15_z +
-							  v2_z * t14_z + v0_x * t12_x + v1_x * t15_x + t13_x * v3_x ) *
-							0.5;
+	const double product1 = hadd12( mul( v0, t12 ), mul( v1, t15 ), mul( v2, t14 ), mul( v3, t13 ) ) * 0.5;
 
 	const double st7 = st4 * product1;
 
@@ -381,11 +384,7 @@ void floatTetWild::AMIPS_hessian_v3( const std::array<double, 12>& arr, Matrix3&
 
 	const double helper_104 = -0.444444444444444 * t19_y * t21_x * product1 * st5 + t22_x * t20_y - t22_y * t20_x;
 
-	const double helper_105 = ( 1.85037170770859e-17 * v0_z * t12_z + 1.85037170770859e-17 * v0_y * t12_y + 1.85037170770859e-17 * v1_y * t15_y +
-								1.85037170770859e-17 * v2_y * t14_y + 1.85037170770859e-17 * v3_y * t13_y + 1.85037170770859e-17 * v3_z * t13_z +
-								1.85037170770859e-17 * v2_x * t14_x + 1.85037170770859e-17 * v1_z * t15_z + 1.85037170770859e-17 * v2_z * t14_z +
-								1.85037170770859e-17 * v0_x * t12_x + 1.85037170770859e-17 * v1_x * t15_x + 1.85037170770859e-17 * t13_x * v3_x ) *
-							  0.5;
+	const double helper_105 = 1.85037170770859e-17 * product1;
 
 	const double helper_106 = -t19_x * product1 * st5;
 	const double helper_83 = 0.444444444444444 * st4 * product1;
