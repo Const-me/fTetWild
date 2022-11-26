@@ -37,38 +37,43 @@ void floatTetWild::AMIPS_hessian_v2( const std::array<double, 12>& arr, Matrix3&
 	const double v3_y = arr[ 10 ];
 	const double v3_z = arr[ 11 ];
 
-	const double helper_3 = v0_z - v3_z;
 	const double helper_5 = magic1 * v0_x;
-	const double helper_7 = magic2 * v1_x;
+	const double helper_21 = magic1 * v0_y;
+	const double helper_42 = magic1 * v0_z;
+
 	const double helper_9 = magic1 * v3_x;
-	const double helper_10 = helper_5 - helper_7 + helper_9;
+	const double helper_23 = magic1 * v3_y;
+	const double helper_44 = magic1 * v3_z;
+
+	const double helper_7 = magic2 * v1_x;
+	const double helper_22 = magic2 * v1_y;
+	const double helper_43 = magic2 * v1_z;
+
 	const double helper_12 = magic3 * v0_y;
 	const double helper_14 = magic3 * v1_y;
-	const double helper_16 = magic4 * v2_y;
 	const double helper_18 = magic3 * v3_y;
-	const double helper_19 = helper_12 + helper_14 - helper_16 + helper_18;
-	const double helper_20 = helper_10 * helper_19;
-	const double helper_21 = magic1 * v0_y;
-	const double helper_22 = magic2 * v1_y;
-	const double helper_23 = magic1 * v3_y;
-	const double helper_24 = helper_21 - helper_22 + helper_23;
 	const double helper_25 = magic3 * v0_x;
 	const double helper_26 = magic3 * v1_x;
-	const double helper_28 = magic4 * v2_x;
 	const double helper_29 = magic3 * v3_x;
+	const double helper_34 = magic3 * v0_z;
+	const double helper_36 = magic3 * v1_z;
+	const double helper_39 = magic3 * v3_z;
+
+	const double helper_28 = magic4 * v2_x;
+	const double helper_16 = magic4 * v2_y;
+	const double helper_38 = magic4 * v2_z;
+
+	const double helper_3 = v0_z - v3_z;
+	const double helper_10 = helper_5 - helper_7 + helper_9;
+	const double helper_19 = helper_12 + helper_14 - helper_16 + helper_18;
+	const double helper_20 = helper_10 * helper_19;
+	const double helper_24 = helper_21 - helper_22 + helper_23;
 	const double helper_30 = helper_25 + helper_26 - helper_28 + helper_29;
 	const double helper_31 = helper_24 * helper_30;
 	const double helper_32 = helper_3 * ( helper_20 - helper_31 );
 	const double helper_33 = v0_x - v3_x;
-	const double helper_34 = magic3 * v0_z;
-	const double helper_36 = magic3 * v1_z;
-	const double helper_38 = magic4 * v2_z;
-	const double helper_39 = magic3 * v3_z;
 	const double helper_40 = helper_34 + helper_36 - helper_38 + helper_39;
 	const double helper_41 = helper_24 * helper_40;
-	const double helper_42 = magic1 * v0_z;
-	const double helper_43 = magic2 * v1_z;
-	const double helper_44 = magic1 * v3_z;
 	const double helper_45 = helper_42 - helper_43 + helper_44;
 	const double helper_46 = helper_19 * helper_45;
 	const double helper_47 = helper_41 - helper_46;
