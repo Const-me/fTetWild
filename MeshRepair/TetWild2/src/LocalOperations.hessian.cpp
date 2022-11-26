@@ -165,24 +165,25 @@ void floatTetWild::AMIPS_hessian_v2( const std::array<double, 12>& arr, Matrix3&
 	const __m256d t11 = add( v1, v2 );
 	STORE( t11 );
 
-	const double t12_x = ( -3 * v0_x + t11_x + v3_x ) * 0.5;
-	const double t12_y = ( -3 * v0_y + v3_y + t11_y ) * 0.5;
-	const double t12_z = ( -3 * v0_z + v3_z + t11_z ) * 0.5;
+	const double t12_x = -3 * v0_x + t11_x + v3_x;
+	const double t12_y = -3 * v0_y + v3_y + t11_y;
+	const double t12_z = -3 * v0_z + v3_z + t11_z;
 
-	const double t13_x = ( v0_x + t11_x - 3 * v3_x ) * 0.5;
-	const double t13_y = ( v0_y - 3 * v3_y + t11_y ) * 0.5;
-	const double t13_z = ( v0_z - 3 * v3_z + t11_z ) * 0.5;
+	const double t13_x = v0_x + t11_x - 3 * v3_x;
+	const double t13_y = v0_y - 3 * v3_y + t11_y;
+	const double t13_z = v0_z - 3 * v3_z + t11_z;
 
-	const double t14_x = ( -3 * v2_x + v0_x + v1_x + v3_x ) * 0.5;
-	const double t14_y = ( v0_y + v1_y - 3 * v2_y + v3_y ) * 0.5;
-	const double t14_z = ( v0_z + v3_z + v1_z - 3 * v2_z ) * 0.5;
+	const double t14_x = -3 * v2_x + v0_x + v1_x + v3_x;
+	const double t14_y = v0_y + v1_y - 3 * v2_y + v3_y;
+	const double t14_z = v0_z + v3_z + v1_z - 3 * v2_z;
 
-	const double t15_x = ( v2_x + v0_x - 3 * v1_x + v3_x ) * 0.5;
-	const double t15_y = ( v0_y - 3 * v1_y + v2_y + v3_y ) * 0.5;
-	const double t15_z = ( v0_z + v3_z - 3 * v1_z + v2_z ) * 0.5;
+	const double t15_x = v2_x + v0_x - 3 * v1_x + v3_x;
+	const double t15_y = v0_y - 3 * v1_y + v2_y + v3_y;
+	const double t15_z = v0_z + v3_z - 3 * v1_z + v2_z;
 
-	const double product1 = v0_z * t12_z + v0_y * t12_y + v1_y * t15_y + v2_y * t14_y + v3_y * t13_y + v3_z * t13_z + v2_x * t14_x + v1_z * t15_z +
-							v2_z * t14_z + v0_x * t12_x + v1_x * t15_x + t13_x * v3_x;
+	const double product1 = ( v0_z * t12_z + v0_y * t12_y + v1_y * t15_y + v2_y * t14_y + v3_y * t13_y + v3_z * t13_z + v2_x * t14_x + v1_z * t15_z +
+							  v2_z * t14_z + v0_x * t12_x + v1_x * t15_x + t13_x * v3_x ) *
+							0.5;
 
 	const double st7 = st4 * product1;
 
@@ -206,9 +207,6 @@ void floatTetWild::AMIPS_hessian_v2( const std::array<double, 12>& arr, Matrix3&
 	const double t20_z =
 	  -0.666666666666667 * t08_x * t09_y + 0.666666666666667 * t08_y * t09_x + 0.666666666666667 * t07_x * t10_y - 0.666666666666667 * t07_y * t10_x;
 
-	// const double t21_x = -t10_y * t16_z + t10_z * t16_y + t17_y * t18_z - t17_z * t18_y;
-	// const double t21_y = -t10_x * t16_z + t10_z * t16_x + t17_x * t18_z - t17_z * t18_x;
-	// const double t21_z = -t10_x * t16_y + t10_y * t16_x + t17_x * t18_y - t17_y * t18_x;
 	const __m256d t21_0 = mul( permute_yxx( t10 ), permute_zzy( t16 ) );
 	const __m256d t21_1 = mul( permute_yxx( t16 ), permute_zzy( t10 ) );
 	const __m256d t21_2 = mul( permute_yxx( t17 ), permute_zzy( t18 ) );
@@ -218,10 +216,11 @@ void floatTetWild::AMIPS_hessian_v2( const std::array<double, 12>& arr, Matrix3&
 
 	const double helper_104 = 0.444444444444444 * helper_102 * t21_x * product1 * st5 + t22_x * t20_y - t22_y * t20_x;
 
-	const double helper_105 = 1.85037170770859e-17 * v0_z * t12_z + 1.85037170770859e-17 * v0_y * t12_y + 1.85037170770859e-17 * v1_y * t15_y +
-							  1.85037170770859e-17 * v2_y * t14_y + 1.85037170770859e-17 * v3_y * t13_y + 1.85037170770859e-17 * v3_z * t13_z +
-							  1.85037170770859e-17 * v2_x * t14_x + 1.85037170770859e-17 * v1_z * t15_z + 1.85037170770859e-17 * v2_z * t14_z +
-							  1.85037170770859e-17 * v0_x * t12_x + 1.85037170770859e-17 * v1_x * t15_x + 1.85037170770859e-17 * t13_x * v3_x;
+	const double helper_105 = ( 1.85037170770859e-17 * v0_z * t12_z + 1.85037170770859e-17 * v0_y * t12_y + 1.85037170770859e-17 * v1_y * t15_y +
+								1.85037170770859e-17 * v2_y * t14_y + 1.85037170770859e-17 * v3_y * t13_y + 1.85037170770859e-17 * v3_z * t13_z +
+								1.85037170770859e-17 * v2_x * t14_x + 1.85037170770859e-17 * v1_z * t15_z + 1.85037170770859e-17 * v2_z * t14_z +
+								1.85037170770859e-17 * v0_x * t12_x + 1.85037170770859e-17 * v1_x * t15_x + 1.85037170770859e-17 * t13_x * v3_x ) *
+							  0.5;
 
 	const double helper_106 = -t19_x * product1 * st5;
 	const double helper_83 = 0.444444444444444 * st4 * product1;
