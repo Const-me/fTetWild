@@ -20,50 +20,82 @@ namespace
 	constexpr double magic3 = 0.408248290463863;  // sqrt(1/6)
 	constexpr double magic4 = 1.22474487139159;	  // sqrt(3/2)
 	constexpr double magic5 = 0.707106781186548;  // sqrt(0.5)
+
+	struct sMagicNumbers
+	{
+		const double m1 = magic1;
+		const double m2 = magic2;
+		const double m3 = magic3;
+		const double m4 = magic4;
+		const double m5 = magic5;
+	};
+	static const alignas( 64 ) sMagicNumbers s_magic;
+
+	template<int i>
+	inline double extract( __m256d v );
+
+	template<>
+	inline double extract<0>( __m256d v )
+	{
+		return _mm256_cvtsd_f64( v );
+	}
+
+	template<>
+	inline double extract<1>( __m256d v )
+	{
+		__m128d low = _mm256_castpd256_pd128( v );
+		low = _mm_unpackhi_pd( low, low );
+		return _mm_cvtsd_f64( low );
+	}
+
+	template<>
+	inline double extract<2>( __m256d v )
+	{
+		__m128d high = _mm256_extractf128_pd( v, 1 );
+		return _mm_cvtsd_f64( high );
+	}
+
+#define STORE( v )                        \
+	const double v##_x = extract<0>( v ); \
+	const double v##_y = extract<1>( v ); \
+	const double v##_z = extract<2>( v );
 }
 
 void floatTetWild::AMIPS_hessian_v2( const std::array<double, 12>& arr, Matrix3& result_0 )
 {
-	const double v0_x = arr[ 0 ];
-	const double v0_y = arr[ 1 ];
-	const double v0_z = arr[ 2 ];
-	const double v1_x = arr[ 3 ];
-	const double v1_y = arr[ 4 ];
-	const double v1_z = arr[ 5 ];
-	const double v2_x = arr[ 6 ];
-	const double v2_y = arr[ 7 ];
-	const double v2_z = arr[ 8 ];
-	const double v3_x = arr[ 9 ];
-	const double v3_y = arr[ 10 ];
-	const double v3_z = arr[ 11 ];
+	// Load slices of 3 elements into 4 vectors
+	const __m256d v0 = _mm256_loadu_pd( &arr[ 0 ] );
+	const __m256d v1 = _mm256_loadu_pd( &arr[ 3 ] );
+	const __m256d v2 = _mm256_loadu_pd( &arr[ 6 ] );
+	const __m256d v3 = AvxMath::loadDouble3( &arr[ 9 ] );
 
-	const double t00_x = magic1 * v0_x;
-	const double t00_y = magic1 * v0_y;
-	const double t00_z = magic1 * v0_z;
+	const __m256d m1 = _mm256_broadcast_sd( &s_magic.m1 );
+	const __m256d t00 = _mm256_mul_pd( m1, v0 );
+	const __m256d t01 = _mm256_mul_pd( m1, v3 );
 
-	const double t01_x = magic1 * v3_x;
-	const double t01_y = magic1 * v3_y;
-	const double t01_z = magic1 * v3_z;
+	const __m256d m2 = _mm256_broadcast_sd( &s_magic.m2 );
+	const __m256d t02 = _mm256_mul_pd( m2, v1 );
 
-	const double t02_x = magic2 * v1_x;
-	const double t02_y = magic2 * v1_y;
-	const double t02_z = magic2 * v1_z;
+	const __m256d m3 = _mm256_broadcast_sd( &s_magic.m3 );
+	const __m256d t03 = _mm256_mul_pd( m3, v0 );
+	const __m256d t04 = _mm256_mul_pd( m3, v1 );
+	const __m256d t05 = _mm256_mul_pd( m3, v3 );
 
-	const double t03_x = magic3 * v0_x;
-	const double t03_y = magic3 * v0_y;
-	const double t03_z = magic3 * v0_z;
+	const __m256d m4 = _mm256_broadcast_sd( &s_magic.m4 );
+	const __m256d t06 = _mm256_mul_pd( m4, v2 );
 
-	const double t04_x = magic3 * v1_x;
-	const double t04_y = magic3 * v1_y;
-	const double t04_z = magic3 * v1_z;
+	STORE( v0 );
+	STORE( v1 );
+	STORE( v2 );
+	STORE( v3 );
 
-	const double t05_x = magic3 * v3_x;
-	const double t05_y = magic3 * v3_y;
-	const double t05_z = magic3 * v3_z;
-
-	const double t06_x = magic4 * v2_x;
-	const double t06_y = magic4 * v2_y;
-	const double t06_z = magic4 * v2_z;
+	STORE( t00 );
+	STORE( t01 );
+	STORE( t02 );
+	STORE( t03 );
+	STORE( t04 );
+	STORE( t05 );
+	STORE( t06 );
 
 	const double helper_3 = v0_z - v3_z;
 	const double helper_10 = t00_x - t02_x + t01_x;
