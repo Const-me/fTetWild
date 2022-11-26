@@ -474,25 +474,10 @@ void floatTetWild::AMIPS_hessian_v4( const std::array<double, 12>& arr, Matrix3&
 	const __m256d t10 = mul( m5, sub( v1, v2 ) );
 	STORE( t10 );
 
-	const __m256d t11 = add( v1, v2 );
-
-	const __m256d three = _mm256_set1_pd( 3 );
-	// v3 + t11 - 3.0 * v0
-	const __m256d t12 = sub( add( t11, v3 ), mul( three, v0 ) );
-
-	// v0 + t11 - 3.0 * v3
-	const __m256d t13 = sub( add( t11, v0 ), mul( three, v3 ) );
-
-	// v0 + v1 + v3 - 3.0 * v2
-	const __m256d t14 = sub( add( add( v0, v1 ), v3 ), mul( three, v2 ) );
-
-	// v0 + v2 + v3 - 3.0 * v1
-	const __m256d t15 = sub( add( add( v0, v2 ), v3 ), mul( three, v1 ) );
-
-	const double product1 = hadd12( mul( v0, t12 ), mul( v1, t15 ), mul( v2, t14 ), mul( v3, t13 ) ) * 0.5;
-
+	const double product1 = hadd12( mul( v0, v0 ), mul( v1, v1 ), mul( v2, v2 ), mul( v3, v3 ) ) * -2.0;
 	const double st7 = st4 * product1;
 
+	const __m256d t12 = mul( v0, _mm256_set1_pd( -4.0 ) );
 	STORE( t12 );
 
 	const __m256d t16 = sub( v3, v0 );
