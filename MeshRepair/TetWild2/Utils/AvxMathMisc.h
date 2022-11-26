@@ -201,4 +201,27 @@ namespace AvxMath
 		return _mm256_add_pd( _mm256_mul_pd( a, b ), c );
 #endif
 	}
+
+	// Compute two pieces of the cross-product; the complete cross product is equal to ( lhs - rhs )
+	__forceinline void crossProductPieces( __m256d a, __m256d b, __m256d& lhs, __m256d& rhs )
+	{
+#ifdef __AVX2__
+		const __m256d a1 = _mm256_permute4x64_pd( a, _MM_SHUFFLE( 3, 0, 2, 1 ) );  // a.yzxw
+		const __m256d b2 = _mm256_permute4x64_pd( b, _MM_SHUFFLE( 3, 1, 0, 2 ) );  // b.zxyw
+		const __m256d a2 = _mm256_permute4x64_pd( a, _MM_SHUFFLE( 3, 1, 0, 2 ) );  // a.zxyw
+		const __m256d b1 = _mm256_permute4x64_pd( b, _MM_SHUFFLE( 3, 0, 2, 1 ) );  // b.yzxw
+#else
+		const __m256d af = flipHighLow( a );  // a.zwxy
+		const __m256d bf = flipHighLow( b );  // b.zwxy
+
+		__m256d a1 = _mm256_shuffle_pd( a, af, 0b0101 );		// a.yzwx
+		__m256d b1 = _mm256_shuffle_pd( b, bf, 0b0101 );		// b.yzwx
+		const __m256d b2 = _mm256_shuffle_pd( bf, b, 0b1100 );	// b.zxyw
+		const __m256d a2 = _mm256_shuffle_pd( af, a, 0b1100 );	// a.zxyw
+		a1 = _mm256_permute_pd( a1, 0b0110 );					// a.yzxw
+		b1 = _mm256_permute_pd( b1, 0b0110 );					// b.yzxw
+#endif
+		lhs = _mm256_mul_pd( a1, b2 );
+		rhs = _mm256_mul_pd( a2, b1 );
+	}
 }  // namespace AvxMath
