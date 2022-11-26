@@ -59,6 +59,20 @@ namespace
 	const double v##_x = extract<0>( v ); \
 	const double v##_y = extract<1>( v ); \
 	const double v##_z = extract<2>( v );
+
+#ifdef __AVX2__
+	inline __m256d permute_yxx( __m256d vec )
+	{
+		return _mm256_permute4x64_pd( vec, _MM_SHUFFLE( 3, 0, 0, 1 ) );
+	}
+	inline __m256d permute_zzy( __m256d vec )
+	{
+		return _mm256_permute4x64_pd( vec, _MM_SHUFFLE( 3, 1, 2, 2 ) );
+	}
+#else
+#error Not currently implemented
+#endif	// __AVX2__
+
 }
 
 void floatTetWild::AMIPS_hessian_v2( const std::array<double, 12>& arr, Matrix3& result_0 )
@@ -106,31 +120,16 @@ void floatTetWild::AMIPS_hessian_v2( const std::array<double, 12>& arr, Matrix3&
 	const __m256d t09 = _mm256_add_pd( _mm256_sub_pd( _mm256_add_pd( t03, t04 ), t06 ), t05 );
 	STORE( t09 );
 
-	/*
-	__m256d cp1, cp2;
-	AvxMath::crossProductPieces( t08, t09, cp1, cp2 );
-	const __m256d cp = _mm256_sub_pd( cp1, cp2 );
-	const __m256d prod = _mm256_mul_pd( t07, cp );
+	const __m256d cp1 = _mm256_mul_pd( permute_yxx( t08 ), permute_zzy( t09 ) );
+	const __m256d cp2 = _mm256_mul_pd( permute_zzy( t08 ), permute_yxx( t09 ) );
 	STORE( cp1 );
 	STORE( cp2 );
+
+	const __m256d cp = _mm256_sub_pd( cp1, cp2 );
 	STORE( cp );
-	STORE( prod ); */
 
-	const double cp1_x = t08_y * t09_z;
-	const double cp1_y = t08_x * t09_z;
-	const double cp1_z = t08_x * t09_y;
-
-	const double cp2_x = t08_z * t09_y;
-	const double cp2_y = t08_z * t09_x;
-	const double cp2_z = t08_y * t09_x;
-
-	const double cp_x = cp1_x - cp2_x;
-	const double cp_y = cp1_y - cp2_y;
-	const double cp_z = cp1_z - cp2_z;
-
-	const double prod_x = t07_x * cp_x;
-	const double prod_y = t07_y * cp_y;
-	const double prod_z = t07_z * cp_z;
+	const __m256d prod = _mm256_mul_pd( t07, cp );
+	STORE( prod );
 
 	const double helper_54 = prod_z + prod_x - prod_y;
 	const double helper_55 = pow2( helper_54 );
