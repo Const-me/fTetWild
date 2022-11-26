@@ -369,13 +369,7 @@ void floatTetWild::AMIPS_hessian_v3( const std::array<double, 12>& arr, Matrix3&
 	const double t20_y = 0.666666666666667 * ( t08_x * t09_z - t08_z * t09_x + t07_z * t10_x - t07_x * t10_z );
 	const double t20_z = 0.666666666666667 * ( -t08_x * t09_y + t08_y * t09_x + t07_x * t10_y - t07_y * t10_x );
 
-	const __m256d t21_0 = mul( permute_yxx( t10 ), permute_zzy( t16 ) );
-	const __m256d t21_1 = mul( permute_yxx( t16 ), permute_zzy( t10 ) );
-	const __m256d t21_2 = mul( permute_yxx( t17 ), permute_zzy( t18 ) );
-	const __m256d t21_3 = mul( permute_yxx( t18 ), permute_zzy( t17 ) );
-	const __m256d t21_01 = sub( t21_1, t21_0 );
-	const __m256d t21_23 = sub( t21_2, t21_3 );
-	const __m256d t21 = add( t21_01, t21_23 );
+	const __m256d t21 = add( customProduct( t16, t10 ), customProduct( t17, t18 ) );
 	STORE( t21 );
 
 	const double helper_104 = -0.444444444444444 * t19_y * t21_x * product1 * st5 + t12_x * t20_y - t12_y * t20_x;
