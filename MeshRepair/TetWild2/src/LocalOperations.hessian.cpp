@@ -187,192 +187,51 @@ void floatTetWild::AMIPS_hessian_v2( const std::array<double, 12>& arr, Matrix3&
 	const double t15_y = ( v0_y - 3 * v1_y + v2_y + v3_y ) * 0.5;
 	const double t15_z = ( v0_z + v3_z - 3 * v1_z + v2_z ) * 0.5;
 
-	const double helper_82 = v0_z * t12_z + v0_y * t12_y + v1_y * t15_y + v2_y * t14_y + v3_y * t13_y + v3_z * t13_z + v2_x * t14_x + v1_z * t15_z +
-							 v2_z * t14_z + v0_x * t12_x + v1_x * t15_x + t13_x * v3_x;
+	const double product1 = v0_z * t12_z + v0_y * t12_y + v1_y * t15_y + v2_y * t14_y + v3_y * t13_y + v3_z * t13_z + v2_x * t14_x + v1_z * t15_z +
+							v2_z * t14_z + v0_x * t12_x + v1_x * t15_x + t13_x * v3_x;
 
-	const double helper_83 = 0.444444444444444 * st4 * helper_82;
-	const double helper_84 = st4 * helper_82;
+	const double helper_83 = 0.444444444444444 * st4 * product1;
+	const double helper_84 = st4 * product1;
 	const double helper_85 = -st0;
 	const double helper_86 = 1.0 / helper_85;
 	const double helper_87 = helper_86 / cubicRoot( pow2( helper_85 ) );
 	const double helper_91 =
 	  0.666666666666667 * t08_x * t09_z + 0.666666666666667 * t07_z * t10_x - 0.666666666666667 * t09_x * t08_z - 0.666666666666667 * t07_x * t10_z;
 	const double helper_92 = -3.0 * v0_y + 1.0 * v1_y + 1.0 * v2_y + 1.0 * v3_y;
-	const double helper_93 = -v0_y + v3_y;
-	const double helper_94 = -v0_z + v3_z;
-	const double helper_95 = -t00_y + t02_y - t01_y;
-	const double helper_96 = -t03_z - t04_z + t06_z - t05_z;
-	const double helper_97 = -t00_z + t02_z - t01_z;
-	const double helper_98 = -t03_y - t04_y + t06_y - t05_y;
-	const double helper_99 = -0.666666666666667 * t10_y * helper_94 + 0.666666666666667 * t10_z * helper_93 + 0.666666666666667 * helper_95 * helper_96 -
-							 0.666666666666667 * helper_97 * helper_98;
-	const double helper_103 = -t10_y * helper_94 + t10_z * helper_93 + helper_95 * helper_96 - helper_97 * helper_98;
-	const double helper_104 = 0.444444444444444 * helper_102 * helper_103 * helper_82 * helper_86 + helper_57 * helper_91 - helper_92 * helper_99;
+
+	const double t16_x = v3_x - v0_x;
+	const double t16_y = v3_y - v0_y;
+	const double t16_z = v3_z - v0_z;
+
+	const double t17_x = -t00_x + t02_x - t01_x;
+	const double t17_y = -t00_y + t02_y - t01_y;
+	const double t17_z = -t00_z + t02_z - t01_z;
+
+	const double t18_x = -t03_x - t04_x + t06_x - t05_x;
+	const double t18_y = -t03_y - t04_y + t06_y - t05_y;
+	const double t18_z = -t03_z - t04_z + t06_z - t05_z;
+
+	const double helper_99 =
+	  -0.666666666666667 * t10_y * t16_z + 0.666666666666667 * t10_z * t16_y + 0.666666666666667 * t17_y * t18_z - 0.666666666666667 * t17_z * t18_y;
+	const double helper_103 = -t10_y * t16_z + t10_z * t16_y + t17_y * t18_z - t17_z * t18_y;
+	const double helper_104 = 0.444444444444444 * helper_102 * helper_103 * product1 * helper_86 + helper_57 * helper_91 - helper_92 * helper_99;
 	const double helper_105 = 1.85037170770859e-17 * v0_z * t12_z + 1.85037170770859e-17 * v0_y * t12_y + 1.85037170770859e-17 * v1_y * t15_y +
 							  1.85037170770859e-17 * v2_y * t14_y + 1.85037170770859e-17 * v3_y * t13_y + 1.85037170770859e-17 * v3_z * t13_z +
 							  1.85037170770859e-17 * v2_x * t14_x + 1.85037170770859e-17 * v1_z * t15_z + 1.85037170770859e-17 * v2_z * t14_z +
 							  1.85037170770859e-17 * v0_x * t12_x + 1.85037170770859e-17 * v1_x * t15_x + 1.85037170770859e-17 * t13_x * v3_x;
-	const double helper_106 = helper_64 * helper_82 * helper_86;
+
+	const double helper_106 = helper_64 * product1 * helper_86;
 	const double helper_107 =
 	  -0.666666666666667 * t08_x * t09_y + 0.666666666666667 * t08_y * t09_x + 0.666666666666667 * t07_x * t10_y - 0.666666666666667 * t07_y * t10_x;
 	const double helper_108 = -3.0 * v0_z + 1.0 * v3_z + 1.0 * v1_z + 1.0 * v2_z;
 	const double helper_109 = -cp1_z + cp2_z + t07_x * t10_y - t07_y * t10_x;
-	const double helper_110 = 0.444444444444444 * helper_109 * helper_82 * helper_86;
+	const double helper_110 = 0.444444444444444 * helper_109 * product1 * helper_86;
 	const double helper_111 = helper_103 * helper_110 + helper_107 * helper_57 - helper_108 * helper_99;
-	const double helper_112 = -v0_x + v3_x;
 	const double helper_113 = -t10_x;
-	const double helper_114 = -t00_x + t02_x - t01_x;
-	const double helper_115 = -t03_x - t04_x + t06_x - t05_x;
-	const double helper_116 = helper_82 * helper_86 * ( helper_112 * t10_z + helper_113 * helper_94 + helper_114 * helper_96 - helper_115 * helper_97 );
+	const double helper_116 = product1 * helper_86 * ( t16_x * t10_z + helper_113 * t16_z + t17_x * t18_z - t18_x * t17_z );
 	const double helper_117 = -helper_100 + helper_101 - cp1_y + cp2_y;
 	const double helper_118 = -helper_102 * helper_110 + helper_107 * helper_92 + helper_108 * helper_91;
-	const double helper_119 = helper_82 * helper_86 * ( helper_112 * ( -t10_y ) - helper_113 * helper_93 - helper_114 * helper_98 + helper_115 * helper_95 );
-	result_0( 0, 0 ) = st3 * ( helper_57 * helper_64 * st2 - pow2( helper_64 ) * helper_83 +
-							   0.666666666666667 * helper_64 * helper_84 * ( -cp1_x + cp2_x - helper_61 + helper_63 ) + 3.0 );
-	result_0( 0, 1 ) = helper_87 * ( helper_104 - helper_105 * v1_z + helper_106 * helper_91 );
-	result_0( 0, 2 ) = helper_87 * ( helper_106 * helper_107 + helper_111 );
-	result_0( 1, 0 ) = helper_87 * ( helper_104 + helper_116 * helper_99 );
-	result_0( 1, 1 ) = st3 * ( -pow2( helper_117 ) * helper_83 + helper_117 * st2 * helper_92 + helper_117 * helper_84 * helper_91 + 3.0 );
-	result_0( 1, 2 ) = helper_87 * ( -helper_105 * v1_x - helper_107 * helper_116 + helper_118 );
-	result_0( 2, 0 ) = helper_87 * ( -helper_105 * v1_y + helper_111 + helper_119 * helper_99 );
-	result_0( 2, 1 ) = helper_87 * ( helper_118 - helper_119 * helper_91 );
-	result_0( 2, 2 ) = st3 * ( -helper_108 * helper_109 * st2 - 1.11111111111111 * pow2( helper_109 ) * helper_84 + 3.0 );
-}
-
-void floatTetWild::AMIPS_hessian_v3( const std::array<double, 12>& arr, Matrix3& result_0 )
-{
-	// Load slices of 3 elements into 4 vectors
-	const __m256d v0 = _mm256_loadu_pd( &arr[ 0 ] );
-	const __m256d v1 = _mm256_loadu_pd( &arr[ 3 ] );
-	const __m256d v2 = _mm256_loadu_pd( &arr[ 6 ] );
-	const __m256d v3 = AvxMath::loadDouble3( &arr[ 9 ] );
-
-	const __m256d m1 = _mm256_broadcast_sd( &s_magic.m1 );
-	const __m256d t00 = mul( m1, v0 );
-	const __m256d t01 = mul( m1, v3 );
-
-	const __m256d m2 = _mm256_broadcast_sd( &s_magic.m2 );
-	const __m256d t02 = mul( m2, v1 );
-
-	const __m256d m3 = _mm256_broadcast_sd( &s_magic.m3 );
-	const __m256d t03 = mul( m3, v0 );
-	const __m256d t04 = mul( m3, v1 );
-	const __m256d t05 = mul( m3, v3 );
-
-	const __m256d m4 = _mm256_broadcast_sd( &s_magic.m4 );
-	const __m256d t06 = mul( m4, v2 );
-
-	STORE( v0 );
-	STORE( v1 );
-	STORE( v2 );
-	STORE( v3 );
-
-	STORE( t00 );
-	STORE( t01 );
-	STORE( t02 );
-	STORE( t03 );
-	STORE( t04 );
-	STORE( t05 );
-	STORE( t06 );
-
-	const __m256d t07 = sub( v0, v3 );
-	STORE( t07 );
-
-	const __m256d t08 = add( sub( t00, t02 ), t01 );
-	STORE( t08 );
-
-	const __m256d t09 = add( sub( add( t03, t04 ), t06 ), t05 );
-	STORE( t09 );
-
-	const __m256d cp1 = mul( permute_yxx( t08 ), permute_zzy( t09 ) );
-	const __m256d cp2 = mul( permute_zzy( t08 ), permute_yxx( t09 ) );
-	STORE( cp1 );
-	STORE( cp2 );
-
-	const __m256d cp = sub( cp1, cp2 );
-	STORE( cp );
-
-	const __m256d prod = mul( t07, cp );
-	STORE( prod );
-
-	const double st0 = prod_z + prod_x - prod_y;
-	const double st1 = pow2( st0 );
-	const double st2 = 1.33333333333333 / st0;
-	const double st3 = 1.0 / cubicRoot( st1 );
-	const double st4 = 1.0 / st1;
-
-	const double helper_57 = v2_x - 3.0 * v0_x + v1_x + v3_x;
-
-	const __m256d m5 = _mm256_broadcast_sd( &s_magic.m5 );
-	const __m256d t10 = sub( mul( m5, v1 ), mul( m5, v2 ) );
-	STORE( t10 );
-
-	const double helper_61 = t07_z * t10_y;
-	const double helper_63 = t07_y * t10_z;
-	const double helper_64 = cp_x + helper_61 - helper_63;
-
-	const __m256d t11 = add( v1, v2 );
-	STORE( t11 );
-
-	const __m256d minus3 = _mm256_broadcast_sd( &s_magic.minus3 );
-	const __m256d half = _mm256_broadcast_sd( &s_magic.half );
-
-	const __m256d t12 = mul( half, add( add( t11, v3 ), mul( v0, minus3 ) ) );
-	const __m256d t13 = mul( half, add( add( t11, v0 ), mul( v3, minus3 ) ) );
-	const __m256d t14 = mul( half, add( add( add( v0, v1 ), v3 ), mul( v2, minus3 ) ) );
-	const __m256d t15 = mul( half, add( add( add( v0, v2 ), v3 ), mul( v1, minus3 ) ) );
-
-	STORE( t12 );
-	STORE( t13 );
-	STORE( t14 );
-	STORE( t15 );
-
-	const __m256d t16 = mul( t12, v0 );
-	const __m256d t17 = mul( t15, v1 );
-	const __m256d t18 = mul( t14, v2 );
-	const __m256d t19 = mul( t13, v3 );
-	const double hsum = AvxMath::vector3HorizontalSum( add( add( t16, t17 ), add( t18, t19 ) ) );
-
-	const double helper_83 = 0.444444444444444 * st4 * hsum;
-	const double helper_84 = st4 * hsum;
-	const double helper_85 = -st0;
-	const double helper_86 = 1.0 / helper_85;
-	const double helper_87 = helper_86 / cubicRoot( pow2( helper_85 ) );
-	const double helper_91 =
-	  0.666666666666667 * t08_x * t09_z + 0.666666666666667 * t07_z * t10_x - 0.666666666666667 * t09_x * t08_z - 0.666666666666667 * t07_x * t10_z;
-	const double helper_92 = -3.0 * v0_y + 1.0 * v1_y + 1.0 * v2_y + 1.0 * v3_y;
-	const double helper_93 = -v0_y + v3_y;
-	const double helper_94 = -v0_z + v3_z;
-	const double helper_95 = -t00_y + t02_y - t01_y;
-	const double helper_96 = -t03_z - t04_z + t06_z - t05_z;
-	const double helper_97 = -t00_z + t02_z - t01_z;
-	const double helper_98 = -t03_y - t04_y + t06_y - t05_y;
-	const double helper_99 = -0.666666666666667 * t10_y * helper_94 + 0.666666666666667 * t10_z * helper_93 + 0.666666666666667 * helper_95 * helper_96 -
-							 0.666666666666667 * helper_97 * helper_98;
-	const double helper_100 = t07_z * t10_x;
-	const double helper_101 = t07_x * t10_z;
-	const double helper_102 = helper_100 - helper_101 + cp_y;
-	const double helper_103 = -t10_y * helper_94 + t10_z * helper_93 + helper_95 * helper_96 - helper_97 * helper_98;
-	const double helper_104 = 0.444444444444444 * helper_102 * helper_103 * hsum * helper_86 + helper_57 * helper_91 - helper_92 * helper_99;
-	const double helper_105 = 1.85037170770859e-17 * v0_z * t12_z + 1.85037170770859e-17 * v0_y * t12_y + 1.85037170770859e-17 * v1_y * t15_y +
-							  1.85037170770859e-17 * v2_y * t14_y + 1.85037170770859e-17 * v3_y * t13_y + 1.85037170770859e-17 * v3_z * t13_z +
-							  1.85037170770859e-17 * v2_x * t14_x + 1.85037170770859e-17 * v1_z * t15_z + 1.85037170770859e-17 * v2_z * t14_z +
-							  1.85037170770859e-17 * v0_x * t12_x + 1.85037170770859e-17 * v1_x * t15_x + 1.85037170770859e-17 * t13_x * v3_x;
-	const double helper_106 = helper_64 * hsum * helper_86;
-	const double helper_107 =
-	  -0.666666666666667 * t08_x * t09_y + 0.666666666666667 * t08_y * t09_x + 0.666666666666667 * t07_x * t10_y - 0.666666666666667 * t07_y * t10_x;
-	const double helper_108 = -3.0 * v0_z + 1.0 * v3_z + 1.0 * v1_z + 1.0 * v2_z;
-	const double helper_109 = -cp1_z + cp2_z + t07_x * t10_y - t07_y * t10_x;
-	const double helper_110 = 0.444444444444444 * helper_109 * hsum * helper_86;
-	const double helper_111 = helper_103 * helper_110 + helper_107 * helper_57 - helper_108 * helper_99;
-	const double helper_112 = -v0_x + v3_x;
-	const double helper_113 = -t10_x;
-	const double helper_114 = -t00_x + t02_x - t01_x;
-	const double helper_115 = -t03_x - t04_x + t06_x - t05_x;
-	const double helper_116 = hsum * helper_86 * ( helper_112 * t10_z + helper_113 * helper_94 + helper_114 * helper_96 - helper_115 * helper_97 );
-	const double helper_117 = -helper_100 + helper_101 - cp1_y + cp2_y;
-	const double helper_118 = -helper_102 * helper_110 + helper_107 * helper_92 + helper_108 * helper_91;
-	const double helper_119 = hsum * helper_86 * ( helper_112 * ( -t10_y ) - helper_113 * helper_93 - helper_114 * helper_98 + helper_115 * helper_95 );
+	const double helper_119 = product1 * helper_86 * ( t16_x * ( -t10_y ) - helper_113 * t16_y - t17_x * t18_y + t18_x * t17_y );
 	result_0( 0, 0 ) = st3 * ( helper_57 * helper_64 * st2 - pow2( helper_64 ) * helper_83 +
 							   0.666666666666667 * helper_64 * helper_84 * ( -cp1_x + cp2_x - helper_61 + helper_63 ) + 3.0 );
 	result_0( 0, 1 ) = helper_87 * ( helper_104 - helper_105 * v1_z + helper_106 * helper_91 );
@@ -388,11 +247,11 @@ void floatTetWild::AMIPS_hessian_v3( const std::array<double, 12>& arr, Matrix3&
 void floatTetWild::AMIPS_hessian( const std::array<Scalar, 12>& T, Matrix3& result_0 )
 {
 #if 0
-	AMIPS_hessian_v3( T, result_0 );
+	AMIPS_hessian_v2( T, result_0 );
 #else
 	Matrix3 matOld, matNew;
 	AMIPS_hessian_v1( T, matOld );
-	AMIPS_hessian_v3( T, matNew );
+	AMIPS_hessian_v2( T, matNew );
 	Matrix3 diff = matNew - matOld;
 	__debugbreak();
 	result_0 = matOld;
