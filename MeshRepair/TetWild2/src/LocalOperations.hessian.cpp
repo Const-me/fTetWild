@@ -354,9 +354,7 @@ void floatTetWild::AMIPS_hessian_v3( const std::array<double, 12>& arr, Matrix3&
 
 	const double st7 = st4 * product1;
 
-	const double t22_x = -3.0 * v0_x + v2_x + v1_x + v3_x;
-	const double t22_y = -3.0 * v0_y + v1_y + v2_y + v3_y;
-	const double t22_z = -3.0 * v0_z + v3_z + v1_z + v2_z;
+	STORE( t12 );
 
 	const __m256d t16 = sub( v3, v0 );
 	STORE( t16 );
@@ -368,7 +366,7 @@ void floatTetWild::AMIPS_hessian_v3( const std::array<double, 12>& arr, Matrix3&
 	STORE( t18 );
 
 	const double t20_x = 0.666666666666667 * ( -t10_y * t16_z + t10_z * t16_y + t17_y * t18_z - t17_z * t18_y );
-	const double t20_y = 0.666666666666667 * ( t08_x * t09_z + t07_z * t10_x - t08_z * t09_x - t07_x * t10_z );
+	const double t20_y = 0.666666666666667 * ( t08_x * t09_z - t08_z * t09_x + t07_z * t10_x - t07_x * t10_z );
 	const double t20_z = 0.666666666666667 * ( -t08_x * t09_y + t08_y * t09_x + t07_x * t10_y - t07_y * t10_x );
 
 	const __m256d t21_0 = mul( permute_yxx( t10 ), permute_zzy( t16 ) );
@@ -378,25 +376,25 @@ void floatTetWild::AMIPS_hessian_v3( const std::array<double, 12>& arr, Matrix3&
 	const __m256d t21 = sub( add( sub( t21_1, t21_0 ), t21_2 ), t21_3 );
 	STORE( t21 );
 
-	const double helper_104 = -0.444444444444444 * t19_y * t21_x * product1 * st5 + t22_x * t20_y - t22_y * t20_x;
+	const double helper_104 = -0.444444444444444 * t19_y * t21_x * product1 * st5 + t12_x * t20_y - t12_y * t20_x;
 
 	const double helper_105 = 1.85037170770859e-17 * product1;
 
 	const double helper_106 = -t19_x * product1 * st5;
 	const double helper_83 = 0.444444444444444 * st4 * product1;
 	const double helper_110 = 0.444444444444444 * t19_z * product1 * st5;
-	const double helper_111 = t21_x * helper_110 + t20_z * t22_x - t22_z * t20_x;
+	const double helper_111 = t21_x * helper_110 + t20_z * t12_x - t12_z * t20_x;
 	const double helper_116 = product1 * st5 * t21_y;
-	const double helper_118 = t19_y * helper_110 + t20_z * t22_y + t22_z * t20_y;
+	const double helper_118 = t19_y * helper_110 + t20_z * t12_y + t12_z * t20_y;
 	const double helper_119 = product1 * st5 * t21_z;
 
 	const double t24_x = -pow2( t19_x );
 	const double t24_y = -pow2( t19_y );
 	const double t24_z = -pow2( t19_z );
 
-	const double diag_x = t22_x * -t19_x * st2 + t24_x * helper_83 - 0.666666666666667 * t19_x * st7 * t19_x + 3.0;
-	const double diag_y = t24_y * helper_83 + t19_y * st2 * t22_y + t19_y * st7 * t20_y + 3.0;
-	const double diag_z = -t22_z * t19_z * st2 + 1.11111111111111 * t24_z * st7 + 3.0;
+	const double diag_x = t12_x * -t19_x * st2 + t24_x * helper_83 - 0.666666666666667 * t19_x * st7 * t19_x + 3.0;
+	const double diag_y = t24_y * helper_83 + t19_y * st2 * t12_y + t19_y * st7 * t20_y + 3.0;
+	const double diag_z = -t12_z * t19_z * st2 + 1.11111111111111 * t24_z * st7 + 3.0;
 
 	result_0( 0, 0 ) = st3 * diag_x;
 	result_0( 0, 1 ) = st6 * ( helper_104 - helper_105 * v1_z + helper_106 * t20_y );
