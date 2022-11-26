@@ -383,13 +383,12 @@ void floatTetWild::AMIPS_hessian_v3( const std::array<double, 12>& arr, Matrix3&
 	const double helper_118 = t19_y * helper_110 + t20_z * t12_y + t12_z * t20_y;
 	const double helper_119 = product1 * st5 * t21_z;
 
-	const double t24_x = -pow2( t19_x );
-	const double t24_y = -pow2( t19_y );
-	const double t24_z = -pow2( t19_z );
+	const __m256d t24 = mul( t19, t19 );
+	STORE( t24 );
 
-	const double diag_x = t12_x * -t19_x * st2 + t24_x * helper_83 - 0.666666666666667 * t19_x * st7 * t19_x + 3.0;
-	const double diag_y = t24_y * helper_83 + t19_y * st2 * t12_y + t19_y * st7 * t20_y + 3.0;
-	const double diag_z = -t12_z * t19_z * st2 + 1.11111111111111 * t24_z * st7 + 3.0;
+	const double diag_x = t12_x * -t19_x * st2 - t24_x * helper_83 - 0.666666666666667 * t19_x * st7 * t19_x + 3.0;
+	const double diag_y = -t24_y * helper_83 + t19_y * st2 * t12_y + t19_y * st7 * t20_y + 3.0;
+	const double diag_z = -t12_z * t19_z * st2 - 1.11111111111111 * t24_z * st7 + 3.0;
 
 	result_0( 0, 0 ) = st3 * diag_x;
 	result_0( 0, 1 ) = st6 * ( helper_104 - helper_105 * v1_z + helper_106 * t20_y );
