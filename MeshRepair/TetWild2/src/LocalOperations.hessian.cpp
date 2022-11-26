@@ -272,6 +272,16 @@ namespace
 		const __m256d v = _mm256_add_pd( ab, cd );
 		return AvxMath::vector3HorizontalSum( v );
 	}
+
+	// Compute x - y + z
+	inline double horizontalAddSub( __m256d v )
+	{
+		__m128d z = _mm256_extractf128_pd( v, 1 );
+		__m128d xy = _mm256_castpd256_pd128( v );
+		xy = _mm_sub_sd( xy, _mm_unpackhi_pd( xy, xy ) );
+		xy = _mm_add_sd( xy, z );
+		return _mm_cvtsd_f64( xy );
+	}
 }  // namespace
 
 void floatTetWild::AMIPS_hessian_v3( const std::array<double, 12>& arr, Matrix3& result_0 )
@@ -297,10 +307,7 @@ void floatTetWild::AMIPS_hessian_v3( const std::array<double, 12>& arr, Matrix3&
 	const __m256d m4 = _mm256_broadcast_sd( &s_magic.m4 );
 	const __m256d t06 = mul( m4, v2 );
 
-	STORE( v0 );
 	STORE( v1 );
-	STORE( v2 );
-	STORE( v3 );
 
 	const __m256d t07 = sub( v0, v3 );
 	STORE( t07 );
@@ -312,12 +319,10 @@ void floatTetWild::AMIPS_hessian_v3( const std::array<double, 12>& arr, Matrix3&
 	STORE( t09 );
 
 	const __m256d cp = customProduct( t08, t09 );
-	STORE( cp );
 
 	const __m256d prod = mul( t07, cp );
-	STORE( prod );
 
-	const double st0 = prod_z + prod_x - prod_y;
+	const double st0 = horizontalAddSub( prod );
 	const double st1 = pow2( st0 );
 	const double st2 = 1.33333333333333 / st0;
 	const double root = cubicRoot( st1 );
@@ -334,7 +339,6 @@ void floatTetWild::AMIPS_hessian_v3( const std::array<double, 12>& arr, Matrix3&
 	STORE( t19 );
 
 	const __m256d t11 = add( v1, v2 );
-	STORE( t11 );
 
 	const __m256d three = _mm256_set1_pd( 3 );
 	// v3 + t11 - 3.0 * v0
