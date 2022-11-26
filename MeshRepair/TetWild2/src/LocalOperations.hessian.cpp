@@ -330,9 +330,8 @@ void floatTetWild::AMIPS_hessian_v3( const std::array<double, 12>& arr, Matrix3&
 	const __m256d t10 = mul( m5, sub( v1, v2 ) );
 	STORE( t10 );
 
-	const double t19_x = -cp_x - t07_z * t10_y + t07_y * t10_z;
-	const double t19_y = -cp_y - t07_z * t10_x + t07_x * t10_z;
-	const double t19_z = -cp_z - t07_y * t10_x + t07_x * t10_y;
+	const __m256d t19 = sub( customProduct( t07, t10 ), cp );
+	STORE( t19 );
 
 	const __m256d t11 = add( v1, v2 );
 	STORE( t11 );
