@@ -19,5 +19,6 @@ namespace floatTetWild
 	// Vectorized version which is still bitwise identical to the original one
 	void AMIPS_hessian_v2( const std::array<Scalar, 12>& T, Matrix3& result_0 );
 
+	// Vectorized version which no longer bitwise identical, due to different summation orders and minor algebra optimizations
 	void AMIPS_hessian_v3( const std::array<Scalar, 12>& T, Matrix3& result_0 );
 }
