@@ -530,7 +530,7 @@ void floatTetWild::AMIPS_hessian_v4( const std::array<double, 12>& arr, Matrix3&
 
 void floatTetWild::AMIPS_hessian( const std::array<Scalar, 12>& T, Matrix3& result_0 )
 {
-#if 0
+#if 1
 	AMIPS_hessian_v4( T, result_0 );
 #else
 	Matrix3 matOld, matNew;
