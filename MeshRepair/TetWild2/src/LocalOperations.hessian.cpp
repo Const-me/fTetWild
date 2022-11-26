@@ -120,14 +120,6 @@ void floatTetWild::AMIPS_hessian_v2( const std::array<double, 12>& arr, Matrix3&
 	STORE( v2 );
 	STORE( v3 );
 
-	STORE( t00 );
-	STORE( t01 );
-	STORE( t02 );
-	STORE( t03 );
-	STORE( t04 );
-	STORE( t05 );
-	STORE( t06 );
-
 	const __m256d t07 = sub( v0, v3 );
 	STORE( t07 );
 
