@@ -2,14 +2,14 @@
 #include "LocalOperations2.h"
 #include "../Utils/lowLevel.h"
 #include "../Utils/AvxMath.h"
-// clang-format off
+#include "LocalOperationsUtils.h"
 namespace
 {
-	constexpr double magic1 = 0.577350269189626;	// sqrt(1/3)
-	constexpr double magic2 = 1.15470053837925;		// sqrt(4/3)
-	constexpr double magic3 = 0.408248290463863;	// sqrt(1/6)
-	constexpr double magic4 = 1.22474487139159;		// sqrt(3/2)
-}
+	constexpr double magic1 = 0.577350269189626;  // sqrt(1/3)
+	constexpr double magic2 = 1.15470053837925;	  // sqrt(4/3)
+	constexpr double magic3 = 0.408248290463863;  // sqrt(1/6)
+	constexpr double magic4 = 1.22474487139159;	  // sqrt(3/2)
+}  // namespace
 
 double floatTetWild::AMIPS_energy_aux_v2( const std::array<double, 12>& arr )
 {
@@ -38,25 +38,15 @@ double floatTetWild::AMIPS_energy_aux_v2( const std::array<double, 12>& arr )
 	const double helper_20 = a4 + a7;
 	const double helper_21 = a5 + a8;
 
-	const double tmpDiv = ( a2 - a11 ) * ( helper_11 * helper_6 - helper_12 * helper_14 ) -
-					   ( -a10 + a1 ) * ( -helper_14 * helper_18 + helper_17 * helper_6 ) +
-					   ( a0 - a9 ) * ( -helper_11 * helper_18 + helper_12 * helper_17 );
+	const double tmpDiv = ( a2 - a11 ) * ( helper_11 * helper_6 - helper_12 * helper_14 ) - ( -a10 + a1 ) * ( -helper_14 * helper_18 + helper_17 * helper_6 ) +
+						  ( a0 - a9 ) * ( -helper_11 * helper_18 + helper_12 * helper_17 );
 
 	// This optimization delivers identical results because scaling numbers by powers of 2 (like 0.5) is a lossless operation
 	// Applies an offset to exponent, but preserves all these precious mantissa bits
 	// That's why it was OK to remove the multiplications by 0.5 in the inner expression
-	double mul = a2 * ( -3 * a2 + a11 + helper_21 ) + 
-		a10 * ( -3 * a10 + helper_20 + a1 ) +
-		a6 * ( -3 * a6 + a0 + a3 + a9 ) +
-		a5 * ( a2 - 3 * a5 + a8 + a11 ) +
-		a8 * ( a2 + a5 - 3 * a8 + a11 ) + 
-		a11 * ( a2 - 3 * a11 + helper_21 ) +
-		a0 * ( helper_19 - 3 * a0 + a9 ) + 
-		a3 * ( a6 + a0 - 3 * a3 + a9 ) +
-		a9 * ( helper_19 + a0 - 3 * a9 ) + 
-		a1 * ( a10 + helper_20 - 3 * a1 ) +
-		a4 * ( a10 + a1 - 3 * a4 + a7 ) +
-		a7 * ( a10 + a1 + a4 - 3 * a7 );
+	double mul = a2 * ( -3 * a2 + a11 + helper_21 ) + a10 * ( -3 * a10 + helper_20 + a1 ) + a6 * ( -3 * a6 + a0 + a3 + a9 ) + a5 * ( a2 - 3 * a5 + a8 + a11 ) +
+				 a8 * ( a2 + a5 - 3 * a8 + a11 ) + a11 * ( a2 - 3 * a11 + helper_21 ) + a0 * ( helper_19 - 3 * a0 + a9 ) + a3 * ( a6 + a0 - 3 * a3 + a9 ) +
+				 a9 * ( helper_19 + a0 - 3 * a9 ) + a1 * ( a10 + helper_20 - 3 * a1 ) + a4 * ( a10 + a1 - 3 * a4 + a7 ) + a7 * ( a10 + a1 + a4 - 3 * a7 );
 
 	mul *= -0.5;
 	const double res = mul / std::cbrt( tmpDiv * tmpDiv );
@@ -86,27 +76,16 @@ double floatTetWild::AMIPS_energy_aux_v3( const std::array<double, 12>& arr )
 	const double helper_17 = magic3 * a2 + magic3 * a5 - magic4 * a8 + magic3 * a11;
 	const double helper_18 = magic1 * a2 - magic2 * a5 + magic1 * a11;
 
-	const double tmpDiv = ( a2 - a11 ) * ( helper_11 * helper_6 - helper_12 * helper_14 ) -
-					   ( -a10 + a1 ) * ( -helper_14 * helper_18 + helper_17 * helper_6 ) +
-					   ( a0 - a9 ) * ( -helper_11 * helper_18 + helper_12 * helper_17 );
+	const double tmpDiv = ( a2 - a11 ) * ( helper_11 * helper_6 - helper_12 * helper_14 ) - ( -a10 + a1 ) * ( -helper_14 * helper_18 + helper_17 * helper_6 ) +
+						  ( a0 - a9 ) * ( -helper_11 * helper_18 + helper_12 * helper_17 );
 
 	const double sum0 = a0 + a3 + a6 + a9;
 	const double sum1 = a1 + a4 + a7 + a10;
 	const double sum2 = a2 + a5 + a8 + a11;
 
-	double mul = 
-		a0 * ( sum0 - 4 * a0 ) + 
-		a1 * ( sum1 - 4 * a1 ) +
-		a2 * ( sum2 - 4 * a2 ) + 
-		a3 * ( sum0 - 4 * a3 ) +
-		a4 * ( sum1 - 4 * a4 ) +
-		a5 * ( sum2 - 4 * a5 ) +
-		a6 * ( sum0 - 4 * a6 ) +
-		a7 * ( sum1 - 4 * a7 ) +
-		a8 * ( sum2 - 4 * a8 ) + 
-		a9 * ( sum0 - 4 * a9 ) + 
-		a10 * ( sum1 - 4 * a10 ) +
-		a11 * ( sum2 - 4 * a11 );
+	double mul = a0 * ( sum0 - 4 * a0 ) + a1 * ( sum1 - 4 * a1 ) + a2 * ( sum2 - 4 * a2 ) + a3 * ( sum0 - 4 * a3 ) + a4 * ( sum1 - 4 * a4 ) +
+				 a5 * ( sum2 - 4 * a5 ) + a6 * ( sum0 - 4 * a6 ) + a7 * ( sum1 - 4 * a7 ) + a8 * ( sum2 - 4 * a8 ) + a9 * ( sum0 - 4 * a9 ) +
+				 a10 * ( sum1 - 4 * a10 ) + a11 * ( sum2 - 4 * a11 );
 
 	mul *= -0.5;
 	// const double res = mul / std::pow( tmpDiv * tmpDiv, 1.0 / 3.0 );
@@ -130,7 +109,7 @@ namespace
 	static const alignas( 64 ) sMagicNumbers s_magic;
 
 	// Compute c - ( a * b ) with FMA
-	inline __m256d fnmadd(__m256d a, __m256d b, __m256d c )
+	inline __m256d fnmadd( __m256d a, __m256d b, __m256d c )
 	{
 #ifdef __AVX2__
 		return _mm256_fnmadd_pd( a, b, c );
@@ -138,7 +117,7 @@ namespace
 		return _mm256_sub_pd( c, _mm256_mul_pd( a, b ) );
 #endif
 	}
-}
+}  // namespace
 
 double floatTetWild::AMIPS_energy_aux_v4( const std::array<double, 12>& arr )
 {
@@ -195,18 +174,7 @@ double floatTetWild::AMIPS_energy_aux_v5( const std::array<double, 12>& arr )
 	__m256d v6 = _mm256_loadu_pd( &arr[ 6 ] );
 	__m256d v9 = AvxMath::loadDouble3( &arr[ 9 ] );
 
-	{
-		// Compute barycenter of the vertices
-		const __m256d s03 = _mm256_add_pd( v0, v3 );
-		const __m256d s69 = _mm256_add_pd( v6, v9 );
-		const __m256d s = _mm256_add_pd( s03, s69 );
-		const __m256d bc = _mm256_mul_pd( s, _mm256_broadcast_sd( &s_magic.oneFourth ) );
-		// Translate the input vertices, making them relative to the barycenter
-		v0 = _mm256_sub_pd( v0, bc );
-		v3 = _mm256_sub_pd( v3, bc );
-		v6 = _mm256_sub_pd( v6, bc );
-		v9 = _mm256_sub_pd( v9, bc );
-	}
+	translateToBarycenter( v0, v3, v6, v9, _mm256_broadcast_sd( &s_magic.oneFourth ) );
 
 	const __m256d m1 = _mm256_broadcast_sd( &s_magic.m1 );
 	const __m256d m2 = _mm256_broadcast_sd( &s_magic.m2 );

@@ -127,6 +127,7 @@
     <ClInclude Include="ParallelInsertion\refineTetraMesh.h" />
     <ClInclude Include="src\FlatIntMap.h" />
     <ClInclude Include="src\BoolVectorEx.h" />
+    <ClInclude Include="src\LocalOperationsUtils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp" />
