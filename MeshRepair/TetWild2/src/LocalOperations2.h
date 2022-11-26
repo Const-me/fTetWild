@@ -1,5 +1,6 @@
 #pragma once
 #include <array>
+#include "Types.hpp"
 
 namespace floatTetWild
 {
@@ -14,4 +15,6 @@ namespace floatTetWild
 
 	// Optimized the energy formula for better numerical accuracy
 	double AMIPS_energy_aux_v5( const std::array<double, 12>& arr );
+
+	void AMIPS_hessian_v2( const std::array<Scalar, 12>& T, Matrix3& result_0 );
 }

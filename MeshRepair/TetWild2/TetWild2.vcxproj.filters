@@ -234,6 +234,7 @@
     <ClCompile Include="ParallelInsertion\parallelInsertionPreSplit.cpp" />
     <ClCompile Include="ParallelInsertion\refineTetraMesh.cpp" />
     <ClCompile Include="src\BoolVectorEx.cpp" />
+    <ClCompile Include="src\LocalOperations.hessian.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="external">

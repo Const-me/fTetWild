@@ -173,6 +173,7 @@
     <ClCompile Include="ParallelInsertion\TrianglePartition.cpp" />
     <ClCompile Include="src\BoolVector.cpp" />
     <ClCompile Include="src\BoolVectorEx.cpp" />
+    <ClCompile Include="src\LocalOperations.hessian.cpp" />
     <ClCompile Include="src\TrackedSurfaceChanges.cpp" />
     <ClCompile Include="Utils\Box32.cpp" />
     <ClCompile Include="Utils\Cbrt\cbrtBsdOrig.cpp" />

@@ -1044,7 +1044,7 @@ void floatTetWild::AMIPS_jacobian( const std::array<Scalar, 12>& T, Vector3& res
 								  helper_46 * ( -helper_3 * helper_47 - helper_32 + helper_37 + helper_38 * helper_42 ) + 3.0 * helper_8 );
 }
 
-void floatTetWild::AMIPS_hessian( const std::array<Scalar, 12>& T, Matrix3& result_0 )
+void floatTetWild::AMIPS_hessian_v1( const std::array<Scalar, 12>& T, Matrix3& result_0 )
 {
 	Scalar helper_0[ 12 ];
 	helper_0[ 0 ] = T[ 0 ];
