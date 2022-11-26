@@ -207,8 +207,8 @@ void floatTetWild::AMIPS_hessian_v2( const std::array<double, 12>& arr, Matrix3&
 	  -0.666666666666667 * t08_x * t09_y + 0.666666666666667 * t08_y * t09_x + 0.666666666666667 * t07_x * t10_y - 0.666666666666667 * t07_y * t10_x;
 
 	const double t21_x = -t10_y * t16_z + t10_z * t16_y + t17_y * t18_z - t17_z * t18_y;
-	const double t21_y = t16_x * t10_z - t10_x * t16_z + t17_x * t18_z - t18_x * t17_z;
-	const double t21_z = -t16_x * t10_y + t10_x * t16_y - t17_x * t18_y + t18_x * t17_y;
+	const double t21_y = -t10_x * t16_z + t10_z * t16_x + t17_x * t18_z - t17_z * t18_x;
+	const double t21_z = -t10_x * t16_y + t10_y * t16_x + t17_x * t18_y - t17_y * t18_x;
 
 	const double helper_104 = 0.444444444444444 * helper_102 * t21_x * product1 * st5 + t22_x * t20_y - t22_y * t20_x;
 
@@ -239,8 +239,8 @@ void floatTetWild::AMIPS_hessian_v2( const std::array<double, 12>& arr, Matrix3&
 	result_0( 1, 0 ) = st6 * ( helper_104 + helper_116 * t20_x );
 	result_0( 1, 1 ) = st3 * diag_y;
 	result_0( 1, 2 ) = st6 * ( -helper_105 * v1_x - t20_z * helper_116 + helper_118 );
-	result_0( 2, 0 ) = st6 * ( -helper_105 * v1_y + helper_111 + helper_119 * t20_x );
-	result_0( 2, 1 ) = st6 * ( helper_118 - helper_119 * t20_y );
+	result_0( 2, 0 ) = st6 * ( -helper_105 * v1_y + helper_111 - helper_119 * t20_x );
+	result_0( 2, 1 ) = st6 * ( helper_118 + helper_119 * t20_y );
 	result_0( 2, 2 ) = st3 * diag_z;
 }
 
