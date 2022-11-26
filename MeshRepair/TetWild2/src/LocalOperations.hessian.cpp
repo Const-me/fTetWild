@@ -160,15 +160,11 @@ void floatTetWild::AMIPS_hessian_v2( const std::array<double, 12>& arr, Matrix3&
 	const __m256d t10 = sub( mul( m5, v1 ), mul( m5, v2 ) );
 	STORE( t10 );
 
-	const double helper_61 = t07_z * t10_y;
-	const double helper_63 = t07_y * t10_z;
-	const double helper_64 = cp_x + helper_61 - helper_63;
-
 	const double helper_100 = t07_z * t10_x;
 	const double helper_101 = t07_x * t10_z;
 	const double helper_102 = helper_100 - helper_101 + cp_y;
 
-	const double t19_x = -cp_x - helper_61 + helper_63;
+	const double t19_x = -cp_x - t07_z * t10_y + t07_y * t10_z;
 	// cp = cp1 - cp2, but simplifying would break binary equality due to different summation order
 	const double t19_y = -helper_100 + helper_101 - cp1_y + cp2_y;
 	const double t19_z = -cp_z + t07_x * t10_y - t07_y * t10_x;
@@ -226,7 +222,7 @@ void floatTetWild::AMIPS_hessian_v2( const std::array<double, 12>& arr, Matrix3&
 							  1.85037170770859e-17 * v2_x * t14_x + 1.85037170770859e-17 * v1_z * t15_z + 1.85037170770859e-17 * v2_z * t14_z +
 							  1.85037170770859e-17 * v0_x * t12_x + 1.85037170770859e-17 * v1_x * t15_x + 1.85037170770859e-17 * t13_x * v3_x;
 
-	const double helper_106 = helper_64 * product1 * helper_86;
+	const double helper_106 = -t19_x * product1 * helper_86;
 	const double helper_108 = -3.0 * v0_z + v3_z + v1_z + v2_z;
 	const double helper_110 = 0.444444444444444 * t19_z * product1 * helper_86;
 	const double helper_111 = helper_103 * helper_110 + t20_z * helper_57 - helper_108 * t20_x;
@@ -234,7 +230,7 @@ void floatTetWild::AMIPS_hessian_v2( const std::array<double, 12>& arr, Matrix3&
 	const double helper_118 = -helper_102 * helper_110 + t20_z * helper_92 + helper_108 * t20_y;
 	const double helper_119 = product1 * helper_86 * ( -t16_x * t10_y + t10_x * t16_y - t17_x * t18_y + t18_x * t17_y );
 
-	result_0( 0, 0 ) = st3 * ( helper_57 * helper_64 * st2 - pow2( helper_64 ) * helper_83 + 0.666666666666667 * helper_64 * helper_84 * t19_x + 3.0 );
+	result_0( 0, 0 ) = st3 * ( helper_57 * -t19_x * st2 - pow2( t19_x ) * helper_83 - 0.666666666666667 * t19_x * helper_84 * t19_x + 3.0 );
 	result_0( 0, 1 ) = helper_87 * ( helper_104 - helper_105 * v1_z + helper_106 * t20_y );
 	result_0( 0, 2 ) = helper_87 * ( helper_106 * t20_z + helper_111 );
 	result_0( 1, 0 ) = helper_87 * ( helper_104 + helper_116 * t20_x );
