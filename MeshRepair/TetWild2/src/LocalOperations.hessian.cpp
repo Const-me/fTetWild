@@ -264,6 +264,7 @@ namespace
 		return sub( cp1, cp2 );
 	}
 
+	// Add 12 numbers in XYZ lanes of 4 vectors
 	inline double hadd12( __m256d a, __m256d b, __m256d c, __m256d d )
 	{
 		const __m256d ab = _mm256_add_pd( a, b );
@@ -329,8 +330,6 @@ void floatTetWild::AMIPS_hessian_v3( const std::array<double, 12>& arr, Matrix3&
 	const __m256d t10 = mul( m5, sub( v1, v2 ) );
 	STORE( t10 );
 
-	// const double helper_102 = cp_y + t07_z * t10_x - t07_x * t10_z;
-
 	const double t19_x = -cp_x - t07_z * t10_y + t07_y * t10_z;
 	const double t19_y = -cp_y - t07_z * t10_x + t07_x * t10_z;
 	const double t19_z = -cp_z - t07_y * t10_x + t07_x * t10_y;
@@ -368,12 +367,9 @@ void floatTetWild::AMIPS_hessian_v3( const std::array<double, 12>& arr, Matrix3&
 	const __m256d t18 = AvxMath::vectorNegate( add( sub( add( t03, t04 ), t06 ), t05 ) );
 	STORE( t18 );
 
-	const double t20_x =
-	  -0.666666666666667 * t10_y * t16_z + 0.666666666666667 * t10_z * t16_y + 0.666666666666667 * t17_y * t18_z - 0.666666666666667 * t17_z * t18_y;
-	const double t20_y =
-	  0.666666666666667 * t08_x * t09_z + 0.666666666666667 * t07_z * t10_x - 0.666666666666667 * t09_x * t08_z - 0.666666666666667 * t07_x * t10_z;
-	const double t20_z =
-	  -0.666666666666667 * t08_x * t09_y + 0.666666666666667 * t08_y * t09_x + 0.666666666666667 * t07_x * t10_y - 0.666666666666667 * t07_y * t10_x;
+	const double t20_x = 0.666666666666667 * ( -t10_y * t16_z + t10_z * t16_y + t17_y * t18_z - t17_z * t18_y );
+	const double t20_y = 0.666666666666667 * ( t08_x * t09_z + t07_z * t10_x - t08_z * t09_x - t07_x * t10_z );
+	const double t20_z = 0.666666666666667 * ( -t08_x * t09_y + t08_y * t09_x + t07_x * t10_y - t07_y * t10_x );
 
 	const __m256d t21_0 = mul( permute_yxx( t10 ), permute_zzy( t16 ) );
 	const __m256d t21_1 = mul( permute_yxx( t16 ), permute_zzy( t10 ) );
