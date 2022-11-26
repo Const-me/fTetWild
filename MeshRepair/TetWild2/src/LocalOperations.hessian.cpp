@@ -37,44 +37,46 @@ void floatTetWild::AMIPS_hessian_v2( const std::array<double, 12>& arr, Matrix3&
 	const double v3_y = arr[ 10 ];
 	const double v3_z = arr[ 11 ];
 
-	const double helper_5 = magic1 * v0_x;
-	const double helper_21 = magic1 * v0_y;
-	const double helper_42 = magic1 * v0_z;
+	const double t00_x = magic1 * v0_x;
+	const double t00_y = magic1 * v0_y;
+	const double t00_z = magic1 * v0_z;
 
-	const double helper_9 = magic1 * v3_x;
-	const double helper_23 = magic1 * v3_y;
-	const double helper_44 = magic1 * v3_z;
+	const double t01_x = magic1 * v3_x;
+	const double t01_y = magic1 * v3_y;
+	const double t01_z = magic1 * v3_z;
 
-	const double helper_7 = magic2 * v1_x;
-	const double helper_22 = magic2 * v1_y;
-	const double helper_43 = magic2 * v1_z;
+	const double t02_x = magic2 * v1_x;
+	const double t02_y = magic2 * v1_y;
+	const double t02_z = magic2 * v1_z;
 
-	const double helper_12 = magic3 * v0_y;
-	const double helper_14 = magic3 * v1_y;
-	const double helper_18 = magic3 * v3_y;
-	const double helper_25 = magic3 * v0_x;
-	const double helper_26 = magic3 * v1_x;
-	const double helper_29 = magic3 * v3_x;
-	const double helper_34 = magic3 * v0_z;
-	const double helper_36 = magic3 * v1_z;
-	const double helper_39 = magic3 * v3_z;
+	const double t03_x = magic3 * v0_x;
+	const double t03_y = magic3 * v0_y;
+	const double t03_z = magic3 * v0_z;
 
-	const double helper_28 = magic4 * v2_x;
-	const double helper_16 = magic4 * v2_y;
-	const double helper_38 = magic4 * v2_z;
+	const double t04_x = magic3 * v1_x;
+	const double t04_y = magic3 * v1_y;
+	const double t04_z = magic3 * v1_z;
+
+	const double t05_x = magic3 * v3_x;
+	const double t05_y = magic3 * v3_y;
+	const double t05_z = magic3 * v3_z;
+
+	const double t06_x = magic4 * v2_x;
+	const double t06_y = magic4 * v2_y;
+	const double t06_z = magic4 * v2_z;
 
 	const double helper_3 = v0_z - v3_z;
-	const double helper_10 = helper_5 - helper_7 + helper_9;
-	const double helper_19 = helper_12 + helper_14 - helper_16 + helper_18;
+	const double helper_10 = t00_x - t02_x + t01_x;
+	const double helper_19 = t03_y + t04_y - t06_y + t05_y;
 	const double helper_20 = helper_10 * helper_19;
-	const double helper_24 = helper_21 - helper_22 + helper_23;
-	const double helper_30 = helper_25 + helper_26 - helper_28 + helper_29;
+	const double helper_24 = t00_y - t02_y + t01_y;
+	const double helper_30 = t03_x + t04_x - t06_x + t05_x;
 	const double helper_31 = helper_24 * helper_30;
 	const double helper_32 = helper_3 * ( helper_20 - helper_31 );
 	const double helper_33 = v0_x - v3_x;
-	const double helper_40 = helper_34 + helper_36 - helper_38 + helper_39;
+	const double helper_40 = t03_z + t04_z - t06_z + t05_z;
 	const double helper_41 = helper_24 * helper_40;
-	const double helper_45 = helper_42 - helper_43 + helper_44;
+	const double helper_45 = t00_z - t02_z + t01_z;
 	const double helper_46 = helper_19 * helper_45;
 	const double helper_47 = helper_41 - helper_46;
 	const double helper_48 = helper_33 * helper_47;
@@ -127,10 +129,10 @@ void floatTetWild::AMIPS_hessian_v2( const std::array<double, 12>& arr, Matrix3&
 	const double helper_92 = -3.0 * v0_y + 1.0 * v1_y + 1.0 * v2_y + 1.0 * v3_y;
 	const double helper_93 = -v0_y + v3_y;
 	const double helper_94 = -v0_z + v3_z;
-	const double helper_95 = -helper_21 + helper_22 - helper_23;
-	const double helper_96 = -helper_34 - helper_36 + helper_38 - helper_39;
-	const double helper_97 = -helper_42 + helper_43 - helper_44;
-	const double helper_98 = -helper_12 - helper_14 + helper_16 - helper_18;
+	const double helper_95 = -t00_y + t02_y - t01_y;
+	const double helper_96 = -t03_z - t04_z + t06_z - t05_z;
+	const double helper_97 = -t00_z + t02_z - t01_z;
+	const double helper_98 = -t03_y - t04_y + t06_y - t05_y;
 	const double helper_99 = -0.666666666666667 * helper_60 * helper_94 + 0.666666666666667 * helper_62 * helper_93 +
 							 0.666666666666667 * helper_95 * helper_96 - 0.666666666666667 * helper_97 * helper_98;
 	const double helper_100 = helper_3 * helper_90;
@@ -152,8 +154,8 @@ void floatTetWild::AMIPS_hessian_v2( const std::array<double, 12>& arr, Matrix3&
 	const double helper_111 = helper_103 * helper_110 + helper_107 * helper_57 - helper_108 * helper_99;
 	const double helper_112 = -v0_x + v3_x;
 	const double helper_113 = -helper_88 + helper_89;
-	const double helper_114 = -helper_5 + helper_7 - helper_9;
-	const double helper_115 = -helper_25 - helper_26 + helper_28 - helper_29;
+	const double helper_114 = -t00_x + t02_x - t01_x;
+	const double helper_115 = -t03_x - t04_x + t06_x - t05_x;
 	const double helper_116 = helper_82 * helper_86 * ( helper_112 * helper_62 + helper_113 * helper_94 + helper_114 * helper_96 - helper_115 * helper_97 );
 	const double helper_117 = -helper_100 + helper_101 - helper_50 + helper_51;
 	const double helper_118 = -helper_102 * helper_110 + helper_107 * helper_92 + helper_108 * helper_91;
