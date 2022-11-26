@@ -117,10 +117,11 @@ void floatTetWild::AMIPS_hessian_v2( const std::array<double, 12>& arr, Matrix3&
 	STORE( prod ); */
 
 	const double cp1_x = t08_y * t09_z;
-	const double cp2_x = t09_y * t08_z;
 	const double cp1_y = t08_x * t09_z;
-	const double cp2_y = t09_x * t08_z;
 	const double cp1_z = t08_x * t09_y;
+
+	const double cp2_x = t08_z * t09_y;
+	const double cp2_y = t08_z * t09_x;
 	const double cp2_z = t08_y * t09_x;
 
 	const double cp_x = cp1_x - cp2_x;
