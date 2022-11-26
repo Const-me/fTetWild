@@ -206,9 +206,15 @@ void floatTetWild::AMIPS_hessian_v2( const std::array<double, 12>& arr, Matrix3&
 	const double t20_z =
 	  -0.666666666666667 * t08_x * t09_y + 0.666666666666667 * t08_y * t09_x + 0.666666666666667 * t07_x * t10_y - 0.666666666666667 * t07_y * t10_x;
 
-	const double t21_x = -t10_y * t16_z + t10_z * t16_y + t17_y * t18_z - t17_z * t18_y;
-	const double t21_y = -t10_x * t16_z + t10_z * t16_x + t17_x * t18_z - t17_z * t18_x;
-	const double t21_z = -t10_x * t16_y + t10_y * t16_x + t17_x * t18_y - t17_y * t18_x;
+	// const double t21_x = -t10_y * t16_z + t10_z * t16_y + t17_y * t18_z - t17_z * t18_y;
+	// const double t21_y = -t10_x * t16_z + t10_z * t16_x + t17_x * t18_z - t17_z * t18_x;
+	// const double t21_z = -t10_x * t16_y + t10_y * t16_x + t17_x * t18_y - t17_y * t18_x;
+	const __m256d t21_0 = mul( permute_yxx( t10 ), permute_zzy( t16 ) );
+	const __m256d t21_1 = mul( permute_yxx( t16 ), permute_zzy( t10 ) );
+	const __m256d t21_2 = mul( permute_yxx( t17 ), permute_zzy( t18 ) );
+	const __m256d t21_3 = mul( permute_yxx( t18 ), permute_zzy( t17 ) );
+	const __m256d t21 = sub( add( sub( t21_1, t21_0 ), t21_2 ), t21_3 );
+	STORE( t21 );
 
 	const double helper_104 = 0.444444444444444 * helper_102 * t21_x * product1 * st5 + t22_x * t20_y - t22_y * t20_x;
 
