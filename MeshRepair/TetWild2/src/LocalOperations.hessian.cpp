@@ -258,7 +258,9 @@ void floatTetWild::AMIPS_hessian( const std::array<Scalar, 12>& T, Matrix3& resu
 	AMIPS_hessian_v1( T, matOld );
 	AMIPS_hessian_v2( T, matNew );
 	Matrix3 diff = matNew - matOld;
-	__debugbreak();
+	Matrix3 zero = Matrix3::Zero();
+	if( diff != zero )
+		__debugbreak();
 	result_0 = matOld;
 #endif
 }
