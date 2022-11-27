@@ -68,16 +68,14 @@ void floatTetWild::AMIPS_jacobian_v2( const std::array<Scalar, 12>& arr, Vector3
 	const double helper_40 = 1.0 / cubicRoot( pow2( helper_39 ) );
 	const double helper_41 = magic5 * v1_z - magic5 * v2_z;
 	const double helper_42 = magic5 * v1_y - magic5 * v2_y;
-	const double helper_43 = 0.5 * v2_x + 0.5 * v1_x;
-	const double helper_44 = 0.5 * v1_y + 0.5 * v2_y;
-	const double helper_45 = 0.5 * v1_z + 0.5 * v2_z;
-	const double helper_46 = 0.666666666666667 *
-							 ( v0_y * ( -1.5 * v0_y + 0.5 * v3_y + helper_44 ) + v1_z * ( -1.5 * v1_z + 0.5 * v2_z + 0.5 * v3_z + 0.5 * v0_z ) +
-							   v2_z * ( 0.5 * v1_z - 1.5 * v2_z + 0.5 * v3_z + 0.5 * v0_z ) + v3_z * ( -1.5 * v3_z + helper_45 + 0.5 * v0_z ) +
-							   v3_y * ( 0.5 * v0_y - 1.5 * v3_y + helper_44 ) + v2_x * ( -1.5 * v2_x + 0.5 * v0_x + 0.5 * v1_x + 0.5 * v3_x ) +
-							   v1_y * ( 0.5 * v0_y + 0.5 * v3_y - 1.5 * v1_y + 0.5 * v2_y ) + v2_y * ( 0.5 * v0_y + 0.5 * v3_y + 0.5 * v1_y - 1.5 * v2_y ) +
-							   v0_x * ( -1.5 * v0_x + helper_43 + 0.5 * v3_x ) + v1_x * ( 0.5 * v2_x + 0.5 * v0_x - 1.5 * v1_x + 0.5 * v3_x ) +
-							   v3_x * ( 0.5 * v0_x + helper_43 - 1.5 * v3_x ) + v0_z * ( 0.5 * v3_z + helper_45 - 1.5 * v0_z ) ) /
+	const double helper_43 = v1_x + v2_x;
+	const double helper_44 = v1_y + v2_y;
+	const double helper_45 = v1_z + v2_z;
+	const double helper_46 = ( 0.666666666666667 * 0.5 ) *
+							 ( v0_y * ( -3 * v0_y + v3_y + helper_44 ) + v1_z * ( -3 * v1_z + v2_z + v3_z + v0_z ) + v2_z * ( v1_z - 3 * v2_z + v3_z + v0_z ) +
+							   v3_z * ( -3 * v3_z + helper_45 + v0_z ) + v3_y * ( v0_y - 3 * v3_y + helper_44 ) + v2_x * ( -3 * v2_x + v0_x + v1_x + v3_x ) +
+							   v1_y * ( v0_y + v3_y - 3 * v1_y + v2_y ) + v2_y * ( v0_y + v3_y + v1_y - 3 * v2_y ) + v0_x * ( -3 * v0_x + helper_43 + v3_x ) +
+							   v1_x * ( v2_x + v0_x - 3 * v1_x + v3_x ) + v3_x * ( v0_x + helper_43 - 3 * v3_x ) + v0_z * ( v3_z + helper_45 - 3 * v0_z ) ) /
 							 helper_39;
 	const double helper_47 = -magic5 * v2_x + magic5 * v1_x;
 	result_0[ 0 ] = -helper_40 * ( v2_x - 3.0 * v0_x +
