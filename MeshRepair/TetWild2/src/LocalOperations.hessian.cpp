@@ -73,6 +73,7 @@ namespace
 		return _mm256_mul_pd( a, b );
 	}
 
+	// Extract XYZ lanes from the vector, and store into 3 separate const variables with _x, _y and _z suffix
 #define STORE( v )                        \
 	const double v##_x = extract<0>( v ); \
 	const double v##_y = extract<1>( v ); \
@@ -404,23 +405,6 @@ void floatTetWild::AMIPS_hessian_v3( const std::array<double, 12>& arr, Matrix3&
 	result_0( 2, 1 ) = st6 * ( helper_118 + t25_z * t20_y );
 	result_0( 2, 2 ) = st3 * diag_z;
 }
-/*
-void floatTetWild::AMIPS_hessian( const std::array<Scalar, 12>& T, Matrix3& result_0 )
-{
-#if 0
-	AMIPS_hessian_v2( T, result_0 );
-#else
-	Matrix3 matOld, matNew;
-	AMIPS_hessian_v1( T, matOld );
-	AMIPS_hessian_v2( T, matNew );
-	Matrix3 diff = matNew - matOld;
-	Matrix3 zero = Matrix3::Zero();
-	if( diff != zero )
-		__debugbreak();
-	result_0 = matOld;
-#endif
-}
-*/
 
 void floatTetWild::AMIPS_hessian_v4( const std::array<double, 12>& arr, Matrix3& result_0 )
 {
