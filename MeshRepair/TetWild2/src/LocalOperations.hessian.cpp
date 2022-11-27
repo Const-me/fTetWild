@@ -327,6 +327,22 @@ void floatTetWild::AMIPS_hessian_v3( const std::array<double, 12>& arr, Matrix3&
 	result_0( 2, 2 ) = st3 * diag_z;
 }
 
+namespace
+{
+	struct sMagicNumbersV4
+	{
+		const double fourth = 0.25;
+		const double m1 = magic1;
+		const double m2 = magic2;
+		const double m3 = magic3;
+		const double m4 = magic4;
+		const double m5 = magic5;
+		const double _69 = 6.0 / 9.0;
+		const double three = 3.0;
+	};
+	static const alignas( 64 ) sMagicNumbersV4 s_magic4;
+}
+
 void floatTetWild::AMIPS_hessian_v4( const std::array<double, 12>& arr, Matrix3& result_0 )
 {
 	// Load slices of 3 elements into 4 vectors
@@ -334,19 +350,21 @@ void floatTetWild::AMIPS_hessian_v4( const std::array<double, 12>& arr, Matrix3&
 	Vec v1 = _mm256_loadu_pd( &arr[ 3 ] );
 	Vec v2 = _mm256_loadu_pd( &arr[ 6 ] );
 	Vec v3 = AvxMath::loadDouble3( &arr[ 9 ] );
-	translateToBarycenter( v0.vec, v1.vec, v2.vec, v3.vec, _mm256_set1_pd( 0.25 ) );
 
-	const Vec m1 = broadcast( s_magic.m1 );
+	// Translate vertices relative to barycenter; this simplifies algebra, and hopefully increases numerical accuracy
+	translateToBarycenter( v0.vec, v1.vec, v2.vec, v3.vec, broadcast( s_magic4.fourth ) );
+
+	const Vec m1 = broadcast( s_magic4.m1 );
 	const Vec t00 = m1 * v0;
 	const Vec t01 = m1 * v3;
 
-	const Vec t02 = v1 * broadcast( s_magic.m2 );
+	const Vec t02 = v1 * broadcast( s_magic4.m2 );
 
-	const Vec m3 = broadcast( s_magic.m3 );
+	const Vec m3 = broadcast( s_magic4.m3 );
 	const Vec t03 = m3 * v0;
 	const Vec t04 = m3 * v1;
 	const Vec t05 = m3 * v3;
-	const Vec t06 = v2 * broadcast( s_magic.m4 );
+	const Vec t06 = v2 * broadcast( s_magic4.m4 );
 	const Vec t07 = v0 - v3;
 	const Vec t08 = t00 - t02 + t01;
 	const Vec t09 = t03 + t04 - t06 + t05;
@@ -363,7 +381,7 @@ void floatTetWild::AMIPS_hessian_v4( const std::array<double, 12>& arr, Matrix3&
 	const double st5 = -1.0 / st0;
 	const double st6 = st5 / root;
 
-	const Vec t10 = ( v1 - v2 ) * broadcast( s_magic.m5 );
+	const Vec t10 = ( v1 - v2 ) * broadcast( s_magic4.m5 );
 
 	const double product1 = hadd12( v0 * v0, v1 * v1, v2 * v2, v3 * v3 ) * -2.0;
 	const double st7 = product1 / st1;
@@ -382,7 +400,7 @@ void floatTetWild::AMIPS_hessian_v4( const std::array<double, 12>& arr, Matrix3&
 	const Vec t21_zzy = permute_zzy( t21 );
 	const Vec t12_yxx = permute_yxx( t12 );
 	const Vec t12_zzy = permute_zzy( t12 );
-	const Vec _69 = _mm256_set1_pd( 6.0 / 9 );
+	const Vec _69 = broadcast( s_magic4._69 );
 	const Vec t26 = t21_yxx * t21_zzy * _mm256_set1_pd( st8 ) - ( t12_yxx * t21_zzy + t12_zzy * t21_yxx ) * _69;
 	STORE( t26 );
 
@@ -392,7 +410,7 @@ void floatTetWild::AMIPS_hessian_v4( const std::array<double, 12>& arr, Matrix3&
 	Vec diag = t12 * t21;
 	diag *= _mm256_set1_pd( st2 );
 	diag -= t24 * _mm256_set1_pd( st9 );
-	diag += _mm256_set1_pd( 3 );
+	diag += broadcast( s_magic4.three );
 	diag *= _mm256_set1_pd( st3 );
 	STORE( diag );
 
@@ -416,7 +434,7 @@ void floatTetWild::AMIPS_hessian_v4( const std::array<double, 12>& arr, Matrix3&
 
 void floatTetWild::AMIPS_hessian( const std::array<Scalar, 12>& T, Matrix3& result_0 )
 {
-#if 0
+#if 1
 	AMIPS_hessian_v4( T, result_0 );
 #else
 	Matrix3 matOld, matNew;
