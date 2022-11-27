@@ -33,36 +33,6 @@ namespace
 		const double half = 0.5;
 	};
 	static const alignas( 64 ) sMagicNumbers s_magic;
-
-	template<int i>
-	inline double extract( __m256d v );
-
-	template<>
-	inline double extract<0>( __m256d v )
-	{
-		return _mm256_cvtsd_f64( v );
-	}
-
-	template<>
-	inline double extract<1>( __m256d v )
-	{
-		__m128d low = _mm256_castpd256_pd128( v );
-		low = _mm_unpackhi_pd( low, low );
-		return _mm_cvtsd_f64( low );
-	}
-
-	template<>
-	inline double extract<2>( __m256d v )
-	{
-		__m128d high = _mm256_extractf128_pd( v, 1 );
-		return _mm_cvtsd_f64( high );
-	}
-
-	// Extract XYZ lanes from the vector, and store into 3 separate const variables with _x, _y and _z suffix
-#define STORE( v )                        \
-	const double v##_x = extract<0>( v ); \
-	const double v##_y = extract<1>( v ); \
-	const double v##_z = extract<2>( v );
 }  // namespace
 
 void floatTetWild::AMIPS_hessian_v2( const std::array<double, 12>& arr, Matrix3& result_0 )
