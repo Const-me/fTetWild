@@ -330,25 +330,25 @@ void floatTetWild::AMIPS_hessian_v3( const std::array<double, 12>& arr, Matrix3&
 void floatTetWild::AMIPS_hessian_v4( const std::array<double, 12>& arr, Matrix3& result_0 )
 {
 	// Load slices of 3 elements into 4 vectors
-	__m256d v0 = _mm256_loadu_pd( &arr[ 0 ] );
-	__m256d v1 = _mm256_loadu_pd( &arr[ 3 ] );
-	__m256d v2 = _mm256_loadu_pd( &arr[ 6 ] );
-	__m256d v3 = AvxMath::loadDouble3( &arr[ 9 ] );
-	translateToBarycenter( v0, v1, v2, v3, _mm256_set1_pd( 0.25 ) );
+	Vec v0 = _mm256_loadu_pd( &arr[ 0 ] );
+	Vec v1 = _mm256_loadu_pd( &arr[ 3 ] );
+	Vec v2 = _mm256_loadu_pd( &arr[ 6 ] );
+	Vec v3 = AvxMath::loadDouble3( &arr[ 9 ] );
+	translateToBarycenter( v0.vec, v1.vec, v2.vec, v3.vec, _mm256_set1_pd( 0.25 ) );
 
-	const __m256d m1 = _mm256_broadcast_sd( &s_magic.m1 );
+	const __m256d m1 = broadcast( s_magic.m1 );
 	const __m256d t00 = mul( m1, v0 );
 	const __m256d t01 = mul( m1, v3 );
 
-	const __m256d m2 = _mm256_broadcast_sd( &s_magic.m2 );
+	const __m256d m2 = broadcast( s_magic.m2 );
 	const __m256d t02 = mul( m2, v1 );
 
-	const __m256d m3 = _mm256_broadcast_sd( &s_magic.m3 );
+	const __m256d m3 = broadcast( s_magic.m3 );
 	const __m256d t03 = mul( m3, v0 );
 	const __m256d t04 = mul( m3, v1 );
 	const __m256d t05 = mul( m3, v3 );
 
-	const __m256d m4 = _mm256_broadcast_sd( &s_magic.m4 );
+	const __m256d m4 = broadcast( s_magic.m4 );
 	const __m256d t06 = mul( m4, v2 );
 
 	STORE( v1 );
@@ -375,7 +375,7 @@ void floatTetWild::AMIPS_hessian_v4( const std::array<double, 12>& arr, Matrix3&
 	const double st5 = -1.0 / st0;
 	const double st6 = st5 / root;
 
-	const __m256d m5 = _mm256_broadcast_sd( &s_magic.m5 );
+	const __m256d m5 = broadcast( s_magic.m5 );
 	const __m256d t10 = mul( m5, sub( v1, v2 ) );
 	STORE( t10 );
 
@@ -442,7 +442,6 @@ void floatTetWild::AMIPS_hessian( const std::array<Scalar, 12>& T, Matrix3& resu
 	AMIPS_hessian_v1( T, matOld );
 	AMIPS_hessian_v4( T, matNew );
 	Matrix3 diff = matNew - matOld;
-	__debugbreak();
 	result_0 = matOld;
 #endif
 }
