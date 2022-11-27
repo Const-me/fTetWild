@@ -146,8 +146,8 @@ void floatTetWild::AMIPS_jacobian_v3( const std::array<Scalar, 12>& arr, Vector3
 	const Vec t4 = v1 + v2;
 
 	const Vec nm3 = broadcast( s_magicv4.minus3 );
-	const Vec t6 = v0 * ( nm3 * v0 + v3 + t4 );
-	double tmp = hadd12( t6, v1 * ( nm3 * v1 + v0 + v2 + v3 ), v2 * ( nm3 * v2 + v0 + v1 + v3 ), v3 * ( nm3 * v3 + v0 + t4 ) );
+	const Vec t6 = nm3 * v0 + v3 + t4;
+	double tmp = hadd12( v0 * t6, v1 * ( nm3 * v1 + v0 + v2 + v3 ), v2 * ( nm3 * v2 + v0 + v1 + v3 ), v3 * ( nm3 * v3 + v0 + t4 ) );
 	const double s2 = ( 0.666666666666667 * 0.5 ) * tmp / s0;
 
 	STORE( v0 );
@@ -158,11 +158,12 @@ void floatTetWild::AMIPS_jacobian_v3( const std::array<Scalar, 12>& arr, Vector3
 	STORE( t1 );
 	STORE( t2 );
 	STORE( t3 );
+	STORE( t6 );
 	STORE( prod );
 
-	result_0[ 0 ] = s1 * ( -v2_x + 3.0 * v0_x + s2 * ( t3_z * t0_y - t3_y * t0_z + t1_z * t2_y - t1_y * t2_z ) - v1_x - v3_x );
-	result_0[ 1 ] = s1 * ( 3.0 * v0_y - v3_y - v1_y - v2_y + s2 * ( -prod_y + t0_z * t3_x - t0_x * t3_z ) );
-	result_0[ 2 ] = s1 * ( -v1_z - v2_z - v3_z + s2 * ( -t0_y * t3_x - prod_z + t0_x * t3_y ) + 3.0 * v0_z );
+	result_0[ 0 ] = s1 * ( s2 * ( t3_z * t0_y - t3_y * t0_z + t1_z * t2_y - t1_y * t2_z ) - t6_x );
+	result_0[ 1 ] = s1 * ( s2 * ( -prod_y + t0_z * t3_x - t0_x * t3_z ) - t6_y );
+	result_0[ 2 ] = s1 * ( s2 * ( -prod_z - t0_y * t3_x + t0_x * t3_y ) - t6_z );
 }
 
 void floatTetWild::AMIPS_jacobian( const std::array<Scalar, 12>& T, Vector3& result_0 )
