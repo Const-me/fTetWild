@@ -341,9 +341,18 @@ namespace
 		const double three = 3.0;
 	};
 	static const alignas( 64 ) sMagicNumbersV4 s_magic4;
+
+	inline void scatter( __m256d vec, double& x, double& y, double& z )
+	{
+		const __m128d xy = _mm256_castpd256_pd128( vec );
+		_mm_store_sd( &x, xy );
+		_mm_storeh_pd( &y, xy );
+		const __m128d zw = _mm256_extractf128_pd( vec, 1 );
+		_mm_store_sd( &z, zw );
+	}
 }
 
-void floatTetWild::AMIPS_hessian_v4( const std::array<double, 12>& arr, Matrix3& result_0 )
+void floatTetWild::AMIPS_hessian_v4( const std::array<double, 12>& arr, Matrix3& mat )
 {
 	// Load slices of 3 elements into 4 vectors
 	Vec v0 = _mm256_loadu_pd( &arr[ 0 ] );
@@ -412,7 +421,7 @@ void floatTetWild::AMIPS_hessian_v4( const std::array<double, 12>& arr, Matrix3&
 	diag -= t24 * _mm256_set1_pd( st9 );
 	diag += broadcast( s_magic4.three );
 	diag *= _mm256_set1_pd( st3 );
-	STORE( diag );
+	scatter( diag, mat( 0, 0 ), mat( 1, 1 ), mat( 2, 2 ) );
 
 	const Vec t27 = v1 * _mm256_set1_pd( scaledProduct );
 	const Vec t28 = t26 - t27;
@@ -421,15 +430,13 @@ void floatTetWild::AMIPS_hessian_v4( const std::array<double, 12>& arr, Matrix3&
 	const Vec t29 = t21 * _69;
 	STORE( t29 );
 
-	result_0( 0, 0 ) = diag_x;
-	result_0( 0, 1 ) = st6 * ( t28_z - t29_y * t25_x );
-	result_0( 0, 2 ) = st6 * ( t26_y - t29_z * t25_x );
-	result_0( 1, 0 ) = st6 * ( t26_z - t29_x * t25_y );
-	result_0( 1, 1 ) = diag_y;
-	result_0( 1, 2 ) = st6 * ( t28_x - t29_z * t25_y );
-	result_0( 2, 0 ) = st6 * ( t28_y - t29_x * t25_z );
-	result_0( 2, 1 ) = st6 * ( t26_x - t29_y * t25_z );
-	result_0( 2, 2 ) = diag_z;
+	mat( 1, 2 ) = st6 * ( t28_x - t29_z * t25_y );
+	mat( 2, 0 ) = st6 * ( t28_y - t29_x * t25_z );
+	mat( 0, 1 ) = st6 * ( t28_z - t29_y * t25_x );
+
+	mat( 2, 1 ) = st6 * ( t26_x - t29_y * t25_z );
+	mat( 0, 2 ) = st6 * ( t26_y - t29_z * t25_x );
+	mat( 1, 0 ) = st6 * ( t26_z - t29_x * t25_y );
 }
 
 void floatTetWild::AMIPS_hessian( const std::array<Scalar, 12>& T, Matrix3& result_0 )
