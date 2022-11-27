@@ -388,9 +388,10 @@ void floatTetWild::AMIPS_hessian_v4( const std::array<double, 12>& arr, Matrix3&
 	const Vec t25 = t21 * _mm256_set1_pd( product1 * st5 );
 	STORE( t25 );
 
-	const double t26_x = t21_y * t21_z * ( -4.0 / 9 ) * product1 * st5 - ( t12_y * t21_z + t12_z * t21_y ) * ( 6.0 / 9 );
-	const double t26_y = t21_x * t21_z * ( -4.0 / 9 ) * product1 * st5 - ( t12_x * t21_z + t12_z * t21_x ) * ( 6.0 / 9 );
-	const double t26_z = t21_y * t21_x * ( -4.0 / 9 ) * product1 * st5 - ( t12_x * t21_y + t12_y * t21_x ) * ( 6.0 / 9 );
+	const double st8 = product1 * ( 4.0 / 9 ) / st0;
+	const double t26_x = t21_y * t21_z * st8 - ( t12_y * t21_z + t12_z * t21_y ) * ( 6.0 / 9 );
+	const double t26_y = t21_x * t21_z * st8 - ( t12_x * t21_z + t12_z * t21_x ) * ( 6.0 / 9 );
+	const double t26_z = t21_y * t21_x * st8 - ( t12_x * t21_y + t12_y * t21_x ) * ( 6.0 / 9 );
 
 	const Vec t24 = t21 * t21;
 	STORE( t24 );
