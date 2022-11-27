@@ -16,67 +16,55 @@ namespace
 	}
 }  // namespace
 
-void floatTetWild::AMIPS_jacobian_v2( const std::array<Scalar, 12>& T, Vector3& result_0 )
+void floatTetWild::AMIPS_jacobian_v2( const std::array<Scalar, 12>& arr, Vector3& result_0 )
 {
-	Scalar helper_0[ 12 ];
-	helper_0[ 0 ] = T[ 0 ];
-	helper_0[ 1 ] = T[ 1 ];
-	helper_0[ 2 ] = T[ 2 ];
-	helper_0[ 3 ] = T[ 3 ];
-	helper_0[ 4 ] = T[ 4 ];
-	helper_0[ 5 ] = T[ 5 ];
-	helper_0[ 6 ] = T[ 6 ];
-	helper_0[ 7 ] = T[ 7 ];
-	helper_0[ 8 ] = T[ 8 ];
-	helper_0[ 9 ] = T[ 9 ];
-	helper_0[ 10 ] = T[ 10 ];
-	helper_0[ 11 ] = T[ 11 ];
-	Scalar helper_1 = helper_0[ 1 ];
-	Scalar helper_2 = helper_0[ 10 ];
-	Scalar helper_3 = helper_1 - helper_2;
-	Scalar helper_4 = helper_0[ 0 ];
-	Scalar helper_5 = helper_0[ 3 ];
-	Scalar helper_6 = helper_0[ 9 ];
-	Scalar helper_7 = 0.577350269189626 * helper_4 - 1.15470053837925 * helper_5 + 0.577350269189626 * helper_6;
-	Scalar helper_8 = helper_0[ 2 ];
-	Scalar helper_9 = 0.408248290463863 * helper_8;
-	Scalar helper_10 = helper_0[ 5 ];
-	Scalar helper_11 = 0.408248290463863 * helper_10;
-	Scalar helper_12 = helper_0[ 8 ];
-	Scalar helper_13 = 1.22474487139159 * helper_12;
-	Scalar helper_14 = helper_0[ 11 ];
-	Scalar helper_15 = 0.408248290463863 * helper_14;
-	Scalar helper_16 = helper_11 - helper_13 + helper_15 + helper_9;
-	Scalar helper_17 = 0.577350269189626 * helper_8;
-	Scalar helper_18 = 1.15470053837925 * helper_10;
-	Scalar helper_19 = 0.577350269189626 * helper_14;
-	Scalar helper_20 = helper_17 - helper_18 + helper_19;
-	Scalar helper_21 = helper_0[ 6 ];
-	Scalar helper_22 = -1.22474487139159 * helper_21 + 0.408248290463863 * helper_4 + 0.408248290463863 * helper_5 + 0.408248290463863 * helper_6;
-	Scalar helper_23 = helper_16 * helper_7 - helper_20 * helper_22;
-	Scalar helper_24 = -helper_14 + helper_8;
-	Scalar helper_25 = 0.408248290463863 * helper_1;
-	Scalar helper_26 = helper_0[ 4 ];
-	Scalar helper_27 = 0.408248290463863 * helper_26;
-	Scalar helper_28 = helper_0[ 7 ];
-	Scalar helper_29 = 1.22474487139159 * helper_28;
-	Scalar helper_30 = 0.408248290463863 * helper_2;
-	Scalar helper_31 = helper_25 + helper_27 - helper_29 + helper_30;
-	Scalar helper_32 = helper_31 * helper_7;
-	Scalar helper_33 = 0.577350269189626 * helper_1;
-	Scalar helper_34 = 1.15470053837925 * helper_26;
-	Scalar helper_35 = 0.577350269189626 * helper_2;
-	Scalar helper_36 = helper_33 - helper_34 + helper_35;
-	Scalar helper_37 = helper_22 * helper_36;
-	Scalar helper_38 = helper_4 - helper_6;
-	Scalar helper_39 = helper_23 * helper_3 - helper_24 * ( helper_32 - helper_37 ) - helper_38 * ( helper_16 * helper_36 - helper_20 * helper_31 );
-	Scalar helper_40 = 1.0 / cubicRoot( pow2( helper_39 ) );
-	Scalar helper_41 = 0.707106781186548 * helper_10 - 0.707106781186548 * helper_12;
-	Scalar helper_42 = 0.707106781186548 * helper_26 - 0.707106781186548 * helper_28;
-	Scalar helper_43 = 0.5 * helper_21 + 0.5 * helper_5;
-	Scalar helper_44 = 0.5 * helper_26 + 0.5 * helper_28;
-	Scalar helper_45 = 0.5 * helper_10 + 0.5 * helper_12;
-	Scalar helper_46 =
+	const double helper_4 = arr[ 0 ];
+	const double helper_1 = arr[ 1 ];
+	const double helper_8 = arr[ 2 ];
+	const double helper_5 = arr[ 3 ];
+	const double helper_26 = arr[ 4 ];
+	const double helper_10 = arr[ 5 ];
+	const double helper_21 = arr[ 6 ];
+	const double helper_28 = arr[ 7 ];
+	const double helper_12 = arr[ 8 ];
+	const double helper_6 = arr[ 9 ];
+	const double helper_2 = arr[ 10 ];
+	const double helper_14 = arr[ 11 ];
+
+	const double helper_3 = helper_1 - helper_2;
+	const double helper_7 = 0.577350269189626 * helper_4 - 1.15470053837925 * helper_5 + 0.577350269189626 * helper_6;
+	const double helper_9 = 0.408248290463863 * helper_8;
+	const double helper_11 = 0.408248290463863 * helper_10;
+	const double helper_13 = 1.22474487139159 * helper_12;
+	const double helper_15 = 0.408248290463863 * helper_14;
+	const double helper_16 = helper_11 - helper_13 + helper_15 + helper_9;
+	const double helper_17 = 0.577350269189626 * helper_8;
+	const double helper_18 = 1.15470053837925 * helper_10;
+	const double helper_19 = 0.577350269189626 * helper_14;
+	const double helper_20 = helper_17 - helper_18 + helper_19;
+	const double helper_22 = -1.22474487139159 * helper_21 + 0.408248290463863 * helper_4 + 0.408248290463863 * helper_5 + 0.408248290463863 * helper_6;
+	const double helper_23 = helper_16 * helper_7 - helper_20 * helper_22;
+	const double helper_24 = -helper_14 + helper_8;
+	const double helper_25 = 0.408248290463863 * helper_1;
+	const double helper_27 = 0.408248290463863 * helper_26;
+	const double helper_29 = 1.22474487139159 * helper_28;
+	const double helper_30 = 0.408248290463863 * helper_2;
+	const double helper_31 = helper_25 + helper_27 - helper_29 + helper_30;
+	const double helper_32 = helper_31 * helper_7;
+	const double helper_33 = 0.577350269189626 * helper_1;
+	const double helper_34 = 1.15470053837925 * helper_26;
+	const double helper_35 = 0.577350269189626 * helper_2;
+	const double helper_36 = helper_33 - helper_34 + helper_35;
+	const double helper_37 = helper_22 * helper_36;
+	const double helper_38 = helper_4 - helper_6;
+	const double helper_39 = helper_23 * helper_3 - helper_24 * ( helper_32 - helper_37 ) - helper_38 * ( helper_16 * helper_36 - helper_20 * helper_31 );
+	const double helper_40 = 1.0 / cubicRoot( pow2( helper_39 ) );
+	const double helper_41 = 0.707106781186548 * helper_10 - 0.707106781186548 * helper_12;
+	const double helper_42 = 0.707106781186548 * helper_26 - 0.707106781186548 * helper_28;
+	const double helper_43 = 0.5 * helper_21 + 0.5 * helper_5;
+	const double helper_44 = 0.5 * helper_26 + 0.5 * helper_28;
+	const double helper_45 = 0.5 * helper_10 + 0.5 * helper_12;
+	const double helper_46 =
 	  0.666666666666667 *
 	  ( helper_1 * ( -1.5 * helper_1 + 0.5 * helper_2 + helper_44 ) + helper_10 * ( -1.5 * helper_10 + 0.5 * helper_12 + 0.5 * helper_14 + 0.5 * helper_8 ) +
 		helper_12 * ( 0.5 * helper_10 - 1.5 * helper_12 + 0.5 * helper_14 + 0.5 * helper_8 ) + helper_14 * ( -1.5 * helper_14 + helper_45 + 0.5 * helper_8 ) +
@@ -86,7 +74,7 @@ void floatTetWild::AMIPS_jacobian_v2( const std::array<Scalar, 12>& T, Vector3& 
 		helper_5 * ( 0.5 * helper_21 + 0.5 * helper_4 - 1.5 * helper_5 + 0.5 * helper_6 ) + helper_6 * ( 0.5 * helper_4 + helper_43 - 1.5 * helper_6 ) +
 		helper_8 * ( 0.5 * helper_14 + helper_45 - 1.5 * helper_8 ) ) /
 	  helper_39;
-	Scalar helper_47 = -0.707106781186548 * helper_21 + 0.707106781186548 * helper_5;
+	const double helper_47 = -0.707106781186548 * helper_21 + 0.707106781186548 * helper_5;
 	result_0[ 0 ] = -helper_40 * ( 1.0 * helper_21 - 3.0 * helper_4 +
 								   helper_46 * ( helper_41 * ( -helper_1 + helper_2 ) - helper_42 * ( helper_14 - helper_8 ) -
 												 ( -helper_17 + helper_18 - helper_19 ) * ( -helper_25 - helper_27 + helper_29 - helper_30 ) +
