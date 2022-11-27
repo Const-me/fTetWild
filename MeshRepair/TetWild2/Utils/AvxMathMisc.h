@@ -224,4 +224,28 @@ namespace AvxMath
 		lhs = _mm256_mul_pd( a1, b2 );
 		rhs = _mm256_mul_pd( a2, b1 );
 	}
+
+	// Extract X lane from the vector
+	inline double vectorGetX( __m256d vec )
+	{
+		return _mm256_cvtsd_f64( vec );
+	}
+	// Extract Y lane from the vector
+	inline double vectorGetY( __m256d vec )
+	{
+		return _mm_cvtsd_f64( _mm_permute_pd( low2( vec ), 0b11 ) );
+	}
+	// Extract Z lane from the vector
+	inline double vectorGetZ( __m256d vec )
+	{
+		return _mm_cvtsd_f64( high2( vec ) );
+	}
+	// Extract W lane from the vector
+	inline double vectorGetW( __m256d vec )
+	{
+		__m128d high = high2( vec );
+		high = _mm_permute_pd( high, 0b11 );
+		return _mm_cvtsd_f64( high );
+	}
+
 }  // namespace AvxMath

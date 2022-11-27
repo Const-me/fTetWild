@@ -1,7 +1,10 @@
 #pragma once
+#include <Utils/AvxMath.h>
 
 namespace floatTetWild
 {
+	using namespace AvxMath;
+
 	__forceinline void translateToBarycenter( __m256d& v0, __m256d& v1, __m256d& v2, __m256d& v3, __m256d oneFourth )
 	{
 		// Compute barycenter of the vertices
@@ -23,7 +26,7 @@ namespace floatTetWild
 		const __m256d ab = _mm256_add_pd( a, b );
 		const __m256d cd = _mm256_add_pd( c, d );
 		const __m256d v = _mm256_add_pd( ab, cd );
-		return AvxMath::vector3HorizontalSum( v );
+		return vector3HorizontalSum( v );
 	}
 
 	// Compute x - y + z
@@ -72,4 +75,26 @@ namespace floatTetWild
 		const __m256d cp2 = _mm256_mul_pd( a1, b1 );
 		return _mm256_sub_pd( cp1, cp2 );
 	}
+
+	inline __m256d add( __m256d a, __m256d b )
+	{
+		return _mm256_add_pd( a, b );
+	}
+
+	inline __m256d sub( __m256d a, __m256d b )
+	{
+		return _mm256_sub_pd( a, b );
+	}
+
+	inline __m256d mul( __m256d a, __m256d b )
+	{
+		return _mm256_mul_pd( a, b );
+	}
+
+	// Extract XYZ lanes from the vector, and store into 3 separate const variables with _x, _y and _z suffix
+#define STORE( v )                        \
+	const double v##_x = vectorGetX( v ); \
+	const double v##_y = vectorGetY( v ); \
+	const double v##_z = vectorGetZ( v );
+
 }  // namespace floatTetWild
