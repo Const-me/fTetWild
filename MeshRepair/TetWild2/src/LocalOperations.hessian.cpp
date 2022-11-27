@@ -390,8 +390,8 @@ void floatTetWild::AMIPS_hessian_v4( const std::array<double, 12>& arr, Matrix3&
 	const Vec t25 = t21 * _mm256_set1_pd( st8 );
 	STORE( t25 );
 
-	const double t26_x = t21_y * t21_z * ( -4.0 / 9 ) * product1 * st5 - t21_z * t12_y * ( 6.0 / 9 ) - t12_z * t21_y * ( 6.0 / 9 );
-	const double t26_y = t21_x * t21_z * ( -4.0 / 9 ) * product1 * st5 - t21_z * t12_x * ( 6.0 / 9 ) - t12_z * t21_x * ( 6.0 / 9 );
+	const double t26_x = t21_y * t21_z * ( -4.0 / 9 ) * product1 * st5 - t12_y * t21_z * ( 6.0 / 9 ) - t12_z * t21_y * ( 6.0 / 9 );
+	const double t26_y = t21_x * t21_z * ( -4.0 / 9 ) * product1 * st5 - t12_x * t21_z * ( 6.0 / 9 ) - t12_z * t21_x * ( 6.0 / 9 );
 	const double t26_z = t21_y * t21_x * ( -4.0 / 9 ) * product1 * st5 - t12_x * t21_y * ( 6.0 / 9 ) - t12_y * t21_x * ( 6.0 / 9 );
 
 	const Vec t24 = t21 * t21;
@@ -406,8 +406,8 @@ void floatTetWild::AMIPS_hessian_v4( const std::array<double, 12>& arr, Matrix3&
 	result_0( 0, 2 ) = st6 * ( t26_y - t25_x * t21_z * ( 6.0 / 9 ) );
 	result_0( 1, 0 ) = st6 * ( t26_z - t25_y * t21_x * ( 6.0 / 9 ) );
 	result_0( 1, 1 ) = st3 * diag_y;
-	result_0( 1, 2 ) = st6 * ( -scaledProduct * v1_x - t21_z * t25_y * ( 6.0 / 9 ) + t26_x );
-	result_0( 2, 0 ) = st6 * ( -scaledProduct * v1_y + t26_y - t25_z * t21_x * ( 6.0 / 9 ) );
+	result_0( 1, 2 ) = st6 * ( t26_x - scaledProduct * v1_x - t21_z * t25_y * ( 6.0 / 9 ) );
+	result_0( 2, 0 ) = st6 * ( t26_y - scaledProduct * v1_y - t25_z * t21_x * ( 6.0 / 9 ) );
 	result_0( 2, 1 ) = st6 * ( t26_x - t25_z * t21_y * ( 6.0 / 9 ) );
 	result_0( 2, 2 ) = st3 * diag_z;
 }
