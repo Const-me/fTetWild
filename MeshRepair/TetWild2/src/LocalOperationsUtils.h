@@ -133,21 +133,6 @@ namespace floatTetWild
 		return _mm256_sub_pd( cp1, cp2 );
 	}
 
-	inline __m256d add( __m256d a, __m256d b )
-	{
-		return _mm256_add_pd( a, b );
-	}
-
-	inline __m256d sub( __m256d a, __m256d b )
-	{
-		return _mm256_sub_pd( a, b );
-	}
-
-	inline __m256d mul( __m256d a, __m256d b )
-	{
-		return _mm256_mul_pd( a, b );
-	}
-
 	// Extract XYZ lanes from the vector, and store into 3 separate const variables with _x, _y and _z suffix
 #define STORE( v )                        \
 	const double v##_x = vectorGetX( v ); \

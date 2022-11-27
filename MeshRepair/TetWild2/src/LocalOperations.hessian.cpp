@@ -33,6 +33,21 @@ namespace
 		const double half = 0.5;
 	};
 	static const alignas( 64 ) sMagicNumbers s_magic;
+
+	inline __m256d add( __m256d a, __m256d b )
+	{
+		return _mm256_add_pd( a, b );
+	}
+
+	inline __m256d sub( __m256d a, __m256d b )
+	{
+		return _mm256_sub_pd( a, b );
+	}
+
+	inline __m256d mul( __m256d a, __m256d b )
+	{
+		return _mm256_mul_pd( a, b );
+	}
 }  // namespace
 
 void floatTetWild::AMIPS_hessian_v2( const std::array<double, 12>& arr, Matrix3& result_0 )
