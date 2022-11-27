@@ -85,6 +85,7 @@ namespace
 		const double m4 = magic4;
 		const double m5 = magic5;
 		const double minus3 = -3.0;
+		const double minusOneThird = -1.0 / 3.0;
 	};
 	static const alignas( 64 ) sMagicNumbersV4 s_magicv4;
 
@@ -125,6 +126,10 @@ namespace
 		{
 			vec = _mm256_mul_pd( vec, v );
 		}
+		void operator/=( __m256d v )
+		{
+			vec = _mm256_div_pd( vec, v );
+		}
 	};
 	inline __m256d broadcast( const double& r )
 	{
@@ -152,7 +157,7 @@ void floatTetWild::AMIPS_jacobian_v3( const std::array<Scalar, 12>& arr, Vector3
 	using namespace AvxMath;
 	const Vec prod = vector3Cross( t1, t2 );
 	const double s0 = vector3DotScalar( prod, t0 );
-	const double s1 = 1.0 / cubicRoot( pow2( s0 ) );
+	const double s1 = cubicRoot( pow2( s0 ) );
 
 	const Vec t3 = ( v1 - v2 ) * broadcast( s_magicv4.m5 );
 	const Vec t4 = v1 + v2;
@@ -160,13 +165,13 @@ void floatTetWild::AMIPS_jacobian_v3( const std::array<Scalar, 12>& arr, Vector3
 	const Vec nm3 = broadcast( s_magicv4.minus3 );
 	const Vec t6 = nm3 * v0 + v3 + t4;
 	double tmp = hadd12( v0 * t6, v1 * ( nm3 * v1 + v0 + v2 + v3 ), v2 * ( nm3 * v2 + v0 + v1 + v3 ), v3 * ( nm3 * v3 + v0 + t4 ) );
-	const double s2 = ( -0.666666666666667 * 0.5 ) * tmp / s0;
+	const double s2 = s_magicv4.minusOneThird * tmp / s0;
 
 	Vec res = vector3Cross( t0, t3 );
 	res -= prod;
 	res *= _mm256_set1_pd( s2 );
 	res -= t6;
-	res *= _mm256_set1_pd( s1 );
+	res /= _mm256_set1_pd( s1 );
 	storeDouble3( result_0.data(), res );
 }
 
