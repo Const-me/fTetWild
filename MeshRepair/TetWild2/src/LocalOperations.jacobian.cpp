@@ -77,7 +77,7 @@ void floatTetWild::AMIPS_jacobian_v2( const std::array<Scalar, 12>& arr, Vector3
 
 namespace
 {
-	struct sMagicNumbersV4
+	struct sMagicNumbersV3
 	{
 		const double m1 = magic1;
 		const double m2 = magic2;
@@ -87,7 +87,7 @@ namespace
 		const double minus3 = -3.0;
 		const double minusOneThird = -1.0 / 3.0;
 	};
-	static const alignas( 64 ) sMagicNumbersV4 s_magicv4;
+	static const alignas( 64 ) sMagicNumbersV3 s_magicv3;
 
 	class Vec
 	{
@@ -146,12 +146,12 @@ void floatTetWild::AMIPS_jacobian_v3( const std::array<Scalar, 12>& arr, Vector3
 	const Vec v3 = AvxMath::loadDouble3( &arr[ 9 ] );
 
 	const Vec t0 = v0 - v3;
-	const Vec magic1 = broadcast( s_magicv4.m1 );
-	const Vec magic2 = broadcast( s_magicv4.m2 );
+	const Vec magic1 = broadcast( s_magicv3.m1 );
+	const Vec magic2 = broadcast( s_magicv3.m2 );
 	const Vec t1 = magic1 * v0 - magic2 * v1 + magic1 * v3;
 
-	const Vec magic3 = broadcast( s_magicv4.m3 );
-	const Vec magic4 = broadcast( s_magicv4.m4 );
+	const Vec magic3 = broadcast( s_magicv3.m3 );
+	const Vec magic4 = broadcast( s_magicv3.m4 );
 	const Vec t2 = magic3 * v0 + magic3 * v1 - magic4 * v2 + magic3 * v3;
 
 	using namespace AvxMath;
@@ -159,13 +159,13 @@ void floatTetWild::AMIPS_jacobian_v3( const std::array<Scalar, 12>& arr, Vector3
 	const double s0 = vector3DotScalar( prod, t0 );
 	const double s1 = cubicRoot( pow2( s0 ) );
 
-	const Vec t3 = ( v1 - v2 ) * broadcast( s_magicv4.m5 );
+	const Vec t3 = ( v1 - v2 ) * broadcast( s_magicv3.m5 );
 	const Vec t4 = v1 + v2;
 
-	const Vec nm3 = broadcast( s_magicv4.minus3 );
+	const Vec nm3 = broadcast( s_magicv3.minus3 );
 	const Vec t6 = nm3 * v0 + v3 + t4;
 	double tmp = hadd12( v0 * t6, v1 * ( nm3 * v1 + v0 + v2 + v3 ), v2 * ( nm3 * v2 + v0 + v1 + v3 ), v3 * ( nm3 * v3 + v0 + t4 ) );
-	const double s2 = s_magicv4.minusOneThird * tmp / s0;
+	const double s2 = s_magicv3.minusOneThird * tmp / s0;
 
 	Vec res = vector3Cross( t0, t3 );
 	res -= prod;
