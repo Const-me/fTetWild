@@ -382,8 +382,8 @@ void floatTetWild::AMIPS_hessian_v4( const std::array<double, 12>& arr, Matrix3&
 	STORE( t12 );
 
 	const double t20_x = 0.666666666666667 * ( t07_z * t10_y - t07_y * t10_z + t08_y * t09_z - t08_z * t09_y );
-	const double t20_y = 0.666666666666667 * ( t07_z * t10_x - t07_x * t10_z + t08_x * t09_z - t08_z * t09_x );
-	const double t20_z = 0.666666666666667 * ( t07_x * t10_y - t07_y * t10_x + t08_y * t09_x - t08_x * t09_y );
+	const double t20_y = -0.666666666666667 * ( t07_x * t10_z - t07_z * t10_x + t08_z * t09_x - t08_x * t09_z );
+	const double t20_z = -0.666666666666667 * ( t07_y * t10_x - t07_x * t10_y + t08_x * t09_y - t08_y * t09_x );
 
 	const Vec t21 = add( vector3Cross( t08, t09 ), vector3Cross( t10, t07 ) );
 	STORE( t21 );
