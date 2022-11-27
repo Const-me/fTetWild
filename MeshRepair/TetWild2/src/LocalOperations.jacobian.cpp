@@ -67,9 +67,7 @@ void floatTetWild::AMIPS_jacobian_v2( const std::array<Scalar, 12>& arr, Vector3
 							   v1_y * ( v0_y + v3_y - 3 * v1_y + v2_y ) + v2_y * ( v0_y + v3_y + v1_y - 3 * v2_y ) + v0_x * ( -3 * v0_x + t4_x + v3_x ) +
 							   v1_x * ( v2_x + v0_x - 3 * v1_x + v3_x ) + v3_x * ( v0_x + t4_x - 3 * v3_x ) + v0_z * ( v3_z + t4_z - 3 * v0_z ) ) /
 							 helper_39;
-	result_0[ 0 ] =
-	  -helper_40 *
-	  ( v2_x - 3.0 * v0_x + helper_46 * ( t3_z * ( -v0_y + v3_y ) - t3_y * ( v3_z - v0_z ) - t1_z * t2_y + t1_y * t2_z ) + v1_x + v3_x );
+	result_0[ 0 ] = helper_40 * ( -v2_x + 3.0 * v0_x - helper_46 * ( -t3_z * t0_y + t3_y * t0_z - t1_z * t2_y + t1_y * t2_z ) - v1_x - v3_x );
 	result_0[ 1 ] = helper_40 * ( 3.0 * v0_y - v3_y - v1_y - v2_y + helper_46 * ( helper_23 + t0_z * t3_x - t0_x * t3_z ) );
 	result_0[ 2 ] = helper_40 * ( -v1_z - v2_z - v3_z + helper_46 * ( -t0_y * t3_x - helper_32 + helper_37 + t0_x * t3_y ) + 3.0 * v0_z );
 }
