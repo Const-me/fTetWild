@@ -88,52 +88,6 @@ namespace
 		const double minusOneThird = -1.0 / 3.0;
 	};
 	static const alignas( 64 ) sMagicNumbersV3 s_magicv3;
-
-	struct Vec
-	{
-		__m256d vec;
-
-		Vec( __m256d v )
-			: vec( v )
-		{
-		}
-		operator __m256d() const
-		{
-			return vec;
-		}
-		Vec operator+( __m256d v ) const
-		{
-			return Vec { _mm256_add_pd( vec, v ) };
-		}
-		Vec operator-( __m256d v ) const
-		{
-			return Vec { _mm256_sub_pd( vec, v ) };
-		}
-		Vec operator*( __m256d v ) const
-		{
-			return Vec { _mm256_mul_pd( vec, v ) };
-		}
-		void operator+=( __m256d v )
-		{
-			vec = _mm256_add_pd( vec, v );
-		}
-		void operator-=( __m256d v )
-		{
-			vec = _mm256_sub_pd( vec, v );
-		}
-		void operator*=( __m256d v )
-		{
-			vec = _mm256_mul_pd( vec, v );
-		}
-		void operator/=( __m256d v )
-		{
-			vec = _mm256_div_pd( vec, v );
-		}
-	};
-	inline __m256d broadcast( const double& r )
-	{
-		return _mm256_broadcast_sd( &r );
-	}
 }  // namespace
 
 void floatTetWild::AMIPS_jacobian_v3( const std::array<Scalar, 12>& arr, Vector3& result_0 )

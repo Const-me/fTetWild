@@ -20,6 +20,61 @@ namespace floatTetWild
 		v3 = _mm256_sub_pd( v3, bc );
 	}
 
+	// Broadcast a scalar from memory to all lanes of the vector
+	inline __m256d broadcast( const double& r )
+	{
+		return _mm256_broadcast_sd( &r );
+	}
+
+	// A wrapper around __m256d implementing arithmetic operators
+	// The only reason for a separate structure - neither gcc or clang support operators outside of classes.
+	// For VC++ it's possible to define these operators directly on the __m256d type
+	struct Vec
+	{
+		__m256d vec;
+
+		Vec( __m256d v )
+			: vec( v )
+		{
+		}
+		operator __m256d() const
+		{
+			return vec;
+		}
+		Vec operator+( __m256d v ) const
+		{
+			return Vec { _mm256_add_pd( vec, v ) };
+		}
+		Vec operator-( __m256d v ) const
+		{
+			return Vec { _mm256_sub_pd( vec, v ) };
+		}
+		Vec operator*( __m256d v ) const
+		{
+			return Vec { _mm256_mul_pd( vec, v ) };
+		}
+		Vec operator/( __m256d v ) const
+		{
+			return Vec { _mm256_div_pd( vec, v ) };
+		}
+		void operator+=( __m256d v )
+		{
+			vec = _mm256_add_pd( vec, v );
+		}
+		void operator-=( __m256d v )
+		{
+			vec = _mm256_sub_pd( vec, v );
+		}
+		void operator*=( __m256d v )
+		{
+			vec = _mm256_mul_pd( vec, v );
+		}
+		void operator/=( __m256d v )
+		{
+			vec = _mm256_div_pd( vec, v );
+		}
+	};
+
 	// Add 12 numbers in XYZ lanes of 4 vectors
 	inline double hadd12( __m256d a, __m256d b, __m256d c, __m256d d )
 	{
@@ -44,23 +99,23 @@ namespace floatTetWild
 #ifdef __AVX2__
 	inline __m256d permute_yxx( __m256d vec )
 	{
-		return _mm256_permute4x64_pd( vec, _MM_SHUFFLE( 3, 0, 0, 1 ) );	// yxxw
+		return _mm256_permute4x64_pd( vec, _MM_SHUFFLE( 3, 0, 0, 1 ) );	 // yxxw
 	}
 	inline __m256d permute_zzy( __m256d vec )
 	{
-		return _mm256_permute4x64_pd( vec, _MM_SHUFFLE( 3, 1, 2, 2 ) );	// zzyw
+		return _mm256_permute4x64_pd( vec, _MM_SHUFFLE( 3, 1, 2, 2 ) );	 // zzyw
 	}
 #else
 	inline __m256d permute_yxx( __m256d vec )
 	{
 		const __m128d xy = _mm256_castpd256_pd128( vec );
 		const __m128d yx = _mm_permute_pd( xy, _MM_SHUFFLE2( 0, 1 ) );
-		return _mm256_setr_m128d( yx, xy );	// yxxy
+		return _mm256_setr_m128d( yx, xy );	 // yxxy
 	}
 	inline __m256d permute_zzy( __m256d vec )
 	{
 		const __m256d zwxy = _mm256_permute2f128_pd( vec, vec, 1 );
-		return _mm256_permute_pd( zwxy, 0b1100 );	// zzyy
+		return _mm256_permute_pd( zwxy, 0b1100 );  // zzyy
 	}
 #endif	// __AVX2__
 
