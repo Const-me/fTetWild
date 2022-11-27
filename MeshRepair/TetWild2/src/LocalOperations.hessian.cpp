@@ -336,35 +336,32 @@ void floatTetWild::AMIPS_hessian_v4( const std::array<double, 12>& arr, Matrix3&
 	Vec v3 = AvxMath::loadDouble3( &arr[ 9 ] );
 	translateToBarycenter( v0.vec, v1.vec, v2.vec, v3.vec, _mm256_set1_pd( 0.25 ) );
 
-	const __m256d m1 = broadcast( s_magic.m1 );
-	const __m256d t00 = mul( m1, v0 );
-	const __m256d t01 = mul( m1, v3 );
+	const Vec m1 = broadcast( s_magic.m1 );
+	const Vec t00 = m1 * v0;
+	const Vec t01 = m1 * v3;
 
-	const __m256d m2 = broadcast( s_magic.m2 );
-	const __m256d t02 = mul( m2, v1 );
+	const Vec t02 = v1 * broadcast( s_magic.m2 );
 
-	const __m256d m3 = broadcast( s_magic.m3 );
-	const __m256d t03 = mul( m3, v0 );
-	const __m256d t04 = mul( m3, v1 );
-	const __m256d t05 = mul( m3, v3 );
+	const Vec m3 = broadcast( s_magic.m3 );
+	const Vec t03 = m3 * v0;
+	const Vec t04 = m3 * v1;
+	const Vec t05 = m3 * v3;
 
-	const __m256d m4 = broadcast( s_magic.m4 );
-	const __m256d t06 = mul( m4, v2 );
-
+	const Vec t06 = v2 * broadcast( s_magic.m4 );
 	STORE( v1 );
 
-	const __m256d t07 = sub( v0, v3 );
+	const Vec t07 = v0 - v3;
 	STORE( t07 );
 
-	const __m256d t08 = add( sub( t00, t02 ), t01 );
+	const Vec t08 = t00 - t02 + t01;
 	STORE( t08 );
 
-	const __m256d t09 = add( sub( add( t03, t04 ), t06 ), t05 );
+	const Vec t09 = t03 + t04 - t06 + t05;
 	STORE( t09 );
 
 	using namespace AvxMath;
-	const __m256d cp = vector3Cross( t08, t09 );
-	const __m256d prod = mul( t07, cp );
+	const Vec cp = vector3Cross( t08, t09 );
+	const Vec prod = t07 * cp;
 
 	const double st0 = vector3HorizontalSum( prod );
 	const double st1 = pow2( st0 );
@@ -375,30 +372,29 @@ void floatTetWild::AMIPS_hessian_v4( const std::array<double, 12>& arr, Matrix3&
 	const double st5 = -1.0 / st0;
 	const double st6 = st5 / root;
 
-	const __m256d m5 = broadcast( s_magic.m5 );
-	const __m256d t10 = mul( m5, sub( v1, v2 ) );
+	const Vec t10 = ( v1 - v2 ) * broadcast( s_magic.m5 );
 	STORE( t10 );
 
-	const double product1 = hadd12( mul( v0, v0 ), mul( v1, v1 ), mul( v2, v2 ), mul( v3, v3 ) ) * -2.0;
+	const double product1 = hadd12( v0 * v0, v1 * v1, v2 * v2, v3 * v3 ) * -2.0;
 	const double st7 = st4 * product1;
 
-	const __m256d t12 = mul( v0, _mm256_set1_pd( -4.0 ) );
+	const Vec t12 = v0 * _mm256_set1_pd( -4.0 );
 	STORE( t12 );
 
-	const __m256d t16 = sub( v3, v0 );
+	const Vec t16 = v3 - v0;
 	STORE( t16 );
 
-	const __m256d t17 = sub( sub( t02, t00 ), t01 );
+	const Vec t17 = t02 - t00 - t01;
 	STORE( t17 );
 
-	const __m256d t18 = vectorNegate( add( sub( add( t03, t04 ), t06 ), t05 ) );
+	const Vec t18 = vectorNegate( t03 + t04 - t06 + t05 );
 	STORE( t18 );
 
 	const double t20_x = 0.666666666666667 * ( -t10_y * t16_z + t10_z * t16_y + t17_y * t18_z - t17_z * t18_y );
 	const double t20_y = 0.666666666666667 * ( t08_x * t09_z - t08_z * t09_x + t07_z * t10_x - t07_x * t10_z );
 	const double t20_z = 0.666666666666667 * ( -t08_x * t09_y + t08_y * t09_x + t07_x * t10_y - t07_y * t10_x );
 
-	const __m256d t21 = add( vector3Cross( t16, t10 ), vector3Cross( t17, t18 ) );
+	const Vec t21 = add( vector3Cross( t16, t10 ), vector3Cross( t17, t18 ) );
 	STORE( t21 );
 
 	const double helper_104 = -0.444444444444444 * t21_y * t21_x * product1 * st5 + t12_x * t20_y - t12_y * t20_x;
@@ -415,7 +411,7 @@ void floatTetWild::AMIPS_hessian_v4( const std::array<double, 12>& arr, Matrix3&
 	const double helper_111 = t21_x * helper_110 + t20_z * t12_x - t12_z * t20_x;
 	const double helper_118 = t21_y * helper_110 + t20_z * t12_y + t12_z * t20_y;
 
-	const __m256d t24 = mul( t21, t21 );
+	const Vec t24 = t21 * t21;
 	STORE( t24 );
 
 	const double diag_x = -t24_x * ( helper_83 + 0.666666666666667 * st7 ) + t12_x * t21_x * st2 + 3.0;
