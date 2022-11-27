@@ -16,6 +16,7 @@ namespace AvxMath
 		return _mm256_extractf128_pd( vec, 1 );
 	}
 
+	// Compute horizontal sum of the 3D vector
 	inline double vector3HorizontalSum( __m256d v )
 	{
 		__m128d xy = low2( v );
@@ -230,16 +231,19 @@ namespace AvxMath
 	{
 		return _mm256_cvtsd_f64( vec );
 	}
+
 	// Extract Y lane from the vector
 	inline double vectorGetY( __m256d vec )
 	{
 		return _mm_cvtsd_f64( _mm_permute_pd( low2( vec ), 0b11 ) );
 	}
+
 	// Extract Z lane from the vector
 	inline double vectorGetZ( __m256d vec )
 	{
 		return _mm_cvtsd_f64( high2( vec ) );
 	}
+
 	// Extract W lane from the vector
 	inline double vectorGetW( __m256d vec )
 	{
@@ -247,5 +251,4 @@ namespace AvxMath
 		high = _mm_permute_pd( high, 0b11 );
 		return _mm_cvtsd_f64( high );
 	}
-
 }  // namespace AvxMath

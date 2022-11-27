@@ -23,9 +23,11 @@ namespace floatTetWild
 	// Add 12 numbers in XYZ lanes of 4 vectors
 	inline double hadd12( __m256d a, __m256d b, __m256d c, __m256d d )
 	{
+		// Compute vertical sum first
 		const __m256d ab = _mm256_add_pd( a, b );
 		const __m256d cd = _mm256_add_pd( c, d );
 		const __m256d v = _mm256_add_pd( ab, cd );
+		// Now add the 3 numbers
 		return vector3HorizontalSum( v );
 	}
 
