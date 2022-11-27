@@ -89,11 +89,10 @@ namespace
 	};
 	static const alignas( 64 ) sMagicNumbersV3 s_magicv3;
 
-	class Vec
+	struct Vec
 	{
 		__m256d vec;
 
-	  public:
 		Vec( __m256d v )
 			: vec( v )
 		{
@@ -175,14 +174,67 @@ void floatTetWild::AMIPS_jacobian_v3( const std::array<Scalar, 12>& arr, Vector3
 	storeDouble3( result_0.data(), res );
 }
 
+namespace
+{
+	struct sMagicNumbersV4
+	{
+		const double fourth = 0.25;
+		const double m1 = magic1;
+		const double m2 = magic2;
+		const double m3 = magic3;
+		const double m4 = magic4;
+		const double m5 = magic5;
+		const double neg4 = -4;
+		const double ft = 4.0 / 3.0;
+	};
+	static const alignas( 64 ) sMagicNumbersV4 s_magicv4;
+
+}  // namespace
+
+void floatTetWild::AMIPS_jacobian_v4( const std::array<Scalar, 12>& arr, Vector3& result_0 )
+{
+	// Load slices of 3 elements into 4 vectors
+	Vec v0 = _mm256_loadu_pd( &arr[ 0 ] );
+	Vec v1 = _mm256_loadu_pd( &arr[ 3 ] );
+	Vec v2 = _mm256_loadu_pd( &arr[ 6 ] );
+	Vec v3 = AvxMath::loadDouble3( &arr[ 9 ] );
+	translateToBarycenter( v0.vec, v1.vec, v2.vec, v3.vec, broadcast( s_magicv4.fourth ) );
+
+	const Vec t0 = v0 - v3;
+	const Vec magic1 = broadcast( s_magicv4.m1 );
+	const Vec magic2 = broadcast( s_magicv4.m2 );
+	const Vec t1 = magic1 * v0 - magic2 * v1 + magic1 * v3;
+
+	const Vec magic3 = broadcast( s_magicv4.m3 );
+	const Vec magic4 = broadcast( s_magicv4.m4 );
+	const Vec t2 = magic3 * v0 + magic3 * v1 - magic4 * v2 + magic3 * v3;
+
+	using namespace AvxMath;
+	const Vec prod = vector3Cross( t1, t2 );
+	const double s0 = vector3DotScalar( prod, t0 );
+	const double s1 = cubicRoot( pow2( s0 ) );
+
+	const Vec t3 = ( v1 - v2 ) * broadcast( s_magicv4.m5 );
+	const Vec t6 = v0 * broadcast( s_magicv4.neg4 );
+	double tmp = hadd12( v0 * v0, v1 * v1, v2 * v2, v3 * v3 );
+	const double s2 = s_magicv4.ft * tmp / s0;
+
+	Vec res = vector3Cross( t0, t3 );
+	res -= prod;
+	res *= _mm256_set1_pd( s2 );
+	res -= t6;
+	res /= _mm256_set1_pd( s1 );
+	storeDouble3( result_0.data(), res );
+}
+
 void floatTetWild::AMIPS_jacobian( const std::array<Scalar, 12>& T, Vector3& result_0 )
 {
-#if 0
-	AMIPS_jacobian_v3( T, result_0 );
+#if 1
+	AMIPS_jacobian_v4( T, result_0 );
 #else
 	Vector3 resOld, resNew;
 	AMIPS_jacobian_v1( T, resOld );
-	AMIPS_jacobian_v3( T, resNew );
+	AMIPS_jacobian_v4( T, resNew );
 	Vector3 diff = resNew - resOld;
 	result_0 = resOld;
 #endif
