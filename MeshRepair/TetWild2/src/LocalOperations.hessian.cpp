@@ -78,20 +78,6 @@ namespace
 	const double v##_x = extract<0>( v ); \
 	const double v##_y = extract<1>( v ); \
 	const double v##_z = extract<2>( v );
-
-#ifdef __AVX2__
-	inline __m256d permute_yxx( __m256d vec )
-	{
-		return _mm256_permute4x64_pd( vec, _MM_SHUFFLE( 3, 0, 0, 1 ) );
-	}
-	inline __m256d permute_zzy( __m256d vec )
-	{
-		return _mm256_permute4x64_pd( vec, _MM_SHUFFLE( 3, 1, 2, 2 ) );
-	}
-#else
-#error Not currently implemented
-#endif	// __AVX2__
-
 }  // namespace
 
 void floatTetWild::AMIPS_hessian_v2( const std::array<double, 12>& arr, Matrix3& result_0 )
@@ -250,41 +236,6 @@ void floatTetWild::AMIPS_hessian_v2( const std::array<double, 12>& arr, Matrix3&
 	result_0( 2, 1 ) = st6 * ( helper_118 + helper_119 * t20_y );
 	result_0( 2, 2 ) = st3 * diag_z;
 }
-
-namespace
-{
-	inline __m256d customProduct( __m256d a, __m256d b )
-	{
-		// The normal cross product formula is a.yzx * b.zxy - a.zxy * b.yzx
-		// That mysterios Hessian formula instead computes a.yxx * b.zzy - a.zzy * b.yxx, systematically so, in quite a few places
-		const __m256d a0 = permute_yxx( a );
-		const __m256d b0 = permute_zzy( b );
-		const __m256d a1 = permute_zzy( a );
-		const __m256d b1 = permute_yxx( b );
-		const __m256d cp1 = mul( a0, b0 );
-		const __m256d cp2 = mul( a1, b1 );
-		return sub( cp1, cp2 );
-	}
-
-	// Add 12 numbers in XYZ lanes of 4 vectors
-	inline double hadd12( __m256d a, __m256d b, __m256d c, __m256d d )
-	{
-		const __m256d ab = _mm256_add_pd( a, b );
-		const __m256d cd = _mm256_add_pd( c, d );
-		const __m256d v = _mm256_add_pd( ab, cd );
-		return AvxMath::vector3HorizontalSum( v );
-	}
-
-	// Compute x - y + z
-	inline double horizontalAddSub( __m256d v )
-	{
-		__m128d z = _mm256_extractf128_pd( v, 1 );
-		__m128d xy = _mm256_castpd256_pd128( v );
-		xy = _mm_sub_sd( xy, _mm_unpackhi_pd( xy, xy ) );
-		xy = _mm_add_sd( xy, z );
-		return _mm_cvtsd_f64( xy );
-	}
-}  // namespace
 
 void floatTetWild::AMIPS_hessian_v3( const std::array<double, 12>& arr, Matrix3& result_0 )
 {
