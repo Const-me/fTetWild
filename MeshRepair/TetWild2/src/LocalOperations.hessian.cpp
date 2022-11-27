@@ -392,11 +392,11 @@ void floatTetWild::AMIPS_hessian_v4( const std::array<double, 12>& arr, Matrix3&
 	const __m256d t09 = add( sub( add( t03, t04 ), t06 ), t05 );
 	STORE( t09 );
 
-	const __m256d cp = customProduct( t08, t09 );
-
+	using namespace AvxMath;
+	const __m256d cp = vector3Cross( t08, t09 );
 	const __m256d prod = mul( t07, cp );
 
-	const double st0 = horizontalAddSub( prod );
+	const double st0 = vector3HorizontalSum( prod );
 	const double st1 = pow2( st0 );
 	const double st2 = 1.33333333333333 / st0;
 	const double root = cubicRoot( st1 );
