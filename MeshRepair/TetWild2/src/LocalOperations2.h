@@ -24,4 +24,6 @@ namespace floatTetWild
 
 	// Vectorized version which translates vertices to barycenter, for better numerical accuracy
 	void AMIPS_hessian_v4( const std::array<Scalar, 12>& T, Matrix3& result_0 );
+
+	void AMIPS_jacobian_v2( const std::array<Scalar, 12>& T, Vector3& result_0 );
 }

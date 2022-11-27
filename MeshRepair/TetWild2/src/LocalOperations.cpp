@@ -962,7 +962,7 @@ Scalar floatTetWild::AMIPS_energy_aux( const std::array<Scalar, 12>& T )
 #endif
 }
 
-void floatTetWild::AMIPS_jacobian( const std::array<Scalar, 12>& T, Vector3& result_0 )
+void floatTetWild::AMIPS_jacobian_v1( const std::array<Scalar, 12>& T, Vector3& result_0 )
 {
 	Scalar helper_0[ 12 ];
 	helper_0[ 0 ] = T[ 0 ];
