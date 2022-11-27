@@ -384,38 +384,34 @@ void floatTetWild::AMIPS_hessian_v4( const std::array<double, 12>& arr, Matrix3&
 	const Vec t21 = add( vector3Cross( t08, t09 ), vector3Cross( t10, t07 ) );
 	STORE( t21 );
 
-	const Vec t20 = t21 * _mm256_set1_pd( 0.666666666666667 );
-	STORE( t20 );
-
-	const double helper_104 = -0.444444444444444 * t21_y * t21_x * product1 * st5 - t12_x * t20_y - t12_y * t20_x;
+	const double helper_104 = ( -4.0 / 9 ) * t21_y * t21_x * product1 * st5 - t12_x * t21_y * ( 6.0 / 9 ) - t12_y * t21_x * ( 6.0 / 9 );
 
 	const double helper_105 = 1.85037170770859e-17 * product1;
 
 	const double st8 = product1 * st5;
-	const double t25_x = t21_x * st8;
-	const double t25_y = t21_y * st8;
-	const double t25_z = t21_z * st8;
+	const Vec t25 = t21 * _mm256_set1_pd( st8 );
+	STORE( t25 );
 
-	const double helper_83 = 0.444444444444444 * st4 * product1;
-	const double helper_110 = -0.444444444444444 * t21_z * product1 * st5;
-	const double helper_111 = t21_x * helper_110 - t20_z * t12_x - t12_z * t20_x;
-	const double helper_118 = t21_y * helper_110 - t20_z * t12_y - t12_z * t20_y;
+	const double helper_83 = ( 4.0 / 9 ) * st4 * product1;
+	const double helper_110 = ( -4.0 / 9 ) * t21_z * product1 * st5;
+	const double helper_111 = t21_x * helper_110 - t21_z * t12_x * ( 6.0 / 9 ) - t12_z * t21_x * ( 6.0 / 9 );
+	const double helper_118 = t21_y * helper_110 - t21_z * t12_y * ( 6.0 / 9 ) - t12_z * t21_y * ( 6.0 / 9 );
 
 	const Vec t24 = t21 * t21;
 	STORE( t24 );
 
-	const double diag_x = -t24_x * ( helper_83 + 0.666666666666667 * st7 ) + t12_x * t21_x * st2 + 3.0;
-	const double diag_y = -t24_y * helper_83 + t12_y * t21_y * st2 - t21_y * st7 * t20_y + 3.0;
-	const double diag_z = -t24_z * ( 1.11111111111111 * st7 ) + t12_z * t21_z * st2 + 3.0;
+	const double diag_x = -t24_x * ( helper_83 + ( 6.0 / 9 ) * st7 ) + t12_x * t21_x * st2 + 3.0;
+	const double diag_y = -t24_y * helper_83 + t12_y * t21_y * st2 - t21_y * st7 * t21_y * ( 6.0 / 9 ) + 3.0;
+	const double diag_z = -t24_z * ( ( 10.0 / 9 ) * st7 ) + t12_z * t21_z * st2 + 3.0;
 
 	result_0( 0, 0 ) = st3 * diag_x;
-	result_0( 0, 1 ) = st6 * ( helper_104 - helper_105 * v1_z - t25_x * t20_y );
-	result_0( 0, 2 ) = st6 * ( helper_111 - t25_x * t20_z );
-	result_0( 1, 0 ) = st6 * ( helper_104 - t25_y * t20_x );
+	result_0( 0, 1 ) = st6 * ( helper_104 - helper_105 * v1_z - t25_x * t21_y * ( 6.0 / 9 ) );
+	result_0( 0, 2 ) = st6 * ( helper_111 - t25_x * t21_z * ( 6.0 / 9 ) );
+	result_0( 1, 0 ) = st6 * ( helper_104 - t25_y * t21_x * ( 6.0 / 9 ) );
 	result_0( 1, 1 ) = st3 * diag_y;
-	result_0( 1, 2 ) = st6 * ( -helper_105 * v1_x - t20_z * t25_y + helper_118 );
-	result_0( 2, 0 ) = st6 * ( -helper_105 * v1_y + helper_111 - t25_z * t20_x );
-	result_0( 2, 1 ) = st6 * ( helper_118 - t25_z * t20_y );
+	result_0( 1, 2 ) = st6 * ( -helper_105 * v1_x - t21_z * t25_y * ( 6.0 / 9 ) + helper_118 );
+	result_0( 2, 0 ) = st6 * ( -helper_105 * v1_y + helper_111 - t25_z * t21_x * ( 6.0 / 9 ) );
+	result_0( 2, 1 ) = st6 * ( helper_118 - t25_z * t21_y * ( 6.0 / 9 ) );
 	result_0( 2, 2 ) = st3 * diag_z;
 }
 
