@@ -397,15 +397,16 @@ void floatTetWild::AMIPS_hessian_v4( const std::array<double, 12>& arr, Matrix3&
 	const double diag_z = -t24_z * st9 + t12_z * t21_z * st2 + 3.0;
 
 	const Vec t27 = v1 * _mm256_set1_pd( scaledProduct );
-	STORE( t27 );
+	const Vec t28 = t26 - t27;
+	STORE( t28 );
 
 	result_0( 0, 0 ) = st3 * diag_x;
-	result_0( 0, 1 ) = st6 * ( t26_z - t21_y * t25_x * ( 6.0 / 9 ) - t27_z );
+	result_0( 0, 1 ) = st6 * ( t28_z - t21_y * t25_x * ( 6.0 / 9 ) );
 	result_0( 0, 2 ) = st6 * ( t26_y - t21_z * t25_x * ( 6.0 / 9 ) );
 	result_0( 1, 0 ) = st6 * ( t26_z - t21_x * t25_y * ( 6.0 / 9 ) );
 	result_0( 1, 1 ) = st3 * diag_y;
-	result_0( 1, 2 ) = st6 * ( t26_x - t21_z * t25_y * ( 6.0 / 9 ) - t27_x );
-	result_0( 2, 0 ) = st6 * ( t26_y - t21_x * t25_z * ( 6.0 / 9 ) - t27_y );
+	result_0( 1, 2 ) = st6 * ( t28_x - t21_z * t25_y * ( 6.0 / 9 ) );
+	result_0( 2, 0 ) = st6 * ( t28_y - t21_x * t25_z * ( 6.0 / 9 ) );
 	result_0( 2, 1 ) = st6 * ( t26_x - t21_y * t25_z * ( 6.0 / 9 ) );
 	result_0( 2, 2 ) = st3 * diag_z;
 }
