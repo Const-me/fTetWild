@@ -402,7 +402,6 @@ void floatTetWild::AMIPS_hessian_v4( const std::array<double, 12>& arr, Matrix3&
 	const double scaledProduct = 1.85037170770859e-17 * product1;
 
 	const Vec t25 = t21 * _mm256_set1_pd( product1 * st5 );
-	STORE( t25 );
 
 	const double st8 = product1 * ( 4.0 / 9 ) / st0;
 	const Vec t21_yxx = permute_yxx( t21 );
@@ -411,7 +410,6 @@ void floatTetWild::AMIPS_hessian_v4( const std::array<double, 12>& arr, Matrix3&
 	const Vec t12_zzy = permute_zzy( t12 );
 	const Vec _69 = broadcast( s_magic4._69 );
 	const Vec t26 = t21_yxx * t21_zzy * _mm256_set1_pd( st8 ) - ( t12_yxx * t21_zzy + t12_zzy * t21_yxx ) * _69;
-	STORE( t26 );
 
 	const Vec t24 = t21 * t21;
 
@@ -425,18 +423,17 @@ void floatTetWild::AMIPS_hessian_v4( const std::array<double, 12>& arr, Matrix3&
 
 	const Vec t27 = v1 * _mm256_set1_pd( scaledProduct );
 	const Vec t28 = t26 - t27;
-	STORE( t28 );
-
 	const Vec t29 = t21 * _69;
-	STORE( t29 );
+	__m256d t30, t31;
+	crossProductPieces( t25, t29, t30, t31 );
 
-	mat( 1, 2 ) = st6 * ( t28_x - t29_z * t25_y );
-	mat( 2, 0 ) = st6 * ( t28_y - t29_x * t25_z );
-	mat( 0, 1 ) = st6 * ( t28_z - t29_y * t25_x );
-
-	mat( 2, 1 ) = st6 * ( t26_x - t29_y * t25_z );
-	mat( 0, 2 ) = st6 * ( t26_y - t29_z * t25_x );
-	mat( 1, 0 ) = st6 * ( t26_z - t29_x * t25_y );
+	Vec t32 = t28 - t30;
+	Vec t33 = t26 - t31;
+	const Vec t34 = _mm256_set1_pd( st6 );
+	t32 *= t34;
+	t33 *= t34;
+	scatter( t32, mat( 1, 2 ), mat( 2, 0 ), mat( 0, 1 ) );
+	scatter( t33, mat( 2, 1 ), mat( 0, 2 ), mat( 1, 0 ) );
 }
 
 void floatTetWild::AMIPS_hessian( const std::array<Scalar, 12>& T, Matrix3& result_0 )
