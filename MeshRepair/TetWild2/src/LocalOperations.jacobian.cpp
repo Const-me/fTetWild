@@ -37,9 +37,9 @@ void floatTetWild::AMIPS_jacobian_v2( const std::array<Scalar, 12>& arr, Vector3
 	const double v3_y = arr[ 10 ];
 	const double v3_z = arr[ 11 ];
 
-	const double helper_38 = v0_x - v3_x;
-	const double helper_3 = v0_y - v3_y;
-	const double helper_24 = v0_z - v3_z;
+	const double t0_x = v0_x - v3_x;
+	const double t0_y = v0_y - v3_y;
+	const double t0_z = v0_z - v3_z;
 
 	const double helper_7 = magic1 * v0_x - magic2 * v1_x + magic1 * v3_x;
 	const double helper_9 = magic3 * v0_z;
@@ -64,7 +64,7 @@ void floatTetWild::AMIPS_jacobian_v2( const std::array<Scalar, 12>& arr, Vector3
 	const double helper_35 = magic1 * v3_y;
 	const double helper_36 = helper_33 - helper_34 + helper_35;
 	const double helper_37 = helper_22 * helper_36;
-	const double helper_39 = helper_23 * helper_3 - helper_24 * ( helper_32 - helper_37 ) - helper_38 * ( helper_16 * helper_36 - helper_20 * helper_31 );
+	const double helper_39 = helper_23 * t0_y - t0_z * ( helper_32 - helper_37 ) - t0_x * ( helper_16 * helper_36 - helper_20 * helper_31 );
 	const double helper_40 = 1.0 / cubicRoot( pow2( helper_39 ) );
 	const double helper_41 = magic5 * v1_z - magic5 * v2_z;
 	const double helper_42 = magic5 * v1_y - magic5 * v2_y;
@@ -85,8 +85,8 @@ void floatTetWild::AMIPS_jacobian_v2( const std::array<Scalar, 12>& arr, Vector3
 												 ( -helper_17 + helper_18 - helper_19 ) * ( -helper_25 - helper_27 + helper_29 - helper_30 ) +
 												 ( -helper_33 + helper_34 - helper_35 ) * ( -helper_11 + helper_13 - helper_15 - helper_9 ) ) +
 								   v1_x + v3_x );
-	result_0[ 1 ] = helper_40 * ( 3.0 * v0_y - v3_y - v1_y - v2_y + helper_46 * ( helper_23 + helper_24 * helper_47 - helper_38 * helper_41 ) );
-	result_0[ 2 ] = helper_40 * ( -v1_z - v2_z - v3_z + helper_46 * ( -helper_3 * helper_47 - helper_32 + helper_37 + helper_38 * helper_42 ) + 3.0 * v0_z );
+	result_0[ 1 ] = helper_40 * ( 3.0 * v0_y - v3_y - v1_y - v2_y + helper_46 * ( helper_23 + t0_z * helper_47 - t0_x * helper_41 ) );
+	result_0[ 2 ] = helper_40 * ( -v1_z - v2_z - v3_z + helper_46 * ( -t0_y * helper_47 - helper_32 + helper_37 + t0_x * helper_42 ) + 3.0 * v0_z );
 }
 
 void floatTetWild::AMIPS_jacobian( const std::array<Scalar, 12>& T, Vector3& result_0 )
