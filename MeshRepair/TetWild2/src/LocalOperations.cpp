@@ -858,12 +858,17 @@ namespace
 		for( int j = 0; j < 12; j++ )
 			r_T[ j ] = T[ j ];
 
+		const triwild::Rational d63 = r_T[ 6 ] - r_T[ 3 ];
+		const triwild::Rational d30 = r_T[ 3 ] - r_T[ 0 ];
+		const triwild::Rational d60 = r_T[ 6 ] - r_T[ 0 ];
+		const triwild::Rational d93 = r_T[ 9 ] - r_T[ 3 ];
+		const triwild::Rational d96 = r_T[ 9 ] - r_T[ 6 ];
 		// clang-format off
 		triwild::Rational tmp =
-		  ( ( r_T[ 6 ] - r_T[ 3 ] ) * r_T[ 2 ] + ( r_T[ 3 ] - r_T[ 0 ] ) * r_T[ 8 ] - ( r_T[ 6 ] - r_T[ 0 ] ) * r_T[ 5 ] ) * r_T[ 10 ] -
-		  ( ( r_T[ 6 ] - r_T[ 3 ] ) * r_T[ 1 ] + ( r_T[ 3 ] - r_T[ 0 ] ) * r_T[ 7 ] - ( r_T[ 6 ] - r_T[ 0 ] ) * r_T[ 4 ] ) * r_T[ 11 ] +
-		  ( ( r_T[ 9 ] - r_T[ 3 ] ) * r_T[ 8 ] - ( r_T[ 9 ] - r_T[ 6 ] ) * r_T[ 5 ] ) * r_T[ 1 ] -
-		  ( ( r_T[ 9 ] - r_T[ 3 ] ) * r_T[ 7 ] - ( r_T[ 9 ] - r_T[ 6 ] ) * r_T[ 4 ] ) * r_T[ 2 ] +
+		  ( d63 * r_T[ 2 ] + d30 * r_T[ 8 ] - d60 * r_T[ 5 ] ) * r_T[ 10 ] -
+		  ( d63 * r_T[ 1 ] + d30 * r_T[ 7 ] - d60 * r_T[ 4 ] ) * r_T[ 11 ] +
+		  ( d93 * r_T[ 8 ] - d96 * r_T[ 5 ] ) * r_T[ 1 ] -
+		  ( d93 * r_T[ 7 ] - d96 * r_T[ 4 ] ) * r_T[ 2 ] +
 		  ( r_T[ 4 ] * r_T[ 8 ] - r_T[ 5 ] * r_T[ 7 ] ) * ( r_T[ 0 ] - r_T[ 9 ] );
 		// clang-format on
 		if( tmp == 0 )
