@@ -48,3 +48,5 @@ inline bool compareInt2( const E& a, const E& b )
 	e2 = _rotr64( e2, 32 );
 	return e1 < e2;
 }
+
+void dbgTestSolidAngles();

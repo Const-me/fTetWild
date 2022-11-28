@@ -184,6 +184,7 @@
     <ClCompile Include="Utils\Cbrt\cbrtHalleyMetamerist.cpp" />
     <ClCompile Include="Utils\AASort\AASort.cpp" />
     <ClCompile Include="Utils\AASort\AASortTranspose.cpp" />
+    <ClCompile Include="Utils\dbgTestSolidAngles.cpp" />
     <ClCompile Include="Utils\lowLevel.tests.cpp" />
     <ClCompile Include="Utils\TimeMeasure.cpp" />
     <ClCompile Include="Utils\Logger.cpp" />
