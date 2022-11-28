@@ -25,7 +25,7 @@ class TimeMeasure
 		return MeasureRaii { *this };
 	}
 
-	void logInfo( const Logger& log, double mulSeconds, const char* what ) const;
+	void logDebug( const Logger& log, double mulSeconds, const char* what ) const;
 };
 
 // A set of accumulators to measure some functions in this DLL
@@ -38,7 +38,7 @@ class TimeMeasures
 	TimeMeasures();
 
 	// Print collected counters to the log
-	void logInfo( const Logger& log ) const;
+	void logDebug( const Logger& log ) const;
 
 	// insert_triangles
 	TimeMeasure insertTriangles;

@@ -94,7 +94,7 @@ HRESULT meshRepairMain( MeshRepair::SourceMesh& rsi, MeshRepair::eGlobalFlags gl
 			get_surface( mesh, V_sf, F_sf );
 		}
 
-		mesh.times.logInfo( mesh.logger() );
+		mesh.times.logDebug( mesh.logger() );
 
 		using namespace ComLight;
 		if( 0 == ( parameters.flags & MeshRepair::eRepairFlags::DowncastMeshFp32 ) ) 

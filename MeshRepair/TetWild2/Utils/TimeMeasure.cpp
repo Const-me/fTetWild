@@ -79,7 +79,7 @@ namespace
 	}
 }  // namespace
 
-void TimeMeasure::logInfo( const Logger& log, double mulSeconds, const char* what ) const
+void TimeMeasure::logDebug( const Logger& log, double mulSeconds, const char* what ) const
 {
 	const size_t calls = count.load();
 
@@ -92,7 +92,7 @@ void TimeMeasure::logInfo( const Logger& log, double mulSeconds, const char* wha
 	totalTime = printSeconds( totalTime, &ut );
 	averageTime = printSeconds( averageTime, &ua );
 
-	log.logInfo( "%s: %g %s average, %zu calls, %g %s total", what, averageTime, ua, calls, totalTime, ut );
+	log.logDebug( "%s: %g %s average, %zu calls, %g %s total", what, averageTime, ua, calls, totalTime, ut );
 }
 
 TimeMeasures::TimeMeasures()
@@ -101,11 +101,11 @@ TimeMeasures::TimeMeasures()
 {
 }
 
-void TimeMeasures::logInfo( const Logger& log ) const
+void TimeMeasures::logDebug( const Logger& log ) const
 {
 	const double mul = computeMultiplier( constructedTsc, constructedQpc, log );
 
-#define LOG_ENTRY( F ) F.logInfo( log, mul, #F )
+#define LOG_ENTRY( F ) F.logDebug( log, mul, #F )
 
 	LOG_ENTRY( insertTriangles );
 	LOG_ENTRY( edgeSplitting );
