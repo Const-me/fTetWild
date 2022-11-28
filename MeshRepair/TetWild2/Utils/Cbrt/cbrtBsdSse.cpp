@@ -15,8 +15,6 @@ namespace
 		return (uint32_t)_mm_extract_epi32( iv, 1 );
 	}
 
-#define VECTOR_ROUNDING 0
-
 	// Some magic numbers used in the process
 	// Reordering these constants is guaranteed to break the implementation. Most of them are loaded two at a time, with 128-bit vector loads
 	struct sCbrtConstants
@@ -27,21 +25,10 @@ namespace
 		const double P2 = 1.621429720105354466140;			   // 0x3ff9f160, 0x4a49d6c2
 		const double P0 = 1.87595182427177009643;			   // 0x3ffe03e6, 0x0f61e692
 		const uint64_t denormMagic = ( 0x43500000ull << 32 );  // 2**54
-#if VECTOR_ROUNDING
-		const __m128i roundAdd = _mm_setr_epi64( 0x80000000, 0 );
-		const __m128i roundMask = _mm_setr_epi64( (int64_t)( 0xffffffffc0000000ULL ), 0 );
-#endif
 	};
 
-#if VECTOR_ROUNDING
-	// With these two extra vectors, we can round with memory operands.
-	// If the function is called often, the memory will be in L1D, can be faster than waiting for the latency of vmovq, two times in 2 directions of the
-	// movement
-	alignas( 16 ) static const sCbrtConstants cbrtConstants;
-#else
 	// Without two extra vectors all these constants fit in a single cache line, with 16 unused bytes.
 	alignas( 64 ) static const sCbrtConstants cbrtConstants;
-#endif
 }  // namespace
 
 
@@ -59,12 +46,8 @@ double __declspec( noinline ) LowLevel::cbrtBsdSse( double val )
 	constexpr uint32_t signBit = 0x80000000u;
 	const uint32_t sign = hx & signBit;
 
-#ifdef __AVX__
 	// Assuming BMI1 support: https://en.wikipedia.org/wiki/X86_Bit_manipulation_instruction_set#Supporting_CPUs
 	hx = _andn_u32( signBit, hx );
-#else
-	hx &= ( ~signBit );
-#endif
 
 	if( hx >= 0x7ff00000 )
 	{
@@ -132,15 +115,10 @@ double __declspec( noinline ) LowLevel::cbrtBsdSse( double val )
 
 	// Original code: u.bits = ( u.bits + 0x80000000 ) & 0xffffffffc0000000ULL;
 	vi = _mm_castpd_si128( t );
-#if VECTOR_ROUNDING
-	vi = _mm_add_epi64( vi, cbrtConstants.roundAdd );
-	vi = _mm_and_si128( vi, cbrtConstants.roundMask );
-#else
 	uint64_t bits = (uint64_t)_mm_cvtsi128_si64( vi );
 	bits += 0x80000000;	// Same value as signBit couple pages above, VC++ is smart enough to keep that number in a register
 	bits &= 0xFFFFFFFFC0000000ull;
 	vi = _mm_cvtsi64_si128( (int64_t)bits );
-#endif
 	t = _mm_castsi128_pd( vi );
 
 	// One step Newton iteration to 53 bits with error < 0.667 ulps
