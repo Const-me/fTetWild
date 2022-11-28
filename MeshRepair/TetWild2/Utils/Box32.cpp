@@ -246,6 +246,24 @@ namespace
 		v = _mm256_or_ps( v, p );
 		return v;
 	}
+
+	// Slightly faster equivalent of _mm256_dp_ps( v, v, 0b01111111 )
+	__forceinline __m256 len2( __m256 v )
+	{
+#if 1
+		// On Zen 3, vdpps has 15 cycles latency and 7 micro-ops
+		// vmulps = 3 cycles, vpermilps = 3 cycles, vaddps = 3 cycles, so this version is hopefully 12 cycles combined, and 6 micro-ops
+		v = _mm256_mul_ps( v, v );
+		const __m256 x = _mm256_permute_ps( v, _MM_SHUFFLE( 0, 0, 0, 0 ) );
+		const __m256 y = _mm256_permute_ps( v, _MM_SHUFFLE( 1, 1, 1, 1 ) );
+		const __m256 z = _mm256_permute_ps( v, _MM_SHUFFLE( 2, 2, 2, 2 ) );
+		const __m256 xy = _mm256_add_ps( x, y );
+		return _mm256_add_ps( xy, z );
+#else
+		// If your computer has Intel CPU instead of AMD, try to use this version instead, and profile.
+		return _mm256_dp_ps( v, v, 0b01111111 );
+#endif
+	}
 }  // namespace
 
 __m256 Box32::pointBoxSignedSquaredDistanceX2( const Box32& b1, const Box32& b2, __m256 pos )
@@ -272,7 +290,7 @@ __m256 Box32::pointBoxSignedSquaredDistanceX2( const Box32& b1, const Box32& b2,
 
 	// ---- Compute positive distance for the outside case ----
 	__m256 resOut = _mm256_and_ps( dist, outsideMaskVector );
-	resOut = _mm256_dp_ps( resOut, resOut, 0b01111111 );
+	resOut = len2( resOut );
 
 	// ---- Compute negative distance for the inside case ----
 	__m256 resIn = horizontalMinimum3( dist );
