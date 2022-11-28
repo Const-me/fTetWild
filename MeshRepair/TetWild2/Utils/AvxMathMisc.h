@@ -85,13 +85,9 @@ namespace AvxMath
 		y = _mm256_setr_m128d( ayby, cyy );						 // a.y, b.y, cy, cy
 	}
 
-	// Compute cross product between two 3D vectors
-	// The unused W lane is set to 0 unless there's INF or NAN in W lanes of the inputs
-	inline __m256d vector3Cross( __m256d a, __m256d b )
+	// Compute two pieces of the cross-product; the complete cross product is equal to ( lhs - rhs )
+	__forceinline void crossProductPieces( __m256d a, __m256d b, __m256d& lhs, __m256d& rhs )
 	{
-		// The formula is a.yzx * b.zxy - a.zxy * b.yzx
-		// https://en.wikipedia.org/wiki/Cross_product#Coordinate_notation
-
 #ifdef __AVX2__
 		const __m256d a1 = _mm256_permute4x64_pd( a, _MM_SHUFFLE( 3, 0, 2, 1 ) );  // a.yzxw
 		const __m256d b2 = _mm256_permute4x64_pd( b, _MM_SHUFFLE( 3, 1, 0, 2 ) );  // b.zxyw
@@ -108,7 +104,19 @@ namespace AvxMath
 		a1 = _mm256_permute_pd( a1, 0b0110 );					// a.yzxw
 		b1 = _mm256_permute_pd( b1, 0b0110 );					// b.yzxw
 #endif
-		return _mm256_sub_pd( _mm256_mul_pd( a1, b2 ), _mm256_mul_pd( a2, b1 ) );
+		lhs = _mm256_mul_pd( a1, b2 );
+		rhs = _mm256_mul_pd( a2, b1 );
+	}
+
+	// Compute cross product between two 3D vectors
+	// The unused W lane is set to 0 unless there's INF or NAN in W lanes of the inputs
+	inline __m256d vector3Cross( __m256d a, __m256d b )
+	{
+		// The formula is a.yzx * b.zxy - a.zxy * b.yzx
+		// https://en.wikipedia.org/wiki/Cross_product#Coordinate_notation
+		__m256d lhs, rhs;
+		crossProductPieces( a, b, lhs, rhs );
+		return _mm256_sub_pd( lhs, rhs );
 	}
 
 	// Negate all 4 lanes of the vector
@@ -201,29 +209,6 @@ namespace AvxMath
 #else
 		return _mm256_add_pd( _mm256_mul_pd( a, b ), c );
 #endif
-	}
-
-	// Compute two pieces of the cross-product; the complete cross product is equal to ( lhs - rhs )
-	__forceinline void crossProductPieces( __m256d a, __m256d b, __m256d& lhs, __m256d& rhs )
-	{
-#ifdef __AVX2__
-		const __m256d a1 = _mm256_permute4x64_pd( a, _MM_SHUFFLE( 3, 0, 2, 1 ) );  // a.yzxw
-		const __m256d b2 = _mm256_permute4x64_pd( b, _MM_SHUFFLE( 3, 1, 0, 2 ) );  // b.zxyw
-		const __m256d a2 = _mm256_permute4x64_pd( a, _MM_SHUFFLE( 3, 1, 0, 2 ) );  // a.zxyw
-		const __m256d b1 = _mm256_permute4x64_pd( b, _MM_SHUFFLE( 3, 0, 2, 1 ) );  // b.yzxw
-#else
-		const __m256d af = flipHighLow( a );  // a.zwxy
-		const __m256d bf = flipHighLow( b );  // b.zwxy
-
-		__m256d a1 = _mm256_shuffle_pd( a, af, 0b0101 );		// a.yzwx
-		__m256d b1 = _mm256_shuffle_pd( b, bf, 0b0101 );		// b.yzwx
-		const __m256d b2 = _mm256_shuffle_pd( bf, b, 0b1100 );	// b.zxyw
-		const __m256d a2 = _mm256_shuffle_pd( af, a, 0b1100 );	// a.zxyw
-		a1 = _mm256_permute_pd( a1, 0b0110 );					// a.yzxw
-		b1 = _mm256_permute_pd( b1, 0b0110 );					// b.yzxw
-#endif
-		lhs = _mm256_mul_pd( a1, b2 );
-		rhs = _mm256_mul_pd( a2, b1 );
 	}
 
 	// Extract X lane from the vector
