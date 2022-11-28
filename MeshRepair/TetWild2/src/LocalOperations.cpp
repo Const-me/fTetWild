@@ -858,6 +858,8 @@ namespace
 		for( int j = 0; j < 12; j++ )
 			r_T[ j ] = T[ j ];
 
+		// Compiler won't optimize that math because these particular arithmetic operators are function calls, implemented deep inside mpir.dll
+		// Compiler can't possibly know they are pure functions without side effects.
 		const triwild::Rational d63 = r_T[ 6 ] - r_T[ 3 ];
 		const triwild::Rational d30 = r_T[ 3 ] - r_T[ 0 ];
 		const triwild::Rational d60 = r_T[ 6 ] - r_T[ 0 ];
@@ -875,20 +877,23 @@ namespace
 			return std::numeric_limits<double>::infinity();
 
 		const triwild::Rational twothird = triwild::Rational( 2 ) / triwild::Rational( 3 );
+		const triwild::Rational s47 = r_T[ 4 ] + r_T[ 7 ];
+		const triwild::Rational s58 = r_T[ 5 ] + r_T[ 8 ];
+		const triwild::Rational s09 = r_T[ 0 ] + r_T[ 9 ];
 		// clang-format off
 		triwild::Rational temp2 =
 		r_T[ 0 ] * ( r_T[ 0 ] - twothird * r_T[ 9 ] ) +
-		r_T[ 1 ] * ( r_T[ 1 ] - twothird * ( r_T[ 4 ] + r_T[ 7 ] ) ) + 
-		r_T[ 2 ] * ( r_T[ 2 ] - twothird * ( r_T[ 5 ] + r_T[ 8 ] ) ) +
-		r_T[ 3 ] * ( r_T[ 3 ] - twothird * ( r_T[ 0 ] + r_T[ 9 ] + r_T[ 6 ] ) ) +
+		r_T[ 1 ] * ( r_T[ 1 ] - twothird * s47 ) + 
+		r_T[ 2 ] * ( r_T[ 2 ] - twothird * s58 ) +
+		r_T[ 3 ] * ( r_T[ 3 ] - twothird * ( s09 + r_T[ 6 ] ) ) +
 		r_T[ 4 ] * ( r_T[ 4 ] - twothird * r_T[ 7 ] ) +
 		r_T[ 5 ] * ( r_T[ 5 ] - twothird * r_T[ 8 ] ) + 
-		r_T[ 6 ] * ( r_T[ 6 ] - twothird * ( r_T[ 0 ] + r_T[ 9 ] ) ) + 
+		r_T[ 6 ] * ( r_T[ 6 ] - twothird * s09 ) + 
 		r_T[ 7 ] * r_T[ 7 ] +
 		r_T[ 8 ] * r_T[ 8 ] +
 		r_T[ 9 ] * r_T[ 9 ] +
-		r_T[ 10 ] * ( r_T[ 10 ] - twothird * ( r_T[ 1 ] + r_T[ 4 ] + r_T[ 7 ] ) ) +
-		r_T[ 11 ] * ( r_T[ 11 ] - twothird * ( r_T[ 2 ] + r_T[ 5 ] + r_T[ 8 ] ) );
+		r_T[ 10 ] * ( r_T[ 10 ] - twothird * ( r_T[ 1 ] + s47 ) ) +
+		r_T[ 11 ] * ( r_T[ 11 ] - twothird * ( r_T[ 2 ] + s58 ) );
 		// clang-format on
 
 		auto res_r = triwild::Rational( 27 ) / 16 * pow( tmp, -2 ) * pow( temp2, 3 );
@@ -897,7 +902,7 @@ namespace
 
 	static double AMIPS_energy_rational( const std::array<double, 12>& T )
 	{
-#if 0
+#if 1
 		return AMIPS_energy_rational_v2( T );
 #else
 		const double v1 = AMIPS_energy_rational_v1( T );
