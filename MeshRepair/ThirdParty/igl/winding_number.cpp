@@ -30,14 +30,6 @@ IGL_INLINE void igl::winding_number(
   W.resize(O.rows(),1);
   switch(F.cols())
   {
-    case 2:
-    {
-      igl::parallel_for(O.rows(),[&](const int o)
-      {
-        W(o) = winding_number(V,F,O.row(o));
-      },10000);
-      return;
-    }
     case 3:
     {
       WindingNumberAABB<
