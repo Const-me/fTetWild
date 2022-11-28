@@ -13,7 +13,6 @@
 #include "Mesh.h"
 #include "AABBWrapper.h"
 #include "CutMesh.h"
-#include "../external/Rational.h"
 #include "../external/Predicates.h"
 #include <map>
 #include "BoolVector.h"
@@ -78,9 +77,4 @@ namespace floatTetWild
 	void myassert( bool b, const std::string& s );
 
 	Vector3 getNormal( const std::vector<Vector3>& vb, const std::vector<Vector3i>& ib, int idx );
-
-	// fortest
-	using Vector3_r = Eigen::Matrix<triwild::Rational, 3, 1>;
-
-	eOrientation orient_rational( const Vector3_r& p1, const Vector3_r& p2, const Vector3_r& p3, const Vector3_r& p );
 }  // namespace floatTetWild

@@ -2149,19 +2149,5 @@ int floatTetWild::get_opp_t_id( int t_id, int j, const Mesh& mesh )
 void floatTetWild::myassert( bool b, const std::string& s )
 {
 	if( b == false )
-	{
 		throw std::logic_error( s );
-	}
-}
-
-floatTetWild::eOrientation floatTetWild::orient_rational( const Vector3_r& p1, const Vector3_r& p2, const Vector3_r& p3, const Vector3_r& p )
-{
-	auto nv = ( p2 - p1 ).cross( p3 - p1 );
-	triwild::Rational res = nv.dot( p - p1 );
-	if( res == 0 )
-		return eOrientation::Zero;
-	if( res < 0 )
-		return eOrientation::Positive;
-	else
-		return eOrientation::Negative;
 }
