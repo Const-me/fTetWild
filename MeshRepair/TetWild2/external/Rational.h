@@ -32,6 +32,14 @@ namespace triwild
 			//            canonicalize();
 		}
 
+		// Make a rational number numerator/denominator
+		Rational( int numerator, int denominator )
+		{
+			assert( 0 != denominator );
+			mpq_init( value );
+			mpq_set_si( value, numerator, denominator );
+		}
+
 		Rational( const mpq_t& v_ )
 		{
 			mpq_init( value );
@@ -46,37 +54,6 @@ namespace triwild
 		}
 
 		~Rational() { mpq_clear( value ); }
-
-		//        //+, - another point
-		//        Rational operator+(const Rational &r) const {
-		//            Rational r_out;
-		//            mpq_add(r_out.value, value, r.value);
-		//            return r_out;
-		//        }
-		//
-		//        Rational operator-(const Rational &r) const {
-		//            Rational r_out;
-		//            mpq_sub(r_out.value, value, r.value);
-		//            return r_out;
-		//        }
-		//
-		//        //*, / double/rational
-		//        Rational operator*(const Rational &r) const {
-		//            Rational r_out;
-		//            mpq_mul(r_out.value, value, r.value);
-		//            return r_out;
-		//        }
-		//
-		//        Rational operator/(const Rational &r) const {
-		//            Rational r_out;
-		//            mpq_div(r_out.value, value, r.value);
-		//            return r_out;
-		//        }
-		//
-		//        //=
-		//        void operator=(const Rational &r) {
-		//            mpq_set(value, r.value);
-		//        }
 
 		friend Rational operator-( const Rational& x )
 		{

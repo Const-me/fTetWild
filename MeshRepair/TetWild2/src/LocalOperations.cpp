@@ -876,7 +876,7 @@ namespace
 		if( tmp == 0 )
 			return std::numeric_limits<double>::infinity();
 
-		const triwild::Rational twothird = triwild::Rational( 2 ) / triwild::Rational( 3 );
+		const triwild::Rational twothird { 2, 3 };
 		const triwild::Rational s47 = r_T[ 4 ] + r_T[ 7 ];
 		const triwild::Rational s58 = r_T[ 5 ] + r_T[ 8 ];
 		const triwild::Rational s09 = r_T[ 0 ] + r_T[ 9 ];
