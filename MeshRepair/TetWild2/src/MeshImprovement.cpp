@@ -655,9 +655,15 @@ void floatTetWild::correct_tracked_surface_orientation( Mesh& mesh, AABBWrapper&
 	}
 }
 
+namespace
+{
+	using Mat3x = Eigen::Matrix<double, Eigen::Dynamic, 3>;
+	using Mat3i = Eigen::Matrix<int, Eigen::Dynamic, 3>;
+}
+
 void floatTetWild::filter_outside( Mesh& mesh, bool invert_faces )
 {
-	Eigen::MatrixXd C( mesh.get_t_num(), 3 );
+	Mat3x C( mesh.get_t_num(), 3 );
 	C.setZero();
 	int index = 0;
 	for( size_t i = 0; i < mesh.tets.size(); i++ )
@@ -671,8 +677,8 @@ void floatTetWild::filter_outside( Mesh& mesh, bool invert_faces )
 	}
 	//    C.conservativeResize(index, 3);
 
-	Eigen::Matrix<Scalar, Eigen::Dynamic, 3> V;
-	Eigen::Matrix<int, Eigen::Dynamic, 3> F;
+	Mat3x V;
+	Mat3i F;
 	get_tracked_surface( mesh, V, F );
 	Eigen::VectorXd W;
 	if( invert_faces )
@@ -684,7 +690,7 @@ void floatTetWild::filter_outside( Mesh& mesh, bool invert_faces )
 	//    if(!mesh.params.use_general_wn)
 	//        floatTetWild::fast_winding_number(Eigen::MatrixXd(V.cast<double>()), Eigen::MatrixXi(F), C, W);
 	//    else
-	igl::winding_number( Eigen::MatrixXd( V.cast<double>() ), Eigen::MatrixXi( F ), C, W );
+	igl::winding_number( V, F, C, W );
 
 	index = 0;
 	int n_tets = 0;
@@ -738,7 +744,7 @@ void floatTetWild::filter_outside( Mesh& mesh, bool invert_faces )
 
 void floatTetWild::filter_outside( Mesh& mesh, const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces )
 {
-	Eigen::MatrixXd C( mesh.get_t_num(), 3 );
+	Mat3x C( mesh.get_t_num(), 3 );
 	C.setZero();
 	int index = 0;
 	for( size_t i = 0; i < mesh.tets.size(); i++ )
@@ -752,8 +758,8 @@ void floatTetWild::filter_outside( Mesh& mesh, const std::vector<Vector3>& input
 	}
 	//    C.conservativeResize(index, 3);
 
-	Eigen::Matrix<Scalar, Eigen::Dynamic, 3> V( input_vertices.size(), 3 );
-	Eigen::Matrix<int, Eigen::Dynamic, 3> F( input_faces.size(), 3 );
+	Mat3x V( input_vertices.size(), 3 );
+	Mat3i F( input_faces.size(), 3 );
 	//    get_tracked_surface(mesh, V, F);
 	///
 	for( int i = 0; i < input_vertices.size(); i++ )
@@ -770,7 +776,7 @@ void floatTetWild::filter_outside( Mesh& mesh, const std::vector<Vector3>& input
 	//    if(!mesh.params.use_general_wn)
 	//        floatTetWild::fast_winding_number(Eigen::MatrixXd(V.cast<double>()), Eigen::MatrixXi(F), C, W);
 	//    else
-	igl::winding_number( Eigen::MatrixXd( V.cast<double>() ), Eigen::MatrixXi( F ), C, W );
+	igl::winding_number( V, F, C, W );
 
 	index = 0;
 	int n_tets = 0;
@@ -858,7 +864,7 @@ void floatTetWild::filter_outside_floodfill( Mesh& mesh, bool invert_faces )
 
 void floatTetWild::mark_outside( Mesh& mesh, bool invert_faces )
 {
-	Eigen::MatrixXd C( mesh.get_t_num(), 3 );
+	Mat3x C( mesh.get_t_num(), 3 );
 	C.setZero();
 	int index = 0;
 	for( size_t i = 0; i < mesh.tets.size(); i++ )
@@ -871,8 +877,8 @@ void floatTetWild::mark_outside( Mesh& mesh, bool invert_faces )
 		index++;
 	}
 
-	Eigen::Matrix<Scalar, Eigen::Dynamic, 3> V;
-	Eigen::Matrix<int, Eigen::Dynamic, 3> F;
+	Mat3x V;
+	Mat3i F;
 	get_tracked_surface( mesh, V, F );
 	if( invert_faces )
 	{
@@ -881,7 +887,7 @@ void floatTetWild::mark_outside( Mesh& mesh, bool invert_faces )
 		F.col( 2 ) = tmp;
 	}
 	Eigen::VectorXd W;
-	igl::winding_number( Eigen::MatrixXd( V.cast<double>() ), Eigen::MatrixXi( F ), C, W );
+	igl::winding_number( V, F, C, W );
 
 	index = 0;
 	int n_tets = 0;
