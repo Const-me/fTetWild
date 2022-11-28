@@ -858,12 +858,14 @@ namespace
 		for( int j = 0; j < 12; j++ )
 			r_T[ j ] = T[ j ];
 
+		// clang-format off
 		triwild::Rational tmp =
-		  ( ( -r_T[ 3 ] + r_T[ 6 ] ) * r_T[ 2 ] + r_T[ 3 ] * r_T[ 8 ] + ( r_T[ 0 ] - r_T[ 6 ] ) * r_T[ 5 ] - r_T[ 0 ] * r_T[ 8 ] ) * r_T[ 10 ] +
-		  ( ( r_T[ 3 ] - r_T[ 6 ] ) * r_T[ 1 ] - r_T[ 3 ] * r_T[ 7 ] + ( -r_T[ 0 ] + r_T[ 6 ] ) * r_T[ 4 ] + r_T[ 0 ] * r_T[ 7 ] ) * r_T[ 11 ] +
-		  ( -r_T[ 3 ] * r_T[ 8 ] + ( -r_T[ 9 ] + r_T[ 6 ] ) * r_T[ 5 ] + r_T[ 9 ] * r_T[ 8 ] ) * r_T[ 1 ] +
-		  ( r_T[ 3 ] * r_T[ 7 ] + ( r_T[ 9 ] - r_T[ 6 ] ) * r_T[ 4 ] - r_T[ 9 ] * r_T[ 7 ] ) * r_T[ 2 ] +
+		  ( ( r_T[ 6 ] - r_T[ 3 ] ) * r_T[ 2 ] + ( r_T[ 3 ] - r_T[ 0 ] ) * r_T[ 8 ] - ( r_T[ 6 ] - r_T[ 0 ] ) * r_T[ 5 ] ) * r_T[ 10 ] -
+		  ( ( r_T[ 6 ] - r_T[ 3 ] ) * r_T[ 1 ] + ( r_T[ 3 ] - r_T[ 0 ] ) * r_T[ 7 ] - ( r_T[ 6 ] - r_T[ 0 ] ) * r_T[ 4 ] ) * r_T[ 11 ] +
+		  ( ( r_T[ 9 ] - r_T[ 3 ] ) * r_T[ 8 ] - ( r_T[ 9 ] - r_T[ 6 ] ) * r_T[ 5 ] ) * r_T[ 1 ] -
+		  ( ( r_T[ 9 ] - r_T[ 3 ] ) * r_T[ 7 ] - ( r_T[ 9 ] - r_T[ 6 ] ) * r_T[ 4 ] ) * r_T[ 2 ] +
 		  ( r_T[ 4 ] * r_T[ 8 ] - r_T[ 5 ] * r_T[ 7 ] ) * ( r_T[ 0 ] - r_T[ 9 ] );
+		// clang-format on
 		if( tmp == 0 )
 			return std::numeric_limits<double>::infinity();
 
