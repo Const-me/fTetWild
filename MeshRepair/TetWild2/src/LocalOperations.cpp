@@ -874,18 +874,18 @@ namespace
 		const triwild::Rational twothird = triwild::Rational( 2 ) / triwild::Rational( 3 );
 		// clang-format off
 		triwild::Rational temp2 =
-		r_T[ 1 + -1 ] * ( r_T[ 1 + -1 ] - twothird * r_T[ 1 + 8 ] ) +
-		r_T[ 1 + 0 ] * ( r_T[ 1 + 0 ] - twothird * ( r_T[ 1 + 3 ] + r_T[ 1 + 6 ] ) ) + 
-		r_T[ 1 + 1 ] * ( r_T[ 1 + 1 ] - twothird * ( r_T[ 1 + 4 ] + r_T[ 1 + 7 ] ) ) +
-		r_T[ 1 + 2 ] * ( r_T[ 1 + 2 ] - twothird * ( r_T[ 1 + -1 ] + r_T[ 1 + 8 ] + r_T[ 1 + 5 ] ) ) +
-		r_T[ 1 + 3 ] * ( r_T[ 1 + 3 ] - twothird * r_T[ 1 + 6 ] ) +
-		r_T[ 1 + 4 ] * ( r_T[ 1 + 4 ] - twothird * r_T[ 1 + 7 ] ) + 
-		r_T[ 1 + 5 ] * ( r_T[ 1 + 5 ] - twothird * ( r_T[ 1 + -1 ] + r_T[ 1 + 8 ] ) ) + 
-		r_T[ 1 + 6 ] * r_T[ 1 + 6 ] +
-		r_T[ 1 + 7 ] * r_T[ 1 + 7 ] +
-		r_T[ 1 + 8 ] * r_T[ 1 + 8 ] +
-		r_T[ 1 + 9 ] * ( r_T[ 1 + 9 ] - twothird * ( r_T[ 1 + 0 ] + r_T[ 1 + 3 ] + r_T[ 1 + 6 ] ) ) +
-		r_T[ 1 + 10 ] * ( r_T[ 1 + 10 ] - twothird * ( r_T[ 1 + 1 ] + r_T[ 1 + 4 ] + r_T[ 1 + 7 ] ) );
+		r_T[ 0 ] * ( r_T[ 0 ] - twothird * r_T[ 9 ] ) +
+		r_T[ 1 ] * ( r_T[ 1 ] - twothird * ( r_T[ 4 ] + r_T[ 7 ] ) ) + 
+		r_T[ 2 ] * ( r_T[ 2 ] - twothird * ( r_T[ 5 ] + r_T[ 8 ] ) ) +
+		r_T[ 3 ] * ( r_T[ 3 ] - twothird * ( r_T[ 0 ] + r_T[ 9 ] + r_T[ 6 ] ) ) +
+		r_T[ 4 ] * ( r_T[ 4 ] - twothird * r_T[ 7 ] ) +
+		r_T[ 5 ] * ( r_T[ 5 ] - twothird * r_T[ 8 ] ) + 
+		r_T[ 6 ] * ( r_T[ 6 ] - twothird * ( r_T[ 0 ] + r_T[ 9 ] ) ) + 
+		r_T[ 7 ] * r_T[ 7 ] +
+		r_T[ 8 ] * r_T[ 8 ] +
+		r_T[ 9 ] * r_T[ 9 ] +
+		r_T[ 10 ] * ( r_T[ 10 ] - twothird * ( r_T[ 1 ] + r_T[ 4 ] + r_T[ 7 ] ) ) +
+		r_T[ 11 ] * ( r_T[ 11 ] - twothird * ( r_T[ 2 ] + r_T[ 5 ] + r_T[ 8 ] ) );
 		// clang-format on
 
 		auto res_r = triwild::Rational( 27 ) / 16 * pow( tmp, -2 ) * pow( temp2, 3 );
