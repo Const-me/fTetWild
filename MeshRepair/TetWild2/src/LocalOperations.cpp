@@ -840,7 +840,7 @@ namespace
 				 ( -twothird * r_T[ 1 + -1 ] - twothird * r_T[ 1 + 8 ] ) * r_T[ 1 + 5 ] - twothird * r_T[ 1 + -1 ] * r_T[ 1 + 8 ] +
 				 r_T[ 1 + -1 ] * r_T[ 1 + -1 ] + r_T[ 1 + 8 ] * r_T[ 1 + 8 ] + r_T[ 1 + 6 ] * r_T[ 1 + 6 ] + r_T[ 1 + 7 ] * r_T[ 1 + 7 ],
 			3 );
-		return cubicRoot( res_r.to_double() );
+		return cubicRoot( res_r.asDouble() );
 	}
 
 	static double AMIPS_energy_rational_v2( const std::array<double, 12>& T )
@@ -865,6 +865,7 @@ namespace
 		const triwild::Rational d60 = r_T[ 6 ] - r_T[ 0 ];
 		const triwild::Rational d93 = r_T[ 9 ] - r_T[ 3 ];
 		const triwild::Rational d96 = r_T[ 9 ] - r_T[ 6 ];
+
 		// clang-format off
 		triwild::Rational tmp =
 		  ( d63 * r_T[ 2 ] + d30 * r_T[ 8 ] - d60 * r_T[ 5 ] ) * r_T[ 10 ] -
@@ -873,7 +874,7 @@ namespace
 		  ( d93 * r_T[ 7 ] - d96 * r_T[ 4 ] ) * r_T[ 2 ] +
 		  ( r_T[ 4 ] * r_T[ 8 ] - r_T[ 5 ] * r_T[ 7 ] ) * ( r_T[ 0 ] - r_T[ 9 ] );
 		// clang-format on
-		if( tmp == 0 )
+		if( 0 == tmp.getSign() )
 			return std::numeric_limits<double>::infinity();
 
 		const triwild::Rational twothird { 2, 3 };
@@ -896,8 +897,8 @@ namespace
 		r_T[ 11 ] * ( r_T[ 11 ] - twothird * ( r_T[ 2 ] + s58 ) );
 		// clang-format on
 
-		auto res_r = triwild::Rational( 27 ) / 16 * pow( tmp, -2 ) * pow( temp2, 3 );
-		return cubicRoot( res_r.to_double() );
+		auto res_r = triwild::Rational { 27, 16 } * pow( tmp, -2 ) * pow( temp2, 3 );
+		return cubicRoot( res_r.asDouble() );
 	}
 
 	static double AMIPS_energy_rational( const std::array<double, 12>& T )
