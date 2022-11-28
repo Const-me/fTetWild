@@ -222,3 +222,71 @@ __m128 Box32::pointBoxSignedSquaredDistance( __m128 pos ) const
 	// Select one of the output vectors
 	return _mm_blendv_ps( resIn, resOut, mask );
 }
+
+namespace
+{
+	__forceinline __m256 horizontalMinimum3( __m256 v )
+	{
+		__m256 z = _mm256_permute_ps( v, _MM_SHUFFLE( 3, 2, 1, 2 ) );
+		__m256 y = _mm256_movehdup_ps( v );
+		v = _mm256_min_ps( v, z );
+		v = _mm256_min_ps( v, y );
+		return v;
+	}
+
+	// Compute bitwise OR of 4 lanes in the vector in each half, broadcast the result across 16-byte lanes
+	__forceinline __m256 horizontalBitwiseOr( __m256 v )
+	{
+		// v |= v.yxwz
+		__m256 p = _mm256_permute_ps( v, _MM_SHUFFLE( 2, 3, 0, 1 ) );
+		v = _mm256_or_ps( v, p );
+
+		// v |= v.zwxy
+		p = _mm256_permute_ps( v, _MM_SHUFFLE( 1, 0, 3, 2 ) );
+		v = _mm256_or_ps( v, p );
+		return v;
+	}
+}  // namespace
+
+__m256 Box32::pointBoxSignedSquaredDistanceX2( const Box32& b1, const Box32& b2, __m256 pos )
+{
+	// Load both boxes into 2 AVX vectors
+	const __m128 boxMin1 = _mm_loadu_ps( &b1.boxMin[ 0 ] );
+	const __m128 boxMax1 = _mm_loadu_ps( &b1.boxMax[ 0 ] );
+	const __m128 boxMin2 = _mm_loadu_ps( &b2.boxMin[ 0 ] );
+	const __m128 boxMax2 = _mm_loadu_ps( &b2.boxMax[ 0 ] );
+	const __m256 boxMin = _mm256_setr_m128( boxMin1, boxMin2 );
+	const __m256 boxMax = _mm256_setr_m128( boxMax1, boxMax2 );
+
+	// When inside, both numbers are positive
+	const __m256 dmin = _mm256_sub_ps( pos, boxMin );
+	const __m256 dmax = _mm256_sub_ps( boxMax, pos );
+
+	// When inside, distance to the box
+	// When outside, one of the vectors was negative another one positive, min will return the negative one, which is the distance we're after
+	__m256 dist = _mm256_min_ps( dmin, dmax );
+
+	// Compute mask of the lanes which were outside the box
+	const __m256 zero = _mm256_setzero_ps();
+	const __m256 outsideMaskVector = _mm256_cmp_ps( dist, zero, _CMP_LT_OQ );
+
+	// ---- Compute positive distance for the outside case ----
+	__m256 resOut = _mm256_and_ps( dist, outsideMaskVector );
+	resOut = _mm256_dp_ps( resOut, resOut, 0b01111111 );
+
+	// ---- Compute negative distance for the inside case ----
+	__m256 resIn = horizontalMinimum3( dist );
+	// Compute square
+	resIn = _mm256_mul_ps( resIn, resIn );
+	// Negate the vector
+	resIn = _mm256_sub_ps( zero, resIn );
+	// Broadcast the lower lane across the complete vector
+	resIn = _mm256_permute_ps( resIn, _MM_SHUFFLE( 0, 0, 0, 0 ) );
+
+	// ---- Make a mask to select between the two ----
+	__m256 mask = _mm256_blend_ps( outsideMaskVector, zero, 0b10001000 );
+	mask = horizontalBitwiseOr( mask );
+
+	// Select one of the output vectors
+	return _mm256_blendv_ps( resIn, resOut, mask );
+}

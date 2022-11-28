@@ -538,7 +538,9 @@ namespace floatTetWild
 	{
 		std::vector<FacetRecursionFrame32>& stack = recursionStacks[ omp_get_thread_num() ].stack32;
 		const __m256d p = AvxMath::loadDouble3( &point.x );
-		const __m128 p32 = _mm256_cvtpd_ps( p );
+		const __m128 p32_single = _mm256_cvtpd_ps( p );
+		// Duplicate the downcasted position into low & high halves of an AVX vector, for pointBoxSignedSquaredDistanceX2 function
+		const __m256 p32 = _mm256_setr_m128( p32_single, p32_single );
 
 		// Copy that value from memory to a register, saves quite a few loads/stores in the loop below
 		double sqDist = sqDistResult;
@@ -591,10 +593,9 @@ namespace floatTetWild
 			const uint32_t childl = 2 * n;
 			const uint32_t childr = 2 * n + 1;
 
-			// The original code suffers from the unpredictable "if( dl < dr )" branch
-			// To workaround, we using vector blends as conditional moves to figure out which way to go first.
-			const __m128 dl = boxesFloat[ childl ].pointBoxSignedSquaredDistance( p32 );
-			const __m128 dr = boxesFloat[ childr ].pointBoxSignedSquaredDistance( p32 );
+			const __m256 distX2 = Box32::pointBoxSignedSquaredDistanceX2( boxesFloat[ childl ], boxesFloat[ childr ], p32 );
+			const __m128 dl = _mm256_castps256_ps128( distX2 );
+			const __m128 dr = _mm256_extractf128_ps( distX2, 1 );
 
 			// Compare for dl < dr
 			// Because pointBoxSignedSquaredDistance2 returns vectors with both lanes equal, the result is either zero or a vector of UINT_MAX
@@ -728,7 +729,9 @@ namespace floatTetWild
 		uint32_t b = 0;
 		uint32_t e = (uint32_t)mesh_.countTriangles();
 		float d = 0.0f;
-		const __m128 p32 = _mm256_cvtpd_ps( p );
+		const __m128 p32_single = _mm256_cvtpd_ps( p );
+		// Duplicate the downcasted position into low & high halves of an AVX vector, for pointBoxSignedSquaredDistanceX2 function
+		const __m256 p32 = _mm256_setr_m128( p32_single, p32_single );
 
 #define POP_FROM_THE_STACK()      \
 	if( stack.empty() )           \
@@ -779,10 +782,18 @@ namespace floatTetWild
 			const uint32_t childl = 2 * n;
 			const uint32_t childr = 2 * n + 1;
 
-			// The original code suffers from the unpredictable "if( dl < dr )" branch
-			// To workaround, we using vector blends as conditional moves to figure out which way to go first.
-			const __m128 dl = boxesFloat[ childl ].pointBoxSignedSquaredDistance( p32 );
-			const __m128 dr = boxesFloat[ childr ].pointBoxSignedSquaredDistance( p32 );
+			const __m256 distX2 = Box32::pointBoxSignedSquaredDistanceX2( boxesFloat[ childl ], boxesFloat[ childr ], p32 );
+#if 0
+			// Testing things, compare against older pointBoxSignedSquaredDistance implementation
+			const __m128 dl_old = boxesFloat[ childl ].pointBoxSignedSquaredDistance( _mm256_castps256_ps128( p32 ) );
+			const __m128 dr_old = boxesFloat[ childr ].pointBoxSignedSquaredDistance( _mm256_castps256_ps128( p32 ) );
+			const __m256 distX2_old = _mm256_setr_m128( dl_old, dr_old );
+			const __m256 neq = _mm256_cmp_ps( distX2, distX2_old, _CMP_NEQ_UQ );
+			if( !_mm256_testz_ps( neq, neq ) )
+				__debugbreak();
+#endif
+			const __m128 dl = _mm256_castps256_ps128( distX2 );
+			const __m128 dr = _mm256_extractf128_ps( distX2, 1 );
 
 			// Compare for dl < dr
 			// Because pointBoxSignedSquaredDistance2 returns vectors with both lanes equal, the result is either zero or a vector of UINT_MAX

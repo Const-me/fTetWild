@@ -19,5 +19,8 @@ namespace floatTetWild
 		// When the point is outside, the result is positive, distance^2 to the box
 		// The result is broadcasted into all 4 lanes of the output vector
 		__m128 pointBoxSignedSquaredDistance( __m128 pos ) const;
+
+		// Same as above, for 2 boxes and 2 input points in parallel
+		static __m256 pointBoxSignedSquaredDistanceX2( const Box32& b1, const Box32& b2, __m256 pos );
 	};
 }  // namespace floatTetWild
