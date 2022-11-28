@@ -801,7 +801,7 @@ namespace
 		return floatTetWild::cbrt( x );
 	}
 
-	static double AMIPS_energy_rational( const std::array<double, 12>& T )
+	static double AMIPS_energy_rational_v1( const std::array<double, 12>& T )
 	{
 		using namespace floatTetWild;
 
@@ -841,6 +841,69 @@ namespace
 				 r_T[ 1 + -1 ] * r_T[ 1 + -1 ] + r_T[ 1 + 8 ] * r_T[ 1 + 8 ] + r_T[ 1 + 6 ] * r_T[ 1 + 6 ] + r_T[ 1 + 7 ] * r_T[ 1 + 7 ],
 			3 );
 		return cubicRoot( res_r.to_double() );
+	}
+
+	static double AMIPS_energy_rational_v2( const std::array<double, 12>& T )
+	{
+		using namespace floatTetWild;
+
+		if( is_degenerate(
+			  Vector3( T[ 0 ], T[ 1 ], T[ 2 ] ), Vector3( T[ 3 ], T[ 4 ], T[ 5 ] ), Vector3( T[ 6 ], T[ 7 ], T[ 8 ] ), Vector3( T[ 9 ], T[ 10 ], T[ 11 ] ) ) )
+		{
+			pausee( "energy computation degenerate found!!!" );
+			return std::numeric_limits<double>::infinity();
+		}
+
+		std::array<triwild::Rational, 12> r_T;
+		for( int j = 0; j < 12; j++ )
+			r_T[ j ] = T[ j ];
+		const triwild::Rational twothird = triwild::Rational( 2 ) / triwild::Rational( 3 );
+		triwild::Rational tmp =
+		  ( ( -r_T[ 1 + 2 ] + r_T[ 1 + 5 ] ) * r_T[ 1 + 1 ] + r_T[ 1 + 2 ] * r_T[ 1 + 7 ] + ( r_T[ 1 + -1 ] - r_T[ 1 + 5 ] ) * r_T[ 1 + 4 ] -
+			r_T[ 1 + -1 ] * r_T[ 1 + 7 ] ) *
+			r_T[ 1 + 9 ] +
+		  ( ( r_T[ 1 + 2 ] - r_T[ 1 + 5 ] ) * r_T[ 1 + 0 ] - r_T[ 1 + 2 ] * r_T[ 1 + 6 ] + ( -r_T[ 1 + -1 ] + r_T[ 1 + 5 ] ) * r_T[ 1 + 3 ] +
+			r_T[ 1 + -1 ] * r_T[ 1 + 6 ] ) *
+			r_T[ 1 + 10 ] +
+		  ( -r_T[ 1 + 2 ] * r_T[ 1 + 7 ] + ( -r_T[ 1 + 8 ] + r_T[ 1 + 5 ] ) * r_T[ 1 + 4 ] + r_T[ 1 + 8 ] * r_T[ 1 + 7 ] ) * r_T[ 1 + 0 ] +
+		  ( r_T[ 1 + 2 ] * r_T[ 1 + 6 ] + ( r_T[ 1 + 8 ] - r_T[ 1 + 5 ] ) * r_T[ 1 + 3 ] - r_T[ 1 + 8 ] * r_T[ 1 + 6 ] ) * r_T[ 1 + 1 ] +
+		  ( r_T[ 1 + 3 ] * r_T[ 1 + 7 ] - r_T[ 1 + 4 ] * r_T[ 1 + 6 ] ) * ( r_T[ 1 + -1 ] - r_T[ 1 + 8 ] );
+		if( tmp == 0 )
+			return std::numeric_limits<double>::infinity();
+
+		const triwild::Rational one = 1.0;
+
+// clang-format off
+		triwild::Rational temp2 =
+		r_T[ 1 + 9 ] * r_T[ 1 + 9 ] + ( -twothird * r_T[ 1 + 0 ] - twothird * r_T[ 1 + 3 ] - twothird * r_T[ 1 + 6 ] ) * r_T[ 1 + 9 ] +
+		r_T[ 1 + 10 ] * r_T[ 1 + 10 ] + ( -twothird * r_T[ 1 + 1 ] - twothird * r_T[ 1 + 4 ] - twothird * r_T[ 1 + 7 ] ) * r_T[ 1 + 10 ] +
+		r_T[ 1 + 0 ] * r_T[ 1 + 0 ] + ( -twothird * r_T[ 1 + 3 ] - twothird * r_T[ 1 + 6 ] ) * r_T[ 1 + 0 ] + 
+		r_T[ 1 + 1 ] * r_T[ 1 + 1 ] + ( -twothird * r_T[ 1 + 4 ] - twothird * r_T[ 1 + 7 ] ) * r_T[ 1 + 1 ] +
+		r_T[ 1 + 2 ] * r_T[ 1 + 2 ] + ( -twothird * r_T[ 1 + -1 ] - twothird * r_T[ 1 + 8 ] - twothird * r_T[ 1 + 5 ] ) * r_T[ 1 + 2 ] +
+		r_T[ 1 + 3 ] * r_T[ 1 + 3 ] - twothird * r_T[ 1 + 3 ] * r_T[ 1 + 6 ] +
+		r_T[ 1 + 4 ] * r_T[ 1 + 4 ] - twothird * r_T[ 1 + 4 ] * r_T[ 1 + 7 ] + 
+		r_T[ 1 + 5 ] * r_T[ 1 + 5 ] + ( -twothird * r_T[ 1 + -1 ] - twothird * r_T[ 1 + 8 ] ) * r_T[ 1 + 5 ] - 
+		twothird * r_T[ 1 + -1 ] * r_T[ 1 + 8 ] + r_T[ 1 + -1 ] * r_T[ 1 + -1 ] + 
+		r_T[ 1 + 8 ] * r_T[ 1 + 8 ] +
+		r_T[ 1 + 6 ] * r_T[ 1 + 6 ] +
+		r_T[ 1 + 7 ] * r_T[ 1 + 7 ];
+// clang-format on
+
+		auto res_r = triwild::Rational( 27 ) / 16 * pow( tmp, -2 ) * pow( temp2, 3 );
+		return cubicRoot( res_r.to_double() );
+	}
+
+	static double AMIPS_energy_rational( const std::array<double, 12>& T )
+	{
+#if 0
+		return AMIPS_energy_rational_v2( T );
+#else
+		const double v1 = AMIPS_energy_rational_v1( T );
+		const double v2 = AMIPS_energy_rational_v2( T );
+		if( v1 != v2 )
+			__debugbreak();
+		return v1;
+#endif
 	}
 }  // namespace
 
