@@ -55,7 +55,7 @@ void floatTetWild::init( Mesh& mesh, AABBWrapper& tree )
 	}
 }
 
-void floatTetWild::optimization( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const std::vector<int>& input_tags,
+void floatTetWild::optimization( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const std::vector<int>* input_tags,
   BoolVector& is_face_inserted, Mesh& mesh, AABBWrapper& tree, const std::array<int, 4>& ops )
 {
 	init( mesh, tree );
@@ -270,7 +270,7 @@ void floatTetWild::operation( Mesh& mesh, AABBWrapper& tree, const std::array<in
 	}
 }
 
-void floatTetWild::operation( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const std::vector<int>& input_tags,
+void floatTetWild::operation( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const std::vector<int>* input_tags,
   BoolVector& is_face_inserted, Mesh& mesh, AABBWrapper& tree, const std::array<int, 5>& ops )
 {
 	operation( mesh, tree, { { ops[ 0 ], ops[ 1 ], ops[ 2 ], ops[ 3 ] } } );

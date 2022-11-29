@@ -42,10 +42,9 @@ HRESULT meshRepairMain( const MeshRepair::SourceMesh& rsi, MeshRepair::eGlobalFl
 
 		std::vector<floatTetWild::Vector3> input_vertices;
 		std::vector<floatTetWild::Vector3i> input_faces;
-		std::vector<int> input_tags;
-		rsi.makeBuffers( input_vertices, input_faces, &input_tags );
+		rsi.makeBuffers( input_vertices, input_faces, nullptr );
 
-		simplify( input_vertices, input_faces, input_tags, tree, params, skipSimplify );
+		simplify( input_vertices, input_faces, nullptr, tree, params, skipSimplify );
 		tree.init_b_mesh_and_tree( input_vertices, input_faces, mesh );
 
 		mesh.logger().logInfo( "Creating initial volume mesh.." );
@@ -54,10 +53,10 @@ HRESULT meshRepairMain( const MeshRepair::SourceMesh& rsi, MeshRepair::eGlobalFl
 		FloatTetDelaunay::tetrahedralize( input_vertices, input_faces, tree, mesh, is_face_inserted );
 
 		mesh.logger().logInfo( "Inserting triangles.." );
-		insert_triangles( input_vertices, input_faces, input_tags, mesh, is_face_inserted, tree, false );
+		insert_triangles( input_vertices, input_faces, nullptr, mesh, is_face_inserted, tree, false );
 
 		mesh.logger().logInfo( "Optimization passes.." );
-		optimization( input_vertices, input_faces, input_tags, is_face_inserted, mesh, tree, { { 1, 1, 1, 1 } } );
+		optimization( input_vertices, input_faces, nullptr, is_face_inserted, mesh, tree, { { 1, 1, 1, 1 } } );
 
 		mesh.logger().logInfo( "Correcting tracked surface orientation.." );
 		correct_tracked_surface_orientation( mesh, tree );

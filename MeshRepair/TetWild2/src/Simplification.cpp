@@ -12,7 +12,7 @@
 #include <igl/remove_duplicate_vertices.h>
 #include <igl/unique_rows.h>
 
-void floatTetWild::simplify( std::vector<Vector3>& input_vertices, std::vector<Vector3i>& input_faces, std::vector<int>& input_tags, const AABBWrapper& tree,
+void floatTetWild::simplify( std::vector<Vector3>& input_vertices, std::vector<Vector3i>& input_faces, std::vector<int>* input_tags, const AABBWrapper& tree,
   const Parameters& params, bool skip_simplify )
 {
 	remove_duplicates( input_vertices, input_faces, input_tags, params );
@@ -68,28 +68,32 @@ void floatTetWild::simplify( std::vector<Vector3>& input_vertices, std::vector<V
 	}
 
 	std::vector<Vector3i> new_input_faces( cnt );
-	std::vector<int> new_input_tags( cnt );
+	std::vector<int> new_input_tags;
+
+	if( nullptr != input_tags )
+		new_input_tags.resize( cnt );
 	cnt = 0;
 	for( int i = 0; i < input_faces.size(); i++ )
 	{
 		if( f_is_removed[ i ] )
 			continue;
 		new_input_faces[ cnt ] = input_faces[ i ];
-		new_input_tags[ cnt ] = input_tags[ i ];
+		if( nullptr != input_tags )
+			new_input_tags[ cnt ] = ( *input_tags )[ i ];
 		cnt++;
 	}
-	input_faces = new_input_faces;
-	input_tags = new_input_tags;
+	input_faces = std::move( new_input_faces );
+	if( nullptr != input_tags )
+		input_tags->swap( new_input_tags );
 
 	//    flattening(input_vertices, input_faces, tree, params);
-
 	remove_duplicates( input_vertices, input_faces, input_tags, params );
 
 	params.logger.logDebug( "Simplification complete: %zu vertices, %zu triangles", (size_t)input_vertices.size(), (size_t)input_faces.size() );
 }
 
 bool floatTetWild::remove_duplicates(
-  std::vector<Vector3>& input_vertices, std::vector<Vector3i>& input_faces, std::vector<int>& input_tags, const Parameters& params )
+  std::vector<Vector3>& input_vertices, std::vector<Vector3i>& input_faces, std::vector<int>* input_tags, const Parameters& params )
 {
 	MatrixXs V_tmp( input_vertices.size(), 3 ), V_in;
 	Eigen::MatrixXi F_tmp( input_faces.size(), 3 ), F_in;
@@ -121,11 +125,13 @@ bool floatTetWild::remove_duplicates(
 	Eigen::VectorXi IF;
 	igl::unique_rows( F_in, F_tmp, IF, _ );
 	F_in = F_tmp;
-	std::vector<int> old_input_tags = input_tags;
-	input_tags.resize( IF.rows() );
-	for( int i = 0; i < IF.rows(); i++ )
+	std::vector<int> old_input_tags;
+	if( nullptr != input_tags )
 	{
-		input_tags[ i ] = old_input_tags[ IF( i ) ];
+		old_input_tags = *input_tags;
+		input_tags->resize( IF.rows() );
+		for( int i = 0; i < IF.rows(); i++ )
+			( *input_tags )[ i ] = old_input_tags[ IF( i ) ];
 	}
 	//
 	if( V_in.rows() == 0 || F_in.rows() == 0 )
@@ -137,10 +143,15 @@ bool floatTetWild::remove_duplicates(
 	input_vertices.resize( V_in.rows() );
 	input_faces.clear();
 	input_faces.reserve( F_in.rows() );
-	old_input_tags = input_tags;
-	input_tags.clear();
+	if( nullptr != input_tags )
+	{
+		old_input_tags = *input_tags;
+		input_tags->clear();
+	}
+
 	for( int i = 0; i < V_in.rows(); i++ )
 		input_vertices[ i ] = V_in.row( i );
+
 	for( int i = 0; i < F_in.rows(); i++ )
 	{
 		if( F_in( i, 0 ) == F_in( i, 1 ) || F_in( i, 0 ) == F_in( i, 2 ) || F_in( i, 2 ) == F_in( i, 1 ) )
@@ -154,7 +165,8 @@ bool floatTetWild::remove_duplicates(
 		if( area.norm() / 2 <= SCALAR_ZERO * params.bbox_diag_length )
 			continue;
 		input_faces.push_back( F_in.row( i ) );
-		input_tags.push_back( old_input_tags[ i ] );
+		if( nullptr != input_tags )
+			input_tags->push_back( old_input_tags[ i ] );
 	}
 
 	return true;

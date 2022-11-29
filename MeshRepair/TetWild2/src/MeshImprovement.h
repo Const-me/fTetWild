@@ -14,10 +14,10 @@
 namespace floatTetWild
 {
 	void init( Mesh& mesh, AABBWrapper& tree );
-	void optimization( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const std::vector<int>& input_tags,
+	void optimization( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const std::vector<int>* input_tags,
 	  BoolVector& is_face_inserted, Mesh& mesh, AABBWrapper& tree, const std::array<int, 4>& ops = { { 1, 1, 1, 1 } } );
 	void cleanup_empty_slots( Mesh& mesh, double percentage = 0.7 );
-	void operation( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const std::vector<int>& input_tags,
+	void operation( const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const std::vector<int>* input_tags,
 	  BoolVector& is_face_inserted, Mesh& mesh, AABBWrapper& tree, const std::array<int, 5>& ops = { { 1, 1, 1, 1, 1 } } );
 	void operation( Mesh& mesh, AABBWrapper& tree, const std::array<int, 4>& ops = { { 1, 1, 1, 1 } } );
 	bool update_scaling_field( Mesh& mesh, Scalar max_energy );
