@@ -34,7 +34,7 @@ namespace triwild
 		}
 
 		// Return +1 if this value is a positive number, -1 if this value is negative, and zero if this value is 0
-		int getSign()
+		int getSign() const
 		{
 			return mpq_sgn( value );
 		}
@@ -57,6 +57,13 @@ namespace triwild
 		{
 			assert( 0 != denominator );
 			mpq_init( value );
+			mpq_set_si( value, numerator, denominator );
+		}
+
+		// Set this value to numerator / denominator
+		void rational( int numerator, int denominator )
+		{
+			assert( 0 != denominator );
 			mpq_set_si( value, numerator, denominator );
 		}
 
@@ -118,6 +125,25 @@ namespace triwild
 		{
 			// See mul.c, they support accumulation there
 			mpq_mul( value, value, that.value );
+		}
+		void operator/=( const Rational& that )
+		{
+			// See div.c, they support accumulation there
+			mpq_div( value, value, that.value );
+		}
+		// Set this value to a + b
+		void add( const Rational& a, const Rational& b )
+		{
+			mpq_add( value, a.value, b.value );
+		}
+		// Set this value to a - b
+		void sub( const Rational& a, const Rational& b )
+		{
+			mpq_sub( value, a.value, b.value );
+		}
+		void negate()
+		{
+			mpq_neg( value, value );
 		}
 
 		friend Rational operator/( const Rational& x, const Rational& y )
