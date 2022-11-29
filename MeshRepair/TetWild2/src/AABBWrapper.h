@@ -4,12 +4,6 @@
 #include "Mesh.h"
 #include <memory>
 
-//#define NEW_ENVELOPE //fortest
-
-#ifdef NEW_ENVELOPE
-#include <fastenvelope/FastEnvelope.h>
-#endif
-
 namespace floatTetWild
 {
 	class AABBWrapper
@@ -24,7 +18,10 @@ namespace floatTetWild
 		MeshFacetsAABBWithEps sf_tree;
 
 		//// initialization
-		inline Scalar get_sf_diag() const { return sf_mesh.boxDiagonal(); }
+		inline Scalar get_sf_diag() const
+		{
+			return sf_mesh.boxDiagonal();
+		}
 
 		AABBWrapper( const GEO2::Mesh& sf_mesh, FacetRecursionStacks& stacks )
 			: sf_mesh( sf_mesh )
@@ -229,23 +226,6 @@ namespace floatTetWild
 			return false;
 		}
 
-#ifdef NEW_ENVELOPE
-		inline bool is_out_sf_envelope_exact( const Vector3& p ) const
-		{
-			return sf_tree_exact.is_outside( p );
-		}
-
-		inline bool is_out_b_envelope_exact( const Vector3& p ) const
-		{
-			return b_tree_exact.is_outside( p );
-		}
-
-		inline bool is_out_tmp_b_envelope_exact( const Vector3& p ) const
-		{
-			return tmp_b_tree_exact.is_outside( p );
-		}
-#endif
-
 		// fortest
 		inline Scalar dist_sf_envelope( const std::vector<GEO2::vec3>& ps, const Scalar eps_2, GEO2::index_t prev_facet = GEO2::NO_FACET ) const
 		{  /// only used for checking correctness
@@ -273,5 +253,4 @@ namespace floatTetWild
 		}
 		// fortest
 	};
-
 }  // namespace floatTetWild
