@@ -1,3 +1,4 @@
+// ComLight flavor of the COM interfaces exposed by the MeshRepair.dll
 #pragma once
 #include "../../ComLightLib/comLightClient.h"
 #include "Parameters.h"

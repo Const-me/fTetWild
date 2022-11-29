@@ -14,7 +14,7 @@
     <ClInclude Include="API\Parameters.h">
       <Filter>API</Filter>
     </ClInclude>
-    <ClInclude Include="API\interfaces.h">
+    <ClInclude Include="API\interfaces.cl.h">
       <Filter>API</Filter>
     </ClInclude>
     <ClInclude Include="API\library.h">

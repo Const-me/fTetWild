@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Utils/IndexedMesh.h"
 #include "../MeshRepair/API/library.h"
+#include "../MeshRepair/API/interfaces.cl.h"
 #include "Utils/Timer.h"
 #include "Utils/ConsoleLogSink.h"
 #include "Utils/formatMessage.h"

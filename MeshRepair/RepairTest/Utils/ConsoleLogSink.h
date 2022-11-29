@@ -1,5 +1,5 @@
 #pragma once
-#include "../../MeshRepair/API/interfaces.h"
+#include "../../MeshRepair/API/loggerApi.h"
 #include <mutex>
 
 class ConsoleLogSink
