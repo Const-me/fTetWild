@@ -311,8 +311,6 @@ floatTetWild::eCollapseStatus floatTetWild::collapse_an_edge(
 	tet_vertices[ v2_id ].setFlag( eVertexFlags::BoundingBox, tet_vertices[ v1_id ].isBoundingBox() || tet_vertices[ v2_id ].isBoundingBox() );
 	tet_vertices[ v2_id ].setFlag( eVertexFlags::Surface, tet_vertices[ v1_id ].isSurface() || tet_vertices[ v2_id ].isSurface() );
 	tet_vertices[ v2_id ].setFlag( eVertexFlags::Boundary, tet_vertices[ v1_id ].isBoundary() || tet_vertices[ v2_id ].isBoundary() );
-	if( tet_vertices[ v1_id ].on_boundary_e_id >= 0 )
-		tet_vertices[ v2_id ].on_boundary_e_id = tet_vertices[ v1_id ].on_boundary_e_id;
 
 	// tets
 	// update quality

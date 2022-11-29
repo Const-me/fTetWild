@@ -31,6 +31,8 @@ namespace floatTetWild
 		{
 		}
 		Vector3 pos;
+		Scalar sizing_scalar = 1;
+		uint16_t flags = 0;
 
 		inline Scalar& operator[]( const int index )
 		{
@@ -45,7 +47,6 @@ namespace floatTetWild
 		}
 
 		VertexConnectedTets connTets;
-		uint16_t flags = 0;
 		inline bool hasFlag( eVertexFlags f ) const
 		{
 			return 0 != ( flags & (uint16_t)f );
@@ -90,9 +91,6 @@ namespace floatTetWild
 		{
 			return hasFlag( eVertexFlags::BoundingBox );
 		}
-
-		int on_boundary_e_id = -1;
-		Scalar sizing_scalar = 1;
-		Scalar scalar = 0;
+		static constexpr int on_boundary_e_id = -1;
 	};
 }  // namespace floatTetWild
