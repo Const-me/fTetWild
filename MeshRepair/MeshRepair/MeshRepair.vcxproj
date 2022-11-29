@@ -97,6 +97,7 @@
     <ClInclude Include="API\eGlobalFlags.h" />
     <ClInclude Include="API\interfaces.h" />
     <ClInclude Include="API\library.h" />
+    <ClInclude Include="API\loggerApi.h" />
     <ClInclude Include="API\Parameters.h" />
     <ClInclude Include="convertParameters.h" />
     <ClInclude Include="resource.h" />

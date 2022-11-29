@@ -28,6 +28,7 @@
     <ClInclude Include="API\eGlobalFlags.h" />
     <ClInclude Include="Utils\downcastMesh.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="API\loggerApi.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="API">
