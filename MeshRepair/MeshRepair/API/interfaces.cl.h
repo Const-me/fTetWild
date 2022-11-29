@@ -35,6 +35,6 @@ namespace MeshRepair
 		virtual HRESULT COMLIGHTCALL createIndexedMeshFP32(
 		  uint32_t countVertices, const float* vb, uint32_t countTriangles, const uint32_t* ib, iSourceMesh** rdi ) = 0;
 
-		virtual HRESULT COMLIGHTCALL repair( iSourceMesh* mesh, const Parameters& parameters, iResultMesh** rdi ) = 0;
+		virtual HRESULT COMLIGHTCALL repair( const iSourceMesh* mesh, const Parameters& parameters, iResultMesh** rdi ) = 0;
 	};
 }  // namespace MeshRepair

@@ -7,13 +7,12 @@
 #include "../TetWild2/src/TriangleInsertion.h"
 #include "../TetWild2/src/MeshImprovement.h"
 #include "ResultMesh.h"
-// #include "Utils/writeStl.h"
 #include "../TetWild2/parallelThreadsImpl.h"
 #include "Utils/downcastMesh.h"
 
 using namespace floatTetWild;
 
-HRESULT meshRepairMain( MeshRepair::SourceMesh& rsi, MeshRepair::eGlobalFlags globalFlags, const MeshRepair::Parameters& parameters,
+HRESULT meshRepairMain( const MeshRepair::SourceMesh& rsi, MeshRepair::eGlobalFlags globalFlags, const MeshRepair::Parameters& parameters,
   const MeshRepair::sLoggerSetup& logger, MeshRepair::iResultMesh** rdi ) noexcept
 {
 	// writeStl( rsi.input_vertices, rsi.input_faces, LR"(C:\Temp\2remove\MeshRepair\Temp-01.stl)" );
@@ -28,7 +27,7 @@ HRESULT meshRepairMain( MeshRepair::SourceMesh& rsi, MeshRepair::eGlobalFlags gl
 		MeshRepair::SetThreadsCountRaii iglThreadCountSet { params.num_threads };
 		mesh.createThreadLocalBuffers();
 
-		AABBWrapper tree( rsi.mesh, mesh.facetRecursionStacks );
+		AABBWrapper tree( rsi.getMesh(), mesh.facetRecursionStacks );
 		const double boxDiagonal = tree.get_sf_diag();
 		if( parameters.hasFlag( eRepairFlags::LengthsAreAbsolute ) )
 		{
@@ -40,19 +39,25 @@ HRESULT meshRepairMain( MeshRepair::SourceMesh& rsi, MeshRepair::eGlobalFlags gl
 
 		mesh.logger().logInfo( "Preprocessing.." );
 		const bool skipSimplify = parameters.hasFlag( eRepairFlags::SkipSimplify );
-		simplify( rsi.input_vertices, rsi.input_faces, rsi.input_tags, tree, params, skipSimplify );
-		tree.init_b_mesh_and_tree( rsi.input_vertices, rsi.input_faces, mesh );
+
+		std::vector<floatTetWild::Vector3> input_vertices;
+		std::vector<floatTetWild::Vector3i> input_faces;
+		std::vector<int> input_tags;
+		rsi.makeBuffers( input_vertices, input_faces, &input_tags );
+
+		simplify( input_vertices, input_faces, input_tags, tree, params, skipSimplify );
+		tree.init_b_mesh_and_tree( input_vertices, input_faces, mesh );
 
 		mesh.logger().logInfo( "Creating initial volume mesh.." );
 		BoolVector is_face_inserted;
-		is_face_inserted.resize( rsi.input_faces.size(), false );
-		FloatTetDelaunay::tetrahedralize( rsi.input_vertices, rsi.input_faces, tree, mesh, is_face_inserted );
+		is_face_inserted.resize( input_faces.size(), false );
+		FloatTetDelaunay::tetrahedralize( input_vertices, input_faces, tree, mesh, is_face_inserted );
 
 		mesh.logger().logInfo( "Inserting triangles.." );
-		insert_triangles( rsi.input_vertices, rsi.input_faces, rsi.input_tags, mesh, is_face_inserted, tree, false );
+		insert_triangles( input_vertices, input_faces, input_tags, mesh, is_face_inserted, tree, false );
 
 		mesh.logger().logInfo( "Optimization passes.." );
-		optimization( rsi.input_vertices, rsi.input_faces, rsi.input_tags, is_face_inserted, mesh, tree, { { 1, 1, 1, 1 } } );
+		optimization( input_vertices, input_faces, input_tags, is_face_inserted, mesh, tree, { { 1, 1, 1, 1 } } );
 
 		mesh.logger().logInfo( "Correcting tracked surface orientation.." );
 		correct_tracked_surface_orientation( mesh, tree );
@@ -75,7 +80,7 @@ HRESULT meshRepairMain( MeshRepair::SourceMesh& rsi, MeshRepair::eGlobalFlags gl
 				if( params.use_floodfill )
 					filter_outside_floodfill( mesh );
 				else if( params.use_input_for_wn )
-					filter_outside( mesh, rsi.input_vertices, rsi.input_faces );
+					filter_outside( mesh, input_vertices, input_faces );
 				else
 					filter_outside( mesh );
 			}

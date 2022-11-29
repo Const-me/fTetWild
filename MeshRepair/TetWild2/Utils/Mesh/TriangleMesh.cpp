@@ -41,19 +41,24 @@ void TriangleMesh::clearMesh( bool keepMemory )
 	triangles.shrink_to_fit();
 }
 
-HRESULT TriangleMesh::copyData( std::vector<floatTetWild::Vector3>& vb, std::vector<floatTetWild::Vector3i>& ib ) const
+void TriangleMesh::copyDataCpp( std::vector<floatTetWild::Vector3>& vb, std::vector<floatTetWild::Vector3i>& ib ) const
 {
 	static_assert( sizeof( floatTetWild::Vector3 ) == sizeof( GEO2::vec3 ), "sizeof" );
 	static_assert( sizeof( floatTetWild::Vector3i ) == sizeof( GEO2::vec3i ), "sizeof" );
 
 	// Extract the data, store in different types
+	const floatTetWild::Vector3* vertBegin = (const floatTetWild::Vector3*)vertexPointer();
+	vb.assign( vertBegin, vertBegin + countVertices() );
+
+	const floatTetWild::Vector3i* idxBuffer = (const floatTetWild::Vector3i*)trianglePointer();
+	ib.assign( idxBuffer, idxBuffer + countTriangles() );
+}
+
+HRESULT TriangleMesh::copyData( std::vector<floatTetWild::Vector3>& vb, std::vector<floatTetWild::Vector3i>& ib ) const
+{
 	try
 	{
-		const floatTetWild::Vector3* vertBegin = (const floatTetWild::Vector3*)vertexPointer();
-		vb.assign( vertBegin, vertBegin + countVertices() );
-
-		const floatTetWild::Vector3i* idxBuffer = (const floatTetWild::Vector3i*)trianglePointer();
-		ib.assign( idxBuffer, idxBuffer + countTriangles() );
+		copyDataCpp( vb, ib );
 		return S_OK;
 	}
 	catch( const std::bad_alloc& )

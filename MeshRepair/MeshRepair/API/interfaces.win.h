@@ -43,6 +43,6 @@ namespace MeshRepair
 		virtual HRESULT __stdcall createIndexedMeshFP32(
 		  uint32_t countVertices, const float* vb, uint32_t countTriangles, const uint32_t* ib, iSourceMesh** rdi ) = 0;
 
-		virtual HRESULT __stdcall repair( iSourceMesh* mesh, const Parameters& parameters, iResultMesh** rdi ) = 0;
+		virtual HRESULT __stdcall repair( const iSourceMesh* mesh, const Parameters& parameters, iResultMesh** rdi ) = 0;
 	};
 }  // namespace MeshRepair

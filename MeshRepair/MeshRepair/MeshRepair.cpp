@@ -19,7 +19,7 @@ namespace MeshRepair
 		HRESULT COMLIGHTCALL createIndexedMeshFP32(
 		  uint32_t countVertices, const float* vb, uint32_t countTriangles, const uint32_t* ib, iSourceMesh** rdi ) noexcept override final;
 
-		HRESULT COMLIGHTCALL repair( iSourceMesh* mesh, const Parameters& parameters, iResultMesh** rdi ) noexcept override final;
+		HRESULT COMLIGHTCALL repair( const iSourceMesh* mesh, const Parameters& parameters, iResultMesh** rdi ) noexcept override final;
 
 		eGlobalFlags globalFlags;
 		sLoggerSetup logger;
@@ -92,12 +92,12 @@ namespace MeshRepair
 		return S_OK;
 	}
 
-	HRESULT COMLIGHTCALL MeshRepair::repair( iSourceMesh* mesh, const Parameters& parameters, iResultMesh** rdi ) noexcept
+	HRESULT COMLIGHTCALL MeshRepair::repair( const iSourceMesh* mesh, const Parameters& parameters, iResultMesh** rdi ) noexcept
 	{
 		if( nullptr == mesh || nullptr == rdi )
 			return E_POINTER;
 
-		SourceMesh* const objMesh = static_cast<SourceMesh*>( mesh );
+		const SourceMesh* const objMesh = static_cast<const SourceMesh*>( mesh );
 		try
 		{
 			return meshRepairMain( *objMesh, globalFlags, parameters, logger, rdi );

@@ -15,8 +15,12 @@ class TriangleMesh : public MeshBase
 
 	// Set index buffer of the mesh
 	HRESULT assignTriangles( size_t count, const uint32_t* ib );
+
 	// Copy vertex and index buffer out of the mesh
 	HRESULT copyData( std::vector<floatTetWild::Vector3>& vb, std::vector<floatTetWild::Vector3i>& ib ) const;
+
+	// Same as above, doesn't handle C++ exceptions
+	void copyDataCpp( std::vector<floatTetWild::Vector3>& vb, std::vector<floatTetWild::Vector3i>& ib ) const;
 
 	uint32_t countTriangles() const
 	{
