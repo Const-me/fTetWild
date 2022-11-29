@@ -29,6 +29,7 @@
     <ClInclude Include="Utils\downcastMesh.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="API\loggerApi.h" />
+    <ClInclude Include="API\interfaces.win.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="API">

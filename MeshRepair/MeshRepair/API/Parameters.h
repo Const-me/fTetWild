@@ -1,5 +1,4 @@
 #pragma once
-#include <stdint.h>
 #include "eGlobalFlags.h"
 
 namespace MeshRepair

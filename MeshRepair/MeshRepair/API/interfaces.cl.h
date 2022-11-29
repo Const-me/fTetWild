@@ -1,6 +1,10 @@
-// ComLight flavor of the COM interfaces exposed by the MeshRepair.dll
+﻿// ComLight flavor of the COM interfaces implemented by the MeshRepair.dll
+// Include this header if you're porting the library to Linux, and it's also used by the implementation of the DLL
 #pragma once
+
+// That header defines HRESULT codes, ComLight::IUnknown interface, and a few supporting classes and macros
 #include "../../ComLightLib/comLightClient.h"
+// Parameters.h includes <stdint.h>
 #include "Parameters.h"
 
 namespace MeshRepair

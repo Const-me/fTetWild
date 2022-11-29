@@ -96,6 +96,7 @@
   <ItemGroup>
     <ClInclude Include="API\eGlobalFlags.h" />
     <ClInclude Include="API\interfaces.cl.h" />
+    <ClInclude Include="API\interfaces.win.h" />
     <ClInclude Include="API\library.h" />
     <ClInclude Include="API\loggerApi.h" />
     <ClInclude Include="API\Parameters.h" />
