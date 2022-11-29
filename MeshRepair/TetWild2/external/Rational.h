@@ -141,6 +141,11 @@ namespace triwild
 		{
 			mpq_sub( value, a.value, b.value );
 		}
+		// Set this value to a * b
+		void mul( const Rational& a, const Rational& b )
+		{
+			mpq_mul( value, a.value, b.value );
+		}
 		void negate()
 		{
 			mpq_neg( value, value );

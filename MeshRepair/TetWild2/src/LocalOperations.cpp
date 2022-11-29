@@ -843,6 +843,7 @@ namespace
 		return cubicRoot( res_r.asDouble() );
 	}
 
+	// Algebraic optimization of AMIPS_energy_rational_v1
 	static double AMIPS_energy_rational_v2( const std::array<double, 12>& T )
 	{
 		using namespace floatTetWild;
@@ -901,13 +902,163 @@ namespace
 		return cubicRoot( res_r.asDouble() );
 	}
 
+	// acc += lhs * ( lhs + twothird * rhs ); this destroys rhs because using it for temporary values
+	inline void accStep2( triwild::Rational& acc, const triwild::Rational& twothird, const triwild::Rational& lhs, triwild::Rational& rhs )
+	{
+		rhs *= twothird;
+		rhs += lhs;
+		rhs *= lhs;
+		acc += rhs;
+	}
+
+	// acc += lhs * ( lhs + rhs ); this destroys rhs because using it for temporary values
+	inline void accStep2( triwild::Rational& acc, const triwild::Rational& lhs, triwild::Rational& rhs )
+	{
+		rhs += lhs;
+		rhs *= lhs;
+		acc += rhs;
+	}
+
+	// Optimized AMIPS_energy_rational_v2 to reduce count of memory allocations, and cache friendliness
+	static double AMIPS_energy_rational_v3( const std::array<double, 12>& T )
+	{
+		using namespace floatTetWild;
+
+		if( is_degenerate(
+			  Vector3( T[ 0 ], T[ 1 ], T[ 2 ] ), Vector3( T[ 3 ], T[ 4 ], T[ 5 ] ), Vector3( T[ 6 ], T[ 7 ], T[ 8 ] ), Vector3( T[ 9 ], T[ 10 ], T[ 11 ] ) ) )
+		{
+			pausee( "energy computation degenerate found!!!" );
+			return std::numeric_limits<double>::infinity();
+		}
+
+		std::array<triwild::Rational, 12> r_T;
+		for( int j = 0; j < 12; j++ )
+			r_T[ j ] = T[ j ];
+
+		triwild::Rational temp0, temp1, temp2;
+		temp0.sub( r_T[ 6 ], r_T[ 3 ] );
+		temp1.sub( r_T[ 3 ], r_T[ 0 ] );
+		temp2.sub( r_T[ 6 ], r_T[ 0 ] );
+
+		triwild::Rational tmp, inner, outer;
+
+		// ( d63 * r_T[ 2 ] + d30 * r_T[ 8 ] - d60 * r_T[ 5 ] ) * r_T[ 10 ]
+		tmp.mul( temp0, r_T[ 2 ] );
+		inner.mul( temp1, r_T[ 8 ] );
+		tmp += inner;
+		inner.mul( temp2, r_T[ 5 ] );
+		tmp -= inner;
+		tmp *= r_T[ 10 ];
+
+		// - ( d63 * r_T[ 1 ] + d30 * r_T[ 7 ] - d60 * r_T[ 4 ] ) * r_T[ 11 ]
+		outer.mul( temp0, r_T[ 1 ] );
+		inner.mul( temp1, r_T[ 7 ] );
+		outer += inner;
+		inner.mul( temp2, r_T[ 4 ] );
+		outer -= inner;
+		outer *= r_T[ 11 ];
+		tmp -= outer;
+
+		temp0.sub( r_T[ 9 ], r_T[ 3 ] );
+		temp1.sub( r_T[ 9 ], r_T[ 6 ] );
+
+		// + ( d93 * r_T[ 8 ] - d96 * r_T[ 5 ] ) * r_T[ 1 ]
+		outer.mul( temp0, r_T[ 8 ] );
+		inner.mul( temp1, r_T[ 5 ] );
+		outer -= inner;
+		outer *= r_T[ 1 ];
+		tmp += outer;
+
+		// - ( d93 * r_T[ 7 ] - d96 * r_T[ 4 ] ) * r_T[ 2 ]
+		outer.mul( temp0, r_T[ 7 ] );
+		inner.mul( temp1, r_T[ 4 ] );
+		outer -= inner;
+		outer *= r_T[ 2 ];
+		tmp -= outer;
+
+		// + ( r_T[ 4 ] * r_T[ 8 ] - r_T[ 5 ] * r_T[ 7 ] ) * ( r_T[ 0 ] - r_T[ 9 ] );
+		outer.mul( r_T[ 4 ], r_T[ 8 ] );
+		inner.mul( r_T[ 5 ], r_T[ 7 ] );
+		outer -= inner;
+		inner.sub( r_T[ 0 ], r_T[ 9 ] );
+		outer *= inner;
+		tmp += outer;
+
+		if( 0 == tmp.getSign() )
+			return std::numeric_limits<double>::infinity();
+
+		// -2/3
+		const triwild::Rational twothird { -2, 3 };
+
+		temp0.add( r_T[ 4 ], r_T[ 7 ] );
+		temp1.add( r_T[ 5 ], r_T[ 8 ] );
+		temp2.add( r_T[ 0 ], r_T[ 9 ] );
+
+		// r_T[ 0 ] * ( r_T[ 0 ] - twothird * r_T[ 9 ] )
+		outer.mul( r_T[ 9 ], twothird );
+		outer += r_T[ 0 ];
+		outer *= r_T[ 0 ];
+
+		// + r_T[ 1 ] * ( r_T[ 1 ] - twothird * s47 )
+		inner.mul( temp0, twothird );
+		accStep2( outer, r_T[ 1 ], inner );
+
+		// + r_T[ 2 ] * ( r_T[ 2 ] - twothird * s58 )
+		inner.mul( temp1, twothird );
+		accStep2( outer, r_T[ 2 ], inner );
+
+		// + r_T[ 3 ] * ( r_T[ 3 ] - twothird * ( s09 + r_T[ 6 ] ) )
+		inner.add( temp2, r_T[ 6 ] );
+		accStep2( outer, twothird, r_T[ 3 ], inner );
+
+		// + r_T[ 4 ] * ( r_T[ 4 ] - twothird * r_T[ 7 ] )
+		inner.mul( r_T[ 7 ], twothird );
+		accStep2( outer, r_T[ 4 ], inner );
+
+		// + r_T[ 5 ] * ( r_T[ 5 ] - twothird * r_T[ 8 ] )
+		inner.mul( r_T[ 8 ], twothird );
+		accStep2( outer, r_T[ 5 ], inner );
+
+		// + r_T[ 6 ] * ( r_T[ 6 ] - twothird * s09 )
+		inner.mul( temp2, twothird );
+		accStep2( outer, r_T[ 6 ], inner );
+
+		// + r_T[ 7 ] * r_T[ 7 ]
+		inner.mul( r_T[ 7 ], r_T[ 7 ] );
+		outer += inner;
+
+		// + r_T[ 8 ] * r_T[ 8 ]
+		inner.mul( r_T[ 8 ], r_T[ 8 ] );
+		outer += inner;
+
+		// + r_T[ 9 ] * r_T[ 9 ]
+		inner.mul( r_T[ 9 ], r_T[ 9 ] );
+		outer += inner;
+
+		// + r_T[ 10 ] * ( r_T[ 10 ] - twothird * ( r_T[ 1 ] + s47 ) )
+		inner.add( r_T[ 1 ], temp0 );
+		accStep2( outer, twothird, r_T[ 10 ], inner );
+
+		// + r_T[ 11 ] * ( r_T[ 11 ] - twothird * ( r_T[ 2 ] + s58 ) )
+		inner.add( r_T[ 2 ], temp1 );
+		accStep2( outer, twothird, r_T[ 11 ], inner );
+
+		inner.rational( 27, 16 );
+		inner /= tmp;
+		inner /= tmp;
+		inner *= outer;
+		inner *= outer;
+		inner *= outer;
+		return cubicRoot( inner.asDouble() );
+	}
+
 	static double AMIPS_energy_rational( const std::array<double, 12>& T )
 	{
 #if 1
-		return AMIPS_energy_rational_v2( T );
+		return AMIPS_energy_rational_v3( T );
 #else
 		const double v1 = AMIPS_energy_rational_v1( T );
-		const double v2 = AMIPS_energy_rational_v2( T );
+		const double v2 = AMIPS_energy_rational_v3( T );
 		if( v1 != v2 )
 			__debugbreak();
 		return v1;
