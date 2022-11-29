@@ -453,15 +453,18 @@ bool floatTetWild::is_out_envelope( Mesh& mesh, int v_id, const Vector3& new_pos
 	return false;
 }
 
+namespace
+{
+	// std::sqrt( 3 ) / 2;
+	constexpr double sqrt3_2 = 0.86602540378443864676372317075294;
+}
+
 void floatTetWild::sample_triangle( const std::array<Vector3, 3>& vs, std::vector<GEO2::vec3>& ps, Scalar sampling_dist )
 {
-	Scalar sqrt3_2 = std::sqrt( 3 ) / 2;
-
 	std::array<Scalar, 3> ls;
 	for( int i = 0; i < 3; i++ )
-	{
 		ls[ i ] = ( vs[ i ] - vs[ mod3( i + 1 ) ] ).squaredNorm();
-	}
+
 	auto min_max = std::minmax_element( ls.begin(), ls.end() );
 	int min_i = min_max.first - ls.begin();
 	int max_i = min_max.second - ls.begin();
@@ -481,9 +484,7 @@ void floatTetWild::sample_triangle( const std::array<Vector3, 3>& vs, std::vecto
 
 	GEO2::vec3 n_v0v1 = GEO2::normalize( v1 - v0 );
 	for( int n = 0; n <= N; n++ )
-	{
 		ps.push_back( v0 + n_v0v1 * sampling_dist * n );
-	}
 	ps.push_back( v1 );
 
 	Scalar h = GEO2::distance( GEO2::dot( ( v2 - v0 ), ( v1 - v0 ) ) * ( v1 - v0 ) / ls[ max_i ] + v0, v2 );
@@ -507,9 +508,7 @@ void floatTetWild::sample_triangle( const std::array<Vector3, 3>& vs, std::vecto
 		int n = sqrt3_2 / tan_v0 * m + 0.5;
 		int n1 = sqrt3_2 / tan_v0 * m;
 		if( m % 2 == 0 && n == n1 )
-		{
-			n += 1;
-		}
+			n++;
 		GEO2::vec3 v0_m = v0 + m * sqrt3_2 * sampling_dist / sin_v0 * n_v0v2;
 		GEO2::vec3 v1_m = v1 + m * sqrt3_2 * sampling_dist / sin_v1 * n_v1v2;
 		if( GEO2::distance( v0_m, v1_m ) <= sampling_dist )
@@ -520,9 +519,7 @@ void floatTetWild::sample_triangle( const std::array<Vector3, 3>& vs, std::vecto
 		int N1 = GEO2::distance( v, v1_m ) / sampling_dist;
 		//        ps.push_back(v0_m);
 		for( int i = 0; i <= N1; i++ )
-		{
 			ps.push_back( v + i * n_v0v1 * sampling_dist );
-		}
 		//        ps.push_back(v1_m);
 	}
 	ps.push_back( v2 );
@@ -558,8 +555,6 @@ bool floatTetWild::sample_triangle_and_check_is_out(
 {
 	GEO2::vec3 nearest_point;
 	double sq_dist = std::numeric_limits<double>::max();
-
-	Scalar sqrt3_2 = std::sqrt( 3 ) / 2;
 
 	std::array<Scalar, 3> ls;
 	for( int i = 0; i < 3; i++ )
