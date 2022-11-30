@@ -26,7 +26,7 @@ I’ve benchmarked on [Stanford dragon](https://en.wikipedia.org/wiki/Stanford_d
 The computer I’m using at the time of writing has AMD [Ryzen 7 5700G](https://www.amd.com/en/products/apu/amd-ryzen-7-5700g) processor.
 
 The original version took 4:51, process time 07:46<br/>
-My version took 01:53 (so more than twice as fast), process time 03:43
+My version 1.3.0 took 01:34 (about 3 times faster), process time 03:02
 
 Despite I managed to make it way faster, I’m not quite happy with the performance.<br/>
 Just like the original version, this fork is mostly single-threaded.<br/>
