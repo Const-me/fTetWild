@@ -117,53 +117,25 @@ namespace floatTetWild
 			return false;
 		}
 
-		inline bool is_out_b_envelope( const std::vector<GEO2::vec3>& ps, const Scalar eps_2, GEO2::index_t prev_facet = GEO2::NO_FACET ) const
+		inline bool is_out_b_envelope( const std::vector<GEO2::vec3>& ps, __m128d eps21, GEO2::index_t prev_facet = GEO2::NO_FACET ) const
 		{
-			GEO2::vec3 nearest_point;
-			double sq_dist = std::numeric_limits<double>::max();
-
 			for( const GEO2::vec3& current_point : ps )
 			{
-				if( prev_facet != GEO2::NO_FACET )
-				{
-					const __m256d pos = AvxMath::loadDouble3( &current_point.x );
-					get_point_facet_nearest_point( b_mesh, pos, prev_facet, nearest_point, sq_dist );
-				}
-				if( Scalar( sq_dist ) > eps_2 )
-				{
-					b_tree->facet_in_envelope_with_hint( current_point, eps_2, prev_facet, nearest_point, sq_dist );
-				}
-				if( Scalar( sq_dist ) > eps_2 )
-				{
+				__m256d p = AvxMath::loadDouble3( &current_point.x );
+				if( b_tree->isOutOfEnvelope( p, eps21, prev_facet ) )
 					return true;
-				}
 			}
-
 			return false;
 		}
 
-		inline bool is_out_tmp_b_envelope( const std::vector<GEO2::vec3>& ps, const Scalar eps_2, GEO2::index_t prev_facet = GEO2::NO_FACET ) const
+		inline bool is_out_tmp_b_envelope( const std::vector<GEO2::vec3>& ps, __m128d eps21, GEO2::index_t prev_facet = GEO2::NO_FACET ) const
 		{
-			GEO2::vec3 nearest_point;
-			double sq_dist = std::numeric_limits<double>::max();
-
 			for( const GEO2::vec3& current_point : ps )
 			{
-				if( prev_facet != GEO2::NO_FACET )
-				{
-					const __m256d pos = AvxMath::loadDouble3( &current_point.x );
-					get_point_facet_nearest_point( tmp_b_mesh, pos, prev_facet, nearest_point, sq_dist );
-				}
-				if( Scalar( sq_dist ) > eps_2 )
-				{
-					tmp_b_tree->facet_in_envelope_with_hint( current_point, eps_2, prev_facet, nearest_point, sq_dist );
-				}
-				if( Scalar( sq_dist ) > eps_2 )
-				{
+				__m256d p = AvxMath::loadDouble3( &current_point.x );
+				if( tmp_b_tree->isOutOfEnvelope( p, eps21, prev_facet ) )
 					return true;
-				}
 			}
-
 			return false;
 		}
 

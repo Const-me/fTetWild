@@ -719,6 +719,13 @@ namespace floatTetWild
 		return bestDistance > eps2;
 	}
 
+	bool MeshFacetsAABBWithEps::isOutOfEnvelope( __m256d pos, __m128d eps21, uint32_t& prevFace ) const
+	{
+		__m128i root = _mm_cvtsi32_si128( 1 );
+		root = _mm_insert_epi32( root, (int)(uint32_t)mesh_.countTriangles(), 2 );
+		return isOutOfEnvelope( pos, eps21, root, prevFace );
+	}
+
 	bool MeshFacetsAABBWithEps::isOutOfEnvelope( __m256d pos, double eps2, const std::vector<uint32_t>& faces ) const
 	{
 		for( uint32_t f : faces )

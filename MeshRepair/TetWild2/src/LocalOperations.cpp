@@ -182,10 +182,11 @@ bool floatTetWild::is_boundary_edge( const Mesh& mesh, int v1_id, int v2_id, con
 		AvxMath::storeDouble3( ps.emplace_back().data(), pos );
 	}
 
+	const __m128d eps21 = _mm_loadu_pd( &mesh.params.eps_2 );
 	if( !mesh.is_input_all_inserted )
-		return !tree.is_out_tmp_b_envelope( ps, mesh.params.eps_2 );
+		return !tree.is_out_tmp_b_envelope( ps, eps21 );
 	else
-		return !tree.is_out_b_envelope( ps, mesh.params.eps_2 );
+		return !tree.is_out_b_envelope( ps, eps21 );
 }
 
 bool floatTetWild::is_valid_edge( const Mesh& mesh, int v1_id, int v2_id )
@@ -422,7 +423,10 @@ bool floatTetWild::is_out_boundary_envelope( const Mesh& mesh, int v_id, const V
 			ps.push_back( ps[ p0_id ] * ( j / N ) + ps[ p1_id ] * ( 1 - j / N ) );
 		}
 	}
-	return tree.is_out_tmp_b_envelope( ps, mesh.params.eps_2 / 100, prev_facet );
+
+	__m128d eps21 = _mm_loadu_pd( &mesh.params.eps_2 );
+	eps21 = _mm_div_pd( eps21, _mm_setr_pd( 100, 10 ) );	// These two numbers are [ eps^2, eps ], we want to decrement by a factor of 10
+	return tree.is_out_tmp_b_envelope( ps, eps21, prev_facet );
 }
 
 bool floatTetWild::is_out_envelope( Mesh& mesh, int v_id, const Vector3& new_pos, const AABBWrapper& tree )
@@ -668,7 +672,7 @@ namespace
 		__m256d ax = AvxMath::vector3BroadcastMaximum( vec3 );
 		// Compare for equality
 		const __m256d eq = _mm256_cmp_pd( vec3, ax, _CMP_EQ_OQ );
-		// Return index of the first equal lane
+		// Return index of the last equal lane
 		uint32_t mask = _mm256_movemask_pd( eq );
 		mask &= 0b111;
 		uint32_t idx = _lzcnt_u32( mask );
