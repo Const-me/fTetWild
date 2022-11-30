@@ -715,6 +715,8 @@ bool floatTetWild::sampleTriangleAndCheckOut(
 		}
 		return false;
 	}
+	// TODO [low]: replace the following code with simpler, faster, and more accurate algorithm of generating the mid.points, based on barycentric coordinates
+	// Here's a good algorithm: https://www.khronos.org/opengl/wiki/tessellation#Triangles
 	if( N == int( N ) )
 		N -= 1;
 
