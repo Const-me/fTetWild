@@ -718,7 +718,7 @@ namespace floatTetWild
 		sqDistResult = sqDist;
 	}
 
-	void MeshFacetsAABBWithEps::facetInEnvelopeStack32(
+	void MeshFacetsAABBWithEps::facetInEnvelopeStack32_v1(
 	  __m256d p, double sqEpsilon, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDistResult ) const
 	{
 		std::vector<FacetRecursionFrame32>& stack = recursionStacks[ omp_get_thread_num() ].stack32;
@@ -820,6 +820,167 @@ namespace floatTetWild
 		assert( stack.empty() );
 		// Store the result back to memory
 		sqDistResult = sqDist;
+	}
+
+	inline __m256 makeBoxVector( __m256d p, double sqEpsilon )
+	{
+		// std::sqrt() is a function call, this code is called too frequently, compute square root with 1 instruction instead
+		__m128d e2 = _mm_set_sd( sqEpsilon );
+		__m128d eps = _mm_sqrt_sd( e2, e2 );
+
+		const __m256d ev = _mm256_set1_pd( _mm_cvtsd_f64( eps ) );
+		const __m256d i = _mm256_sub_pd( p, ev );
+		const __m256d ax = _mm256_add_pd( p, ev );
+		return Box32::createBoxVector( i, ax );
+	}
+
+	void MeshFacetsAABBWithEps::facetInEnvelopeStack32_v2(
+	  __m256d p, double sqEpsilon, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDistResult ) const
+	{
+		std::vector<FacetRecursionFrame32>& stack = recursionStacks[ omp_get_thread_num() ].stack32;
+		const __m256 boxVec = makeBoxVector( p, sqEpsilon );
+
+		const __m128 p32_single = _mm256_cvtpd_ps( p );
+		// Duplicate the downcasted position into low & high halves of an AVX vector, for pointBoxSignedSquaredDistanceX2 function
+		const __m256 p32 = _mm256_setr_m128( p32_single, p32_single );
+
+		// Copy that value from memory to a register, saves quite a few loads/stores in the loop below
+		double sqDist = sqDistResult;
+
+		// Setup the initial state
+		uint32_t n = 1;
+		uint32_t b = 0;
+		uint32_t e = (uint32_t)mesh_.countTriangles();
+
+#define POP_FROM_THE_STACK()      \
+	if( stack.empty() )           \
+		break;                    \
+	const auto& f = stack.back(); \
+	n = f.n;                      \
+	b = f.b;                      \
+	e = f.e;                      \
+	stack.pop_back()
+
+		// Run the "recursion" using an std::vector instead of the stack
+		while( true )
+		{
+			assert( e > b );
+
+			if( b + 1 == e )
+			{
+				// If node is a leaf: compute point-facet distance and replace current if nearer
+				vec3 cur_nearest_point;
+				double cur_sq_dist;
+				get_point_facet_nearest_point( mesh_, p, b, cur_nearest_point, cur_sq_dist );
+				if( cur_sq_dist < sqDist )
+				{
+					nearestFacet = b;
+					nearestPoint = cur_nearest_point;
+					sqDist = cur_sq_dist;
+					if( cur_sq_dist <= sqEpsilon )
+					{
+						// This alone saves non-trivial amount of overhead compared to recursive version
+						// Clearing the complete std::vector only takes a few instructions
+						stack.clear();
+						break;
+					}
+				}
+				POP_FROM_THE_STACK();
+				continue;
+			}
+
+			const uint32_t m = b + ( e - b ) / 2;
+			const uint32_t childl = 2 * n;
+			const uint32_t childr = 2 * n + 1;
+
+			uint8_t bitmap = boxesFloat[ childl ].intersects( boxVec ) ? 1 : 0;
+			bitmap |= boxesFloat[ childr ].intersects( boxVec ) ? 2 : 0;
+
+			if( 0 == bitmap )
+			{
+				// None of the 2 children intersected with the query box
+				POP_FROM_THE_STACK();
+				continue;
+			}
+
+			if( 1 == bitmap )
+			{
+				// Only the left child has intersected, replace the state with [ childl, b, m ]
+				n = childl;
+				e = m;
+				continue;
+			}
+
+			if( 2 == bitmap )
+			{
+				// Only the right child has intersected, replace the state with [ childr, m, e ]
+				n = childr;
+				b = m;
+				continue;
+			}
+
+			// They both intersected. Compute signed distance to both boxes, which is way more expensive than testing for intersections,
+			// and select the direction to follow
+			const __m256 distX2 = Box32::pointBoxSignedSquaredDistanceX2( boxesFloat[ childl ], boxesFloat[ childr ], p32 );
+
+			const float distL = _mm256_cvtss_f32( distX2 );
+			const float distR = _mm_cvtss_f32( _mm256_extractf128_ps( distX2, 2 ) );
+
+			auto& newFrame = stack.emplace_back();
+
+			if( distL < distR ) 
+			{
+				// Push the right [ childr, m, e ] state to the stack, and replace the current state with the left one
+				newFrame.n = childr;
+				newFrame.b = m;
+				newFrame.e = e;
+
+				n = childl;
+				e = m;
+			}
+			else
+			{
+				// Push the left [ childl, b, m ] state to the stack, and replace the current state with the right one
+				newFrame.n = childl;
+				newFrame.b = b;
+				newFrame.e = m;
+
+				n = childr;
+				b = m;
+			}
+		}
+#undef POP_FROM_THE_STACK
+
+		assert( stack.empty() );
+		// Store the result back to memory
+		sqDistResult = sqDist;
+	}
+
+	void MeshFacetsAABBWithEps::facetInEnvelopeStack32(
+	  __m256d p, double sqEpsilon, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDist ) const
+	{
+#if 1
+		facetInEnvelopeStack32_v2( p, sqEpsilon, nearestFacet, nearestPoint, sqDist );
+#else
+		const uint32_t nfInput = nearestFacet;
+		const vec3 npInput = nearestPoint;
+		const double sqDistInput = sqDist;
+
+		uint32_t nf1 = nfInput;
+		vec3 np1 = npInput;
+		double sqd1 = sqDistInput;
+		facetInEnvelopeStack32_v1( p, sqEpsilon, nf1, np1, sqd1 );
+
+		nearestFacet = nfInput;
+		nearestPoint = npInput;
+		sqDist = sqDistInput;
+		facetInEnvelopeStack32_v2( p, sqEpsilon, nearestFacet, nearestPoint, sqDist );
+
+		const bool found1 = sqd1 <= sqEpsilon;
+		const bool found2 = sqDist <= sqEpsilon;
+		if( found1 != found2 )
+			__debugbreak();
+#endif
 	}
 
 	void MeshFacetsAABBWithEps::facetInEnvelopeCompare(

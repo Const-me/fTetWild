@@ -216,6 +216,9 @@ namespace floatTetWild
 		  __m256d p, double sq_epsilon, GEO2::index_t& nearest_facet, GEO2::vec3& nearest_point, double& sq_dist, __m128i nbe ) const;
 
 		void facetInEnvelopeStack( __m256d p, double sqEpsilon, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDist ) const;
+
+		void facetInEnvelopeStack32_v1( __m256d p, double sqEpsilon, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDist ) const;
+		void facetInEnvelopeStack32_v2( __m256d p, double sqEpsilon, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDist ) const;
 		void facetInEnvelopeStack32( __m256d p, double sqEpsilon, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDist ) const;
 
 		void facetInEnvelopeCompare( __m256d p, double sqEpsilon, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDist, __m128i nbe ) const;
