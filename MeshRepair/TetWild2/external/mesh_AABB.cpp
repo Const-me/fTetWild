@@ -307,8 +307,10 @@ namespace floatTetWild
 
 		if constexpr( useFp32Boxes )
 		{
-			boxesFloat.reserve( boxesCount + 1 );
-			boxesFloat.resize( boxesCount );
+			boxesFloat.resize( boxesCount + 1 );
+			boxesFloat.back().setZero();
+			boxesFloat.pop_back();
+
 			initBoxesRecursive( M, boxesFloat, 1, 0, countTriangles );
 		}
 
@@ -866,5 +868,97 @@ namespace floatTetWild
 		if( sqDist == sqd1 )
 			return;
 		__debugbreak();
+	}
+
+	void MeshFacetsAABBWithEps::facesInTheBox( __m256d boxMin64, __m256d boxMax64, std::vector<uint32_t>& faces ) const
+	{
+		static_assert( useFp32Boxes );
+		std::vector<FacetRecursionFrame32>& stack = recursionStacks[ omp_get_thread_num() ].stack32;
+		faces.clear();
+
+		const __m256 boxVec = Box32::createBoxVector( boxMin64, boxMax64 );
+		// Setup the initial state
+		uint32_t n = 1;
+		uint32_t b = 0;
+		uint32_t e = (uint32_t)mesh_.countTriangles();
+
+#define POP_FROM_THE_STACK()      \
+	if( stack.empty() )           \
+		break;                    \
+	const auto& f = stack.back(); \
+	n = f.n;                      \
+	b = f.b;                      \
+	e = f.e;                      \
+	stack.pop_back()
+
+		// Run the "recursion" using an std::vector instead of the stack
+		while( true )
+		{
+			assert( e > b );
+
+			if( b + 1 == e )
+			{
+				// Node is a leaf, add the triangle.
+				// TODO: ideally do better filtering here, before adding the triangle
+				// Maybe a plane versus aligned box, or plane versus sphere
+				faces.push_back( b );
+				POP_FROM_THE_STACK();
+				continue;
+			}
+
+			const uint32_t m = b + ( e - b ) / 2;
+			const uint32_t childl = 2 * n;
+			const uint32_t childr = 2 * n + 1;
+
+			uint8_t bitmap = boxesFloat[ childl ].intersects( boxVec ) ? 1 : 0;
+			bitmap |= boxesFloat[ childr ].intersects( boxVec ) ? 2 : 0;
+
+			if( 0 == bitmap )
+			{
+				// None of the 2 children intersected with the query box
+				POP_FROM_THE_STACK();
+				continue;
+			}
+
+			if( 1 == bitmap )
+			{
+				// Only the left child has intersected, replace the state with [ childl, b, m ]
+				n = childl;
+				e = m;
+				continue;
+			}
+
+			if( 2 == bitmap )
+			{
+				// Only the right child has intersected, replace the state with [ childr, m, e ]
+				n = childr;
+				b = m;
+				continue;
+			}
+
+			// They both intersected. Push the right [ childr, m, e ] state to the stack, and replace the current state with the left one
+			auto& newFrame = stack.emplace_back();
+			newFrame.n = childr;
+			newFrame.b = m;
+			newFrame.e = e;
+
+			n = childl;
+			e = m;
+		}
+#undef POP_FROM_THE_STACK
+	}
+
+	bool MeshFacetsAABBWithEps::isOutOfEnvelope( __m256d pos, double eps2, const std::vector<uint32_t>& faces ) const
+	{
+		for( uint32_t f : faces )
+		{
+			const vec3 *p1, *p2, *p3;
+			mesh_.getTriangleVertices( f, &p1, &p2, &p3 );
+
+			const double sqd = point_triangle_squared_distance( pos, *p1, *p2, *p3, nullptr );
+			if( sqd < eps2 )
+				return false;
+		}
+		return true;
 	}
 }  // namespace floatTetWild

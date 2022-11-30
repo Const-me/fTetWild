@@ -4,6 +4,13 @@
 
 namespace floatTetWild
 {
+	// Downcast FP64 vector to FP32, rounding towards negative infinity
+	__m128 downcastFloor( __m256d pos );
+
+	// Downcast FP64 vector to FP32, rounding towards positive infinity
+	__m128 downcastCeil( __m256d pos );
+
+	// Axis-aligned 3D bounding box, with FP32 precision
 	struct alignas( 8 ) Box32
 	{
 		std::array<float, 3> boxMin, boxMax;
@@ -22,5 +29,13 @@ namespace floatTetWild
 
 		// Same as above, for 2 boxes and 2 input points in parallel
 		static __m256 pointBoxSignedSquaredDistanceX2( const Box32& b1, const Box32& b2, __m256 pos );
+
+		// Set this box to 0.0 in all 6 scalars
+		void setZero();
+
+		static __m256 createBoxVector( __m256d boxMin, __m256d boxMax );
+
+		// True when this box intersects other box, passed in the input registers
+		bool intersects( __m256 boxVector ) const;
 	};
 }  // namespace floatTetWild

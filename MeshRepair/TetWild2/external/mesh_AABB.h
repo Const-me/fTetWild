@@ -172,6 +172,13 @@ namespace floatTetWild
 				facetInEnvelopeStack( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist );
 		}
 
+		// Collect IDs of the faces which might intersect the specified bounding box
+		void facesInTheBox( __m256d boxMin64, __m256d boxMax64, std::vector<uint32_t>& faces ) const;
+
+		// Compute minimum squared distance between the point and the specified set of triangles
+		// Return true if that distance exceeds the supplied scalar
+		bool isOutOfEnvelope( __m256d pos, double eps2, const std::vector<uint32_t>& faces ) const;
+
 	  private:
 		/**
 		 * \brief The recursive function used by the implementation

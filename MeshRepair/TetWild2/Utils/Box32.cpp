@@ -132,13 +132,24 @@ namespace
 	}
 }  // namespace
 
+__m128 floatTetWild::downcastFloor( __m256d pos )
+{
+	return roundVector<false>( pos );
+}
+
+__m128 floatTetWild::downcastCeil( __m256d pos )
+{
+	return roundVector<true>( pos );
+}
+
 void Box32::computeTriangle( __m256d a, __m256d b, __m256d c )
 {
 	const __m256d i = _mm256_min_pd( _mm256_min_pd( a, b ), c );
 	const __m256d ax = _mm256_max_pd( _mm256_max_pd( a, b ), c );
 
-	__m128 i32 = roundVector<false>( i );
-	__m128 ax32 = roundVector<true>( ax );
+	__m128 i32 = downcastFloor( i );
+	__m128 ax32 = downcastCeil( ax );
+
 	_mm_storeu_ps( &boxMin[ 0 ], i32 );
 	storeFloat3( &boxMax[ 0 ], ax32 );
 }
@@ -307,4 +318,41 @@ __m256 Box32::pointBoxSignedSquaredDistanceX2( const Box32& b1, const Box32& b2,
 
 	// Select one of the output vectors
 	return _mm256_blendv_ps( resIn, resOut, mask );
+}
+
+void Box32::setZero()
+{
+	const __m128 z = _mm_setzero_ps();
+	_mm_storeu_ps( &boxMin[ 0 ], z );
+	_mm_store_sd( (double*)&boxMax[ 1 ], _mm_castps_pd( z ) );
+}
+
+static const float s_fltMin = -FLT_MAX;
+
+// Create a vector with [ -max.x, -max.y, -max.z, -FLT_MAX, min.x, min.y, min.z, -FLT_MAX ]
+__m256 Box32::createBoxVector( __m256d boxMin, __m256d boxMax )
+{
+	__m128 min32 = downcastFloor( boxMin );
+	__m128 max32 = downcastCeil( boxMax );
+	max32 = _mm_sub_ps( _mm_setzero_ps(), max32 );
+	__m256 res = _mm256_setr_m128( max32, min32 );
+	const __m256 floatMin = _mm256_broadcast_ss( &s_fltMin );
+	return _mm256_blend_ps( res, floatMin, 0b10001000 );
+}
+
+bool Box32::intersects( __m256 boxVector ) const
+{
+	// Load current box into vector box = [ -min.x, -min.y, -min.z, *, max.x, max.y, max.z, * ]
+	const __m128 z = _mm_setzero_ps();
+	const __m128 boxMin = _mm_sub_ps( z, _mm_loadu_ps( &this->boxMin[ 0 ] ) );
+	const __m128 boxMax = _mm_loadu_ps( &this->boxMax[ 0 ] );
+	const __m256 box = _mm256_setr_m128( boxMin, boxMax );
+
+	// Compare following vectors for less than:
+	// [ -min.x,    -min.y,    -min.z,        *,    max.x,    max.y,    max.z,        *    ]
+	// [ -bv.max.x, -bv.max.y, -bv.max.z, -FLT_MAX, bv.min.x, bv.min.y, bv.min.z, -FLT_MAX ]
+	const __m256 cmp = _mm256_cmp_ps( box, boxVector, _CMP_NGE_UQ );
+
+	// Any TRUE comparison of these 8 mean the boxes do NOT intersect
+	return (bool)_mm256_testz_ps( cmp, cmp );
 }
