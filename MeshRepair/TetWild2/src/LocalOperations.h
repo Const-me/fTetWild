@@ -55,7 +55,7 @@ namespace floatTetWild
 	bool is_out_envelope( Mesh& mesh, int v_id, const Vector3& new_pos, const AABBWrapper& tree );
 	bool is_out_boundary_envelope( const Mesh& mesh, int v_id, const Vector3& new_pos, const AABBWrapper& tree );
 	void sample_triangle( const std::array<Vector3, 3>& vs, std::vector<GEO2::vec3>& ps, Scalar sampling_dist );
-	bool sampleTriangleAndCheckOut( const std::array<Vector3, 3>& vs, Scalar sampling_dist, Scalar eps_2, const AABBWrapper& tree, GEO2::index_t& prev_facet );
+	bool sampleTriangleAndCheckOut( const std::array<Vector3, 3>& vs, Scalar sampling_dist, Scalar eps_2, const AABBWrapper& tree, uint32_t& prevFace );
 
 	bool is_bbox_edge( const Mesh& mesh, int v1_id, int v2_id, const std::vector<int>& n12_t_ids );
 	bool is_surface_edge( const Mesh& mesh, int v1_id, int v2_id, const std::vector<int>& n12_t_ids );

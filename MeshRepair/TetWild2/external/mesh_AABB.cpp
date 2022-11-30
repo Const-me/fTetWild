@@ -558,6 +558,157 @@ namespace floatTetWild
 		return faces;
 	}
 
+	__m128i MeshFacetsAABBWithEps::getBoxRoot( __m256d boxMin64, __m256d boxMax64 ) const
+	{
+		const __m256 boxVec = Box32::createBoxVector( boxMin64, boxMax64 );
+		// Setup the initial state
+		uint32_t n = 1;
+		uint32_t b = 0;
+		uint32_t e = (uint32_t)mesh_.countTriangles();
+
+		while( true )
+		{
+			assert( e > b );
+			if( b + 1 == e )
+			{
+				// The box contains just a single triangle, this is the best case performance-wise
+				return makeUInt3( n, b, e );
+			}
+
+			const uint32_t m = b + ( e - b ) / 2;
+			const uint32_t childl = 2 * n;
+			const uint32_t childr = 2 * n + 1;
+
+			uint8_t bitmap = boxesFloat[ childl ].intersects( boxVec ) ? 1 : 0;
+			bitmap |= boxesFloat[ childr ].intersects( boxVec ) ? 2 : 0;
+
+			if( 0 == bitmap )
+			{
+				// None of the 2 children intersected with the query box
+				return _mm_setzero_si128();
+			}
+
+			if( 1 == bitmap )
+			{
+				// Only the left child has intersected, replace the state with [ childl, b, m ] and go deeper
+				n = childl;
+				e = m;
+				continue;
+			}
+
+			if( 2 == bitmap )
+			{
+				// Only the right child has intersected, replace the state with [ childr, m, e ] and go deeper
+				n = childr;
+				b = m;
+				continue;
+			}
+
+			// They both intersected, return the current node
+			return makeUInt3( n, b, e );
+		}
+	}
+
+	bool MeshFacetsAABBWithEps::isOutOfEnvelope( __m256d pos, double eps2, __m128i searchRoot, uint32_t& prevFace ) const
+	{
+		if( _mm_testz_si128( searchRoot, searchRoot ) )
+			return true;
+
+		uint32_t face = prevFace;
+		double bestDistance;
+		if( face != GEO2::NO_FACET )
+		{
+			bestDistance = pointTriangleSquaredDistance( mesh_, pos, face );
+			if( bestDistance <= eps2 )
+				return false;
+		}
+		else
+			bestDistance = DBL_MAX;
+
+		std::vector<FacetRecursionFrame32>& stack = recursionStacks[ omp_get_thread_num() ].stack32;
+		const __m256 boxVec = makeBoxVector( pos, eps2 );
+
+		// Setup the initial state, using the search root argument
+		uint32_t n, b, e;
+		unpackUInt3( searchRoot, n, b, e );
+
+#define POP_FROM_THE_STACK()      \
+	if( stack.empty() )           \
+		break;                    \
+	const auto& f = stack.back(); \
+	n = f.n;                      \
+	b = f.b;                      \
+	e = f.e;                      \
+	stack.pop_back()
+
+		// Run the "recursion" using an std::vector instead of the stack
+		while( true )
+		{
+			assert( e > b );
+
+			if( b + 1 == e )
+			{
+				// If node is a leaf: compute point-facet distance and replace current if nearer
+				double dist = pointTriangleSquaredDistance( mesh_, pos, b );
+				if( dist < bestDistance )
+					face = b;
+				bestDistance = std::min( bestDistance, dist );
+				if( dist <= eps2 )
+				{
+					// Found a triangle close enough to the query point
+					stack.clear();
+					break;
+				}
+				POP_FROM_THE_STACK();
+				continue;
+			}
+
+			const uint32_t m = b + ( e - b ) / 2;
+			const uint32_t childl = 2 * n;
+			const uint32_t childr = 2 * n + 1;
+
+			uint8_t bitmap = boxesFloat[ childl ].intersects( boxVec ) ? 1 : 0;
+			bitmap |= boxesFloat[ childr ].intersects( boxVec ) ? 2 : 0;
+
+			if( 0 == bitmap )
+			{
+				// None of the 2 children intersected with the query box
+				POP_FROM_THE_STACK();
+				continue;
+			}
+
+			if( 1 == bitmap )
+			{
+				// Only the left child has intersected, replace the state with [ childl, b, m ]
+				n = childl;
+				e = m;
+				continue;
+			}
+
+			if( 2 == bitmap )
+			{
+				// Only the right child has intersected, replace the state with [ childr, m, e ]
+				n = childr;
+				b = m;
+				continue;
+			}
+
+			// Push the right [ childr, m, e ] state to the stack..
+			auto& newFrame = stack.emplace_back();
+			newFrame.n = childr;
+			newFrame.b = m;
+			newFrame.e = e;
+			// ..and replace the current state with the left one
+			n = childl;
+			e = m;
+		}
+#undef POP_FROM_THE_STACK
+
+		assert( stack.empty() );
+		prevFace = face;
+		return bestDistance > eps2;
+	}
+
 	bool MeshFacetsAABBWithEps::isOutOfEnvelope( __m256d pos, double eps2, const std::vector<uint32_t>& faces ) const
 	{
 		for( uint32_t f : faces )

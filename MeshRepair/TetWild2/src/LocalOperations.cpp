@@ -674,16 +674,29 @@ namespace
 		assert( idx != 32 && idx >= 29 );
 		return 31 - idx;
 	}
+
+	__m128i findSearchRoot( const floatTetWild::MeshFacetsAABBWithEps& mesh, const std::array<AvxMath::Vec, 3>& verts, double eps_2 )
+	{
+		__m256d i = _mm256_min_pd( _mm256_min_pd( verts[ 0 ], verts[ 1 ] ), verts[ 2 ] );
+		__m256d ax = _mm256_max_pd( _mm256_max_pd( verts[ 0 ], verts[ 1 ] ), verts[ 2 ] );
+		__m128d eps = _mm_set_sd( eps_2 );
+		eps = _mm_sqrt_sd( eps, eps );
+		__m256d bc = AvxMath::vectorBroadcast( eps );
+
+		i = _mm256_sub_pd( i, bc );
+		ax = _mm256_add_pd( ax, bc );
+		return mesh.getBoxRoot( i, ax );
+	}
 }  // namespace
 
 bool floatTetWild::sampleTriangleAndCheckOut(
-  const std::array<Vector3, 3>& vs, Scalar sampling_dist, Scalar eps_2, const AABBWrapper& tree, GEO2::index_t& prev_facet )
+  const std::array<Vector3, 3>& vs, Scalar sampling_dist, Scalar eps_2, const AABBWrapper& tree, uint32_t& prevFace )
 {
-	GEO2::vec3 nearest_point;
-	double sq_dist = std::numeric_limits<double>::max();
-
 	using namespace AvxMath;
 	const std::array<Vec, 3> verts = { _mm256_loadu_pd( vs[ 0 ].data() ), _mm256_loadu_pd( vs[ 1 ].data() ), loadDouble3( vs[ 2 ].data() ) };
+
+	const auto& aabb = tree.sf_tree;
+	const __m128i root = findSearchRoot( aabb, verts, eps_2 );
 
 	const Vec ls = computeLengthsSquared( verts[ 0 ] - verts[ 1 ], verts[ 1 ] - verts[ 2 ], verts[ 2 ] - verts[ 0 ] );
 	const Vec lsRel = ls.sqrt() / sampling_dist;
@@ -693,7 +706,7 @@ bool floatTetWild::sampleTriangleAndCheckOut(
 	{
 		for( int i = 0; i < 3; i++ )
 		{
-			if( tree.is_out_sf_envelope( vs[ i ], eps_2, prev_facet, sq_dist, nearest_point ) )
+			if( aabb.isOutOfEnvelope( verts[ i ], eps_2, root, prevFace ) )
 				return true;
 		}
 		return false;
@@ -709,16 +722,16 @@ bool floatTetWild::sampleTriangleAndCheckOut(
 	Vec n_v0v1 = normalize( v1 - v0 );
 	for( int n = 0; n <= N; n++ )
 	{
-		if( tree.is_out_sf_envelope( v0 + n_v0v1 * sampling_dist * n, eps_2, prev_facet, sq_dist, nearest_point ) )
+		if( aabb.isOutOfEnvelope( v0 + n_v0v1 * sampling_dist * n, eps_2, root, prevFace ) )
 			return true;
 	}
-	if( tree.is_out_sf_envelope( v1, eps_2, prev_facet, sq_dist, nearest_point ) )
+	if( aabb.isOutOfEnvelope( v1, eps_2, root, prevFace ) )
 		return true;
 
 	Scalar h = distance( dot( ( v2 - v0 ), ( v1 - v0 ) ) * ( v1 - v0 ) / vectorExtractLane( ls, max_i ) + v0, v2 );
 	int M = h / ( sqrt3_2 * sampling_dist );
 	if( M < 1 )
-		return tree.is_out_sf_envelope( v2, eps_2, prev_facet, sq_dist, nearest_point );
+		return aabb.isOutOfEnvelope( v2, eps_2, root, prevFace );
 
 	Vec n_v0v2 = normalize( v2 - v0 );
 	Vec n_v1v2 = normalize( v2 - v1 );
@@ -745,12 +758,12 @@ bool floatTetWild::sampleTriangleAndCheckOut(
 		int N1 = distance( v, v1_m ) / sampling_dist;
 		for( int i = 0; i <= N1; i++ )
 		{
-			if( tree.is_out_sf_envelope( v + i * n_v0v1 * sampling_dist, eps_2, prev_facet, sq_dist, nearest_point ) )
+			if( aabb.isOutOfEnvelope( v + i * n_v0v1 * sampling_dist, eps_2, root, prevFace ) )
 				return true;
 		}
 	}
 
-	if( tree.is_out_sf_envelope( v2, eps_2, prev_facet, sq_dist, nearest_point ) )
+	if( aabb.isOutOfEnvelope( v2, eps_2, root, prevFace ) )
 		return true;
 
 	// sample edges
@@ -762,7 +775,7 @@ bool floatTetWild::sampleTriangleAndCheckOut(
 		Vec n_v1v2 = normalize( v2 - v1 );
 		for( int n = 1; n <= N; n++ )
 		{
-			if( tree.is_out_sf_envelope( v1 + n_v1v2 * sampling_dist * n, eps_2, prev_facet, sq_dist, nearest_point ) )
+			if( aabb.isOutOfEnvelope( v1 + n_v1v2 * sampling_dist * n, eps_2, root, prevFace ) )
 				return true;
 		}
 	}
@@ -775,7 +788,7 @@ bool floatTetWild::sampleTriangleAndCheckOut(
 		Vec n_v2v0 = normalize( v0 - v2 );
 		for( int n = 1; n <= N; n++ )
 		{
-			if( tree.is_out_sf_envelope( v2 + n_v2v0 * sampling_dist * n, eps_2, prev_facet, sq_dist, nearest_point ) )
+			if( aabb.isOutOfEnvelope( v2 + n_v2v0 * sampling_dist * n, eps_2, root, prevFace ) )
 				return true;
 		}
 	}

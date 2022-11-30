@@ -146,6 +146,11 @@ namespace floatTetWild
 			facetInEnvelopeStack32( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist );
 		}
 
+		// Find root node of the tree which contains the specified box
+		__m128i getBoxRoot( __m256d boxMin64, __m256d boxMax64 ) const;
+
+		bool isOutOfEnvelope( __m256d pos, double eps2, __m128i searchRoot, uint32_t& prevFace ) const;
+
 		// Collect IDs of the faces which might intersect the specified bounding box
 		// The returned vector is stored in a thread-local structure for the calling thread
 		const std::vector<uint32_t>& facesInTheBox( __m256d boxMin64, __m256d boxMax64 ) const;
@@ -174,5 +179,13 @@ namespace floatTetWild
 		const vec3 *p1, *p2, *p3;
 		M.getTriangleVertices( f, &p1, &p2, &p3 );
 		squared_dist = point_triangle_squared_distance( p, *p1, *p2, *p3, &nearest_p );
+	}
+
+	inline double pointTriangleSquaredDistance( const GEO2::Mesh& M, __m256d p, GEO2::index_t f )
+	{
+		using namespace GEO2;
+		const vec3 *p1, *p2, *p3;
+		M.getTriangleVertices( f, &p1, &p2, &p3 );
+		return point_triangle_squared_distance( p, *p1, *p2, *p3, nullptr );
 	}
 }  // namespace floatTetWild
