@@ -558,7 +558,7 @@ namespace floatTetWild
 		return faces;
 	}
 
-	__m128i MeshFacetsAABBWithEps::getBoxRoot( __m256d boxMin64, __m256d boxMax64 ) const
+	__m128i __vectorcall MeshFacetsAABBWithEps::getBoxRoot( __m256d boxMin64, __m256d boxMax64 ) const
 	{
 		const __m256 boxVec = Box32::createBoxVector( boxMin64, boxMax64 );
 		// Setup the initial state
@@ -618,7 +618,7 @@ namespace floatTetWild
 		return Box32::createBoxVector( i, ax );
 	}
 
-	bool MeshFacetsAABBWithEps::isOutOfEnvelope( __m256d pos, __m128d eps21, __m128i searchRoot, uint32_t& prevFace ) const
+	bool __vectorcall MeshFacetsAABBWithEps::isOutOfEnvelope( __m256d pos, __m128d eps21, __m128i searchRoot, uint32_t& prevFace ) const
 	{
 		if( _mm_testz_si128( searchRoot, searchRoot ) )
 			return true;
@@ -719,7 +719,7 @@ namespace floatTetWild
 		return bestDistance > eps2;
 	}
 
-	bool MeshFacetsAABBWithEps::isOutOfEnvelope( __m256d pos, __m128d eps21, uint32_t& prevFace ) const
+	bool __vectorcall MeshFacetsAABBWithEps::isOutOfEnvelope( __m256d pos, __m128d eps21, uint32_t& prevFace ) const
 	{
 		__m128i root = _mm_cvtsi32_si128( 1 );
 		root = _mm_insert_epi32( root, (int)(uint32_t)mesh_.countTriangles(), 2 );

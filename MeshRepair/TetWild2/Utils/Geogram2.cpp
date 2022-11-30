@@ -51,7 +51,7 @@ namespace GEO2
 		return distance2( point, cp );
 	}
 
-	static double __declspec( noinline )
+	static double __declspec( noinline ) __vectorcall
 	  pointDegenerateTriangleSquaredDistance( const __m256d point, const __m256d v0, const __m256d v1, const __m256d v2, vec3* closestPoint )
 	{
 		__m256d closest;
@@ -78,7 +78,7 @@ namespace GEO2
 		return result;
 	}
 
-	double pointTriangleSquaredDistanceAvx( __m256d point, const vec3& V0, const vec3& V1, const vec3& V2, vec3* closest_point )
+	double __vectorcall pointTriangleSquaredDistanceAvx( __m256d point, const vec3& V0, const vec3& V1, const vec3& V2, vec3* closest_point )
 	{
 		using namespace AvxMath;
 		const __m256d v0 = loadDouble3( &V0.x );
@@ -92,15 +92,15 @@ namespace GEO2
 		const double a00 = length2( edge0 );
 		const double a01 = dot( edge0, edge1 );
 		const double a11 = length2( edge1 );
-		const double b0 = dot( diff, edge0 );
-		const double b1 = dot( diff, edge1 );
-		const double c = length2( diff );
 		const double det = ::fabs( a00 * a11 - a01 * a01 );
 
 		// If the triangle is degenerate
 		if( det < 1e-30 )
 			return pointDegenerateTriangleSquaredDistance( point, v0, v1, v2, closest_point );
 
+		const double b0 = dot( diff, edge0 );
+		const double b1 = dot( diff, edge1 );
+		const double c = length2( diff );
 		double s = a01 * b1 - a11 * b0;
 		double t = a01 * b0 - a00 * b1;
 		double sqrDistance;
