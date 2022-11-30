@@ -21,6 +21,7 @@ namespace floatTetWild
 	struct alignas( 64 ) FacetRecursionStack
 	{
 		std::vector<FacetRecursionFrame32> stack32;
+		std::vector<uint32_t> faces;
 	};
 
 	using FacetRecursionStacks = std::vector<FacetRecursionStack>;

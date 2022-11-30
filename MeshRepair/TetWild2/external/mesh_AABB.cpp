@@ -478,9 +478,11 @@ namespace floatTetWild
 #endif
 	}
 
-	void MeshFacetsAABBWithEps::facesInTheBox( __m256d boxMin64, __m256d boxMax64, std::vector<uint32_t>& faces ) const
+	const std::vector<uint32_t>& MeshFacetsAABBWithEps::facesInTheBox( __m256d boxMin64, __m256d boxMax64 ) const
 	{
-		std::vector<FacetRecursionFrame32>& stack = recursionStacks[ omp_get_thread_num() ].stack32;
+		auto& frs = recursionStacks[ omp_get_thread_num() ];
+		std::vector<FacetRecursionFrame32>& stack = frs.stack32;
+		std::vector<uint32_t>& faces = frs.faces;
 		faces.clear();
 
 		const __m256 boxVec = Box32::createBoxVector( boxMin64, boxMax64 );
@@ -505,9 +507,8 @@ namespace floatTetWild
 
 			if( b + 1 == e )
 			{
-				// Node is a leaf, add the triangle.
-				// TODO: ideally do better filtering here, before adding the triangle
-				// Maybe a plane versus aligned box, or plane versus sphere
+				// Node is a leaf, add the triangle to the output collection.
+				// TODO: maybe a better filtering here, like plane versus aligned box, or plane versus sphere
 				faces.push_back( b );
 				POP_FROM_THE_STACK();
 				continue;
@@ -553,6 +554,8 @@ namespace floatTetWild
 			e = m;
 		}
 #undef POP_FROM_THE_STACK
+
+		return faces;
 	}
 
 	bool MeshFacetsAABBWithEps::isOutOfEnvelope( __m256d pos, double eps2, const std::vector<uint32_t>& faces ) const

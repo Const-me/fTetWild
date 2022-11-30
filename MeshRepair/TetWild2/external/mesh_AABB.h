@@ -147,7 +147,8 @@ namespace floatTetWild
 		}
 
 		// Collect IDs of the faces which might intersect the specified bounding box
-		void facesInTheBox( __m256d boxMin64, __m256d boxMax64, std::vector<uint32_t>& faces ) const;
+		// The returned vector is stored in a thread-local structure for the calling thread
+		const std::vector<uint32_t>& facesInTheBox( __m256d boxMin64, __m256d boxMax64 ) const;
 
 		// Compute minimum squared distance between the point and the specified set of triangles
 		// Return true if that distance exceeds the supplied scalar
