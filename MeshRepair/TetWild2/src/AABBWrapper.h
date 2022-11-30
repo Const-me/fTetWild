@@ -185,6 +185,16 @@ namespace floatTetWild
 			GEO2::vec3 geo_p( p[ 0 ], p[ 1 ], p[ 2 ] );
 			return is_out_sf_envelope( geo_p, eps_2, prev_facet, sq_dist, nearest_p );
 		}
+
+		inline bool is_out_sf_envelope( __m256d pos, const Scalar eps_2, GEO2::index_t& prev_facet, double& sq_dist, GEO2::vec3& nearest_p ) const
+		{
+			// TODO: avoid the load/store
+			std::array<double, 4> arr;
+			_mm256_storeu_pd( arr.data(), pos );
+			const GEO2::vec3* geo_p = (const GEO2::vec3*)arr.data();
+			return is_out_sf_envelope( *geo_p, eps_2, prev_facet, sq_dist, nearest_p );
+		}
+
 		inline bool is_out_sf_envelope( const GEO2::vec3& geo_p, const Scalar eps_2, GEO2::index_t& prev_facet, double& sq_dist, GEO2::vec3& nearest_p ) const
 		{
 			if( prev_facet != GEO2::NO_FACET )

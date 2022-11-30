@@ -12,6 +12,7 @@
 #include "../external/Rational.h"
 #include "LocalOperations2.h"
 #include <Utils/lowLevel.h>
+#include <Utils/AvxMathVec.h>
 
 namespace floatTetWild
 {
@@ -550,6 +551,7 @@ void floatTetWild::sample_triangle( const std::array<Vector3, 3>& vs, std::vecto
 	}
 }
 
+/*
 bool floatTetWild::sampleTriangleAndCheckOut(
   const std::array<Vector3, 3>& vs, Scalar sampling_dist, Scalar eps_2, const AABBWrapper& tree, GEO2::index_t& prev_facet )
 {
@@ -655,6 +657,113 @@ bool floatTetWild::sampleTriangleAndCheckOut(
 		}
 	}
 
+	return false;
+} */
+
+bool floatTetWild::sampleTriangleAndCheckOut(
+  const std::array<Vector3, 3>& vs, Scalar sampling_dist, Scalar eps_2, const AABBWrapper& tree, GEO2::index_t& prev_facet )
+{
+	GEO2::vec3 nearest_point;
+	double sq_dist = std::numeric_limits<double>::max();
+
+	std::array<double, 3> ls;
+	for( int i = 0; i < 3; i++ )
+		ls[ i ] = ( vs[ i ] - vs[ mod3( i + 1 ) ] ).squaredNorm();
+
+	auto min_max = std::minmax_element( ls.begin(), ls.end() );
+	int min_i = min_max.first - ls.begin();
+	int max_i = min_max.second - ls.begin();
+	Scalar N = sqrt( ls[ max_i ] ) / sampling_dist;
+	if( N <= 1 )
+	{
+		for( int i = 0; i < 3; i++ )
+		{
+			if( tree.is_out_sf_envelope( vs[ i ], eps_2, prev_facet, sq_dist, nearest_point ) )
+				return true;
+		}
+		return false;
+	}
+	if( N == int( N ) )
+		N -= 1;
+
+	using namespace AvxMath;
+	Vec v0( loadDouble3( vs[ max_i ].data() ) );
+	Vec v1( loadDouble3( vs[ ( max_i + 1 ) % 3 ].data() ) );
+	Vec v2( loadDouble3( vs[ ( max_i + 2 ) % 3 ].data() ) );
+
+	Vec n_v0v1 = normalize( v1 - v0 );
+	for( int n = 0; n <= N; n++ )
+	{
+		if( tree.is_out_sf_envelope( v0 + n_v0v1 * sampling_dist * n, eps_2, prev_facet, sq_dist, nearest_point ) )
+			return true;
+	}
+	if( tree.is_out_sf_envelope( v1, eps_2, prev_facet, sq_dist, nearest_point ) )
+		return true;
+
+	Scalar h = distance( dot( ( v2 - v0 ), ( v1 - v0 ) ) * ( v1 - v0 ) / ls[ max_i ] + v0, v2 );
+	int M = h / ( sqrt3_2 * sampling_dist );
+	if( M < 1 )
+		return tree.is_out_sf_envelope( v2, eps_2, prev_facet, sq_dist, nearest_point );
+
+	Vec n_v0v2 = normalize( v2 - v0 );
+	Vec n_v1v2 = normalize( v2 - v1 );
+	Scalar tan_v0, tan_v1, sin_v0, sin_v1;
+	sin_v0 = length( cross( ( v2 - v0 ), ( v1 - v0 ) ) ) / ( distance( v0, v2 ) * distance( v0, v1 ) );
+	tan_v0 = length( cross( ( v2 - v0 ), ( v1 - v0 ) ) ) / dot( ( v2 - v0 ), ( v1 - v0 ) );
+	tan_v1 = length( cross( ( v2 - v1 ), ( v0 - v1 ) ) ) / dot( ( v2 - v1 ), ( v0 - v1 ) );
+	sin_v1 = length( cross( ( v2 - v1 ), ( v0 - v1 ) ) ) / ( distance( v1, v2 ) * distance( v0, v1 ) );
+
+	for( int m = 1; m <= M; m++ )
+	{
+		int n = sqrt3_2 / tan_v0 * m + 0.5;
+		int n1 = sqrt3_2 / tan_v0 * m;
+		if( m % 2 == 0 && n == n1 )
+			n++;
+
+		Vec v0_m = v0 + m * sqrt3_2 * sampling_dist / sin_v0 * n_v0v2;
+		Vec v1_m = v1 + m * sqrt3_2 * sampling_dist / sin_v1 * n_v1v2;
+		if( distance( v0_m, v1_m ) <= sampling_dist )
+			break;
+
+		Scalar delta_d = ( ( n + ( m % 2 ) / 2.0 ) - m * sqrt3_2 / tan_v0 ) * sampling_dist;
+		Vec v = v0_m + delta_d * n_v0v1;
+		int N1 = distance( v, v1_m ) / sampling_dist;
+		for( int i = 0; i <= N1; i++ )
+		{
+			if( tree.is_out_sf_envelope( v + i * n_v0v1 * sampling_dist, eps_2, prev_facet, sq_dist, nearest_point ) )
+				return true;
+		}
+	}
+
+	if( tree.is_out_sf_envelope( v2, eps_2, prev_facet, sq_dist, nearest_point ) )
+		return true;
+
+	// sample edges
+	N = sqrt( ls[ mod3( max_i + 1 ) ] ) / sampling_dist;
+	if( N > 1 )
+	{
+		if( N == int( N ) )
+			N -= 1;
+		Vec n_v1v2 = normalize( v2 - v1 );
+		for( int n = 1; n <= N; n++ )
+		{
+			if( tree.is_out_sf_envelope( v1 + n_v1v2 * sampling_dist * n, eps_2, prev_facet, sq_dist, nearest_point ) )
+				return true;
+		}
+	}
+
+	N = sqrt( ls[ mod3( max_i + 2 ) ] ) / sampling_dist;
+	if( N > 1 )
+	{
+		if( N == int( N ) )
+			N -= 1;
+		Vec n_v2v0 = normalize( v0 - v2 );
+		for( int n = 1; n <= N; n++ )
+		{
+			if( tree.is_out_sf_envelope( v2 + n_v2v0 * sampling_dist * n, eps_2, prev_facet, sq_dist, nearest_point ) )
+				return true;
+		}
+	}
 	return false;
 }
 

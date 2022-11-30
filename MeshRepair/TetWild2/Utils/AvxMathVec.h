@@ -68,7 +68,16 @@ namespace AvxMath
 		{
 			vec = _mm256_div_pd( vec, _mm256_set1_pd( s ) );
 		}
+		Vec sqrt() const
+		{
+			return _mm256_sqrt_pd( vec );
+		}
 	};
+
+	inline Vec operator*( double s, Vec vec )
+	{
+		return vec * s;
+	}
 
 	inline Vec normalize( __m256d vec )
 	{
@@ -88,5 +97,10 @@ namespace AvxMath
 	inline Vec cross( __m256d a, __m256d b )
 	{
 		return vector3Cross( a, b );
+	}
+
+	inline double length( __m256d vec )
+	{
+		return vector3Length( vec );
 	}
 }  // namespace AvxMath
