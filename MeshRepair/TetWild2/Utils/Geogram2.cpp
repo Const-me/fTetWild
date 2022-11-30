@@ -39,6 +39,7 @@ namespace GEO2
 
 		// Clamp t into [ 0 .. 1 ] interval
 		// For some reason, std::min/max compiled into _mm_cmp_sd + _mm_blendv_pd, which is slower than min/max instructions
+		// At least on my computer, clamping with min/max instructions fixes +INF, -INF, and NAN too, so we're good even when all 3 input points are equal.
 		__m128d tv = _mm_set_sd( t );
 		tv = _mm_max_sd( tv, _mm_setzero_pd() );
 		tv = _mm_min_sd( tv, _mm_set_sd( 1.0 ) );
