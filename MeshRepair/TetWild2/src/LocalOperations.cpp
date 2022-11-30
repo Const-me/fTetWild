@@ -444,7 +444,7 @@ bool floatTetWild::is_out_envelope( Mesh& mesh, int v_id, const Vector3& new_pos
 					else
 						vs[ k ] = mesh.tet_vertices[ mesh.tets[ t_id ][ mod4( j + 1 + k ) ] ].pos;
 				}
-				bool is_out = sample_triangle_and_check_is_out( vs, mesh.params.dd, mesh.params.eps_2, tree, prev_facet );
+				bool is_out = sampleTriangleAndCheckOut( vs, mesh.params.dd, mesh.params.eps_2, tree, prev_facet );
 				if( is_out )
 					return true;
 			}
@@ -457,7 +457,7 @@ namespace
 {
 	// std::sqrt( 3 ) / 2;
 	constexpr double sqrt3_2 = 0.86602540378443864676372317075294;
-}
+}  // namespace
 
 void floatTetWild::sample_triangle( const std::array<Vector3, 3>& vs, std::vector<GEO2::vec3>& ps, Scalar sampling_dist )
 {
@@ -550,7 +550,7 @@ void floatTetWild::sample_triangle( const std::array<Vector3, 3>& vs, std::vecto
 	}
 }
 
-bool floatTetWild::sample_triangle_and_check_is_out(
+bool floatTetWild::sampleTriangleAndCheckOut(
   const std::array<Vector3, 3>& vs, Scalar sampling_dist, Scalar eps_2, const AABBWrapper& tree, GEO2::index_t& prev_facet )
 {
 	GEO2::vec3 nearest_point;
