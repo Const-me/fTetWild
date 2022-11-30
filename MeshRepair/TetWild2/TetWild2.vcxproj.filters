@@ -127,6 +127,7 @@
     <ClInclude Include="src\FlatIntMap.h" />
     <ClInclude Include="src\BoolVectorEx.h" />
     <ClInclude Include="src\LocalOperationsUtils.h" />
+    <ClInclude Include="Utils\AvxMathVec.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp" />

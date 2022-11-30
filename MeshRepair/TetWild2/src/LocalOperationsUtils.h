@@ -1,5 +1,5 @@
 #pragma once
-#include <Utils/AvxMath.h>
+#include <Utils/AvxMathVec.h>
 
 namespace floatTetWild
 {
@@ -25,55 +25,6 @@ namespace floatTetWild
 	{
 		return _mm256_broadcast_sd( &r );
 	}
-
-	// A wrapper around __m256d implementing arithmetic operators
-	// The only reason for a separate structure - neither gcc or clang support operators outside of classes.
-	// For VC++ it's possible to define these operators directly on the __m256d type
-	struct Vec
-	{
-		__m256d vec;
-
-		Vec( __m256d v )
-			: vec( v )
-		{
-		}
-		operator __m256d() const
-		{
-			return vec;
-		}
-		Vec operator+( __m256d v ) const
-		{
-			return Vec { _mm256_add_pd( vec, v ) };
-		}
-		Vec operator-( __m256d v ) const
-		{
-			return Vec { _mm256_sub_pd( vec, v ) };
-		}
-		Vec operator*( __m256d v ) const
-		{
-			return Vec { _mm256_mul_pd( vec, v ) };
-		}
-		Vec operator/( __m256d v ) const
-		{
-			return Vec { _mm256_div_pd( vec, v ) };
-		}
-		void operator+=( __m256d v )
-		{
-			vec = _mm256_add_pd( vec, v );
-		}
-		void operator-=( __m256d v )
-		{
-			vec = _mm256_sub_pd( vec, v );
-		}
-		void operator*=( __m256d v )
-		{
-			vec = _mm256_mul_pd( vec, v );
-		}
-		void operator/=( __m256d v )
-		{
-			vec = _mm256_div_pd( vec, v );
-		}
-	};
 
 	// Add 12 numbers in XYZ lanes of 4 vectors
 	inline double hadd12( __m256d a, __m256d b, __m256d c, __m256d d )
