@@ -221,8 +221,9 @@ bool floatTetWild::is_isolate_surface_point( const Mesh& mesh, int v_id )
 
 bool floatTetWild::is_point_out_envelope( const Mesh& mesh, const Vector3& p, const AABBWrapper& tree )
 {
-	GEO2::index_t prev_facet;
-	return tree.is_out_sf_envelope( p, mesh.params.eps_2, prev_facet );
+	const __m128d eps21 = _mm_loadu_pd( &mesh.params.eps_2 );
+	GEO2::index_t prev_facet = GEO2::NO_FACET;
+	return tree.isOutSurfaceEnvelope( p, eps21, prev_facet );
 }
 
 bool floatTetWild::is_point_out_boundary_envelope( const Mesh& mesh, const Vector3& p, const AABBWrapper& tree )
@@ -431,11 +432,11 @@ bool floatTetWild::is_out_boundary_envelope( const Mesh& mesh, int v_id, const V
 
 bool floatTetWild::is_out_envelope( Mesh& mesh, int v_id, const Vector3& new_pos, const AABBWrapper& tree )
 {
-	GEO2::index_t prev_facet;
-	if( tree.is_out_sf_envelope( new_pos, mesh.params.eps_2, prev_facet ) )
+	const __m128d eps21 = _mm_loadu_pd( &mesh.params.eps_2 );
+	GEO2::index_t prev_facet = GEO2::NO_FACET;
+	if( tree.isOutSurfaceEnvelope( new_pos, eps21, prev_facet ) )
 		return true;
 
-	const __m128d eps21 = _mm_loadu_pd( &mesh.params.eps_2 );
 	for( int t_id : mesh.tet_vertices[ v_id ].connTets )
 	{
 		for( int j = 0; j < 4; j++ )
