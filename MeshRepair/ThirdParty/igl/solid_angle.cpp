@@ -56,21 +56,6 @@ IGL_INLINE typename DerivedA::Scalar igl::solid_angle(
 
 namespace
 {
-	// Compute lengths of 3 vectors
-	inline __m256d computeLengths( __m256d v0, __m256d v1, __m256d v2 )
-	{
-		// Reduce count of shuffles by transposing them first
-		__m256d c0, c1, c2;
-		AvxMath::transpose3x3( v0, v1, v2, c0, c1, c2 );
-		// Once transposed, we need vertical operations instead of horizontal, faster
-		c0 = _mm256_mul_pd( c0, c0 );
-		c1 = _mm256_mul_pd( c1, c1 );
-		c2 = _mm256_mul_pd( c2, c2 );
-
-		__m256d len2 = _mm256_add_pd( _mm256_add_pd( c0, c1 ), c2 );
-		return _mm256_sqrt_pd( len2 );
-	}
-
 	// Compute determinant of the 3x3 matrix
 	inline double det3x3( __m256d v0, __m256d v1, __m256d v2 )
 	{
@@ -112,7 +97,7 @@ IGL_INLINE double igl::solid_angle<DerivedABC, DerivedABC, DerivedABC, DerivedP>
 	const __m256d v1 = _mm256_sub_pd( b, p );
 	const __m256d v2 = _mm256_sub_pd( c, p );
 
-	const __m256d lengths = computeLengths( v0, v1, v2 );
+	const __m256d lengths = AvxMath::computeLengths( v0, v1, v2 );
 
 	// Compute determinant
 	const double detf = det3x3( v0, v1, v2 );

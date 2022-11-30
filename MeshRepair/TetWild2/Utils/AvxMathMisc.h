@@ -243,4 +243,25 @@ namespace AvxMath
 		high = _mm_permute_pd( high, 0b11 );
 		return _mm_cvtsd_f64( high );
 	}
+
+	// Compute squared lengths of 3 vectors
+	inline __m256d computeLengthsSquared( __m256d v0, __m256d v1, __m256d v2 )
+	{
+		// Reduce count of shuffles by transposing them first
+		__m256d c0, c1, c2;
+		transpose3x3( v0, v1, v2, c0, c1, c2 );
+		// Once transposed, we need vertical operations instead of horizontal, faster
+		c0 = _mm256_mul_pd( c0, c0 );
+		c1 = _mm256_mul_pd( c1, c1 );
+		c2 = _mm256_mul_pd( c2, c2 );
+
+		return _mm256_add_pd( _mm256_add_pd( c0, c1 ), c2 );
+	}
+
+	// Compute lengths of 3 vectors
+	inline __m256d computeLengths( __m256d v0, __m256d v1, __m256d v2 )
+	{
+		const __m256d len2 = computeLengthsSquared( v0, v1, v2 );
+		return _mm256_sqrt_pd( len2 );
+	}
 }  // namespace AvxMath
