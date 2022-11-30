@@ -35,6 +35,7 @@ namespace GEO2
 	{
 		double l2 = distance2( v0, v1 );
 		double t = dot( _mm256_sub_pd( point, v0 ), _mm256_sub_pd( v1, v0 ) );
+		t /= l2;
 
 		// Clamp t into [ 0 .. 1 ] interval
 		// For some reason, std::min/max compiled into _mm_cmp_sd + _mm_blendv_pd, which is slower than min/max instructions
@@ -43,7 +44,7 @@ namespace GEO2
 		tv = _mm_min_sd( tv, _mm_set_sd( 1.0 ) );
 		t = _mm_cvtsd_f64( tv );
 
-		__m256d cp = AvxMath::lerpFast( v0, v1, t / l2 );
+		__m256d cp = AvxMath::lerpFast( v0, v1, t );
 		closest = cp;
 		return distance2( point, cp );
 	}
