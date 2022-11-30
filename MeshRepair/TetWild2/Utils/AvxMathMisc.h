@@ -195,11 +195,38 @@ namespace AvxMath
 	inline double vectorExtractLane( __m256d vec, uint32_t lane )
 	{
 		assert( lane < 4 );
-		__m128i v1 = _mm_cvtsi32_si128( (int)lane );
+#ifdef __AVX2__
+
+		// _mm256_permutevar_pd only shuffles within 16-byte pieces, need _mm256_permutevar8x32_ps
+		// Create int32 permutation vector, first 2 lanes equal to [ lane * 2, lane * 2 + 1 ]
+		uint64_t perm = lane * 2;
+		perm |= ( ( perm | 1 ) << 32 );
+		__m128i v1 = _mm_cvtsi64_si128( (int64_t)perm );
+		// We don't care what's in the other 6 lanes, undefined is fine
 		__m256i v2 = _mm256_castsi128_si256( v1 );
-		// Surprisingly, that instruction is from AVX1 set, no need for #ifdef-s
-		vec = _mm256_permutevar_pd( vec, v2 );
+
+		// Cast to FP32 vector, and shuffle with that permutation
+		__m256 f = _mm256_castpd_ps( vec );
+		f = _mm256_permutevar8x32_ps( f, v2 );
+		// Cast back to FP64 vector, and return the lowest lane
+		vec = _mm256_castps_pd( f );
 		return _mm256_cvtsd_f64( vec );
+#else
+		// Select either high or low slice of the input vector
+		const __m128d high = _mm256_extractf128_pd( vec, 1 );
+		const __m128d low = _mm256_castpd256_pd128( vec );
+
+		const bool selectBool = ( 0 != ( lane & 2 ) );
+		const __m128i selectMask = _mm_set1_epi32( selectBool ? -1 : 0 );
+		const __m128d vec2 = _mm_blendv_pd( low, high, _mm_castsi128_pd( selectMask ) );
+
+		// Use _mm_permutevar_pd instruction to return either x or y lane of the vec2
+		// Funfact: just for this one instruction Intel ignores the lowest bit of the second argument, and the index starts at bit #1
+		// Probably a hardware bug in Sandy Bridge (first AVX1 CPU) discovered too late, so Intel documented the bug and called it a day.
+		const __m128i v1 = _mm_cvtsi32_si128( ( lane & 1 ) << 1 );
+		const __m128d res = _mm_permutevar_pd( vec2, v1 );
+		return _mm_cvtsd_f64( res );
+#endif
 	}
 
 	inline __m256d vector3Normalize( __m256d v )
