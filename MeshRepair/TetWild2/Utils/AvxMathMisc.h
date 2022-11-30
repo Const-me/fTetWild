@@ -61,6 +61,13 @@ namespace AvxMath
 		return _mm_cvtsd_f64( res );
 	}
 
+	// Compute square of the distance between two 3D vectors
+	inline double vector3DistanceSquared( __m256d a, __m256d b )
+	{
+		const __m256d diff = _mm256_sub_pd( b, a );
+		return vector3DotScalar( diff, diff );
+	}
+
 	// Dot product of 3D vectors, broadcast to both lanes of SSE vector
 	inline __m128d vector3Dot2( __m256d a, __m256d b )
 	{
