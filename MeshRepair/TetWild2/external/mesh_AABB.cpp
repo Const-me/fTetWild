@@ -609,11 +609,21 @@ namespace floatTetWild
 		}
 	}
 
-	bool MeshFacetsAABBWithEps::isOutOfEnvelope( __m256d pos, double eps2, __m128i searchRoot, uint32_t& prevFace ) const
+	inline __m256 makeBoxVector( __m256d p, __m128d eps21 )
+	{
+		__m128d eps = _mm_unpackhi_pd( eps21, eps21 );
+		const __m256d ev = AvxMath::vectorBroadcast( eps );
+		const __m256d i = _mm256_sub_pd( p, ev );
+		const __m256d ax = _mm256_add_pd( p, ev );
+		return Box32::createBoxVector( i, ax );
+	}
+
+	bool MeshFacetsAABBWithEps::isOutOfEnvelope( __m256d pos, __m128d eps21, __m128i searchRoot, uint32_t& prevFace ) const
 	{
 		if( _mm_testz_si128( searchRoot, searchRoot ) )
 			return true;
 
+		const double eps2 = _mm_cvtsd_f64( eps21 );
 		uint32_t face = prevFace;
 		double bestDistance;
 		if( face != GEO2::NO_FACET )
@@ -626,7 +636,7 @@ namespace floatTetWild
 			bestDistance = DBL_MAX;
 
 		std::vector<FacetRecursionFrame32>& stack = recursionStacks[ omp_get_thread_num() ].stack32;
-		const __m256 boxVec = makeBoxVector( pos, eps2 );
+		const __m256 boxVec = makeBoxVector( pos, eps21 );
 
 		// Setup the initial state, using the search root argument
 		uint32_t n, b, e;

@@ -66,9 +66,11 @@ namespace floatTetWild
 		Scalar ideal_edge_length;
 		Scalar ideal_edge_length_2;
 		Scalar eps_input;
-		Scalar eps;
+		// The following two numbers are loaded as __m128d vector, please keep them together in that order
+		double eps_2;
+		double eps;
+
 		Scalar eps_delta;
-		Scalar eps_2;
 		Scalar dd;
 		Scalar min_edge_length;
 
@@ -79,8 +81,9 @@ namespace floatTetWild
 
 		Scalar eps_coplanar;
 		Scalar eps_2_coplanar;
-		Scalar eps_simplification;
-		Scalar eps_2_simplification;
+		// The following two numbers are loaded as __m128d vector, please keep them together in that order
+		double eps_2_simplification;
+		double eps_simplification;
 		Scalar dd_simplification;
 
 		void init( Scalar bbox_diag_l )

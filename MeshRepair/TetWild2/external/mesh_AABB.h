@@ -149,7 +149,7 @@ namespace floatTetWild
 		// Find root node of the tree which contains the specified box
 		__m128i getBoxRoot( __m256d boxMin64, __m256d boxMax64 ) const;
 
-		bool isOutOfEnvelope( __m256d pos, double eps2, __m128i searchRoot, uint32_t& prevFace ) const;
+		bool isOutOfEnvelope( __m256d pos, __m128d eps21, __m128i searchRoot, uint32_t& prevFace ) const;
 
 		// Collect IDs of the faces which might intersect the specified bounding box
 		// The returned vector is stored in a thread-local structure for the calling thread

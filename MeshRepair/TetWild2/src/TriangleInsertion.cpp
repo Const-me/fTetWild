@@ -1542,7 +1542,7 @@ bool floatTetWild::insert_boundary_edges( const std::vector<Vector3>& input_vert
 			{
 				GEO2::index_t prev_facet = GEO2::NO_FACET;
 				if( sampleTriangleAndCheckOut( { { mesh.tet_vertices[ f[ 0 ] ].pos, mesh.tet_vertices[ f[ 1 ] ].pos, mesh.tet_vertices[ f[ 2 ] ].pos } },
-					  mesh.params.dd, mesh.params.eps_2, tree, prev_facet ) )
+					  mesh.params.dd, _mm_loadu_pd( &mesh.params.eps_2 ), tree, prev_facet ) )
 				{
 					is_inside_envelope = false;
 					break;
@@ -1927,9 +1927,10 @@ void floatTetWild::mark_surface_fs( const std::vector<Vector3>& input_vertices, 
 
 				double eps_2 = ( mesh.params.eps + mesh.params.eps_simplification ) / 2;
 				double dd = ( mesh.params.dd + mesh.params.dd_simplification ) / 2;
-				eps_2 *= eps_2;
+				__m128d eps21 = _mm_set1_pd( eps_2 );
+				eps21 = _mm_mul_sd( eps21, eps21 );
 				GEO2::index_t prev_facet = GEO2::NO_FACET;
-				if( sampleTriangleAndCheckOut( { { tp1_3d, tp2_3d, tp3_3d } }, dd, eps_2, tree, prev_facet ) )
+				if( sampleTriangleAndCheckOut( { { tp1_3d, tp2_3d, tp3_3d } }, dd, eps21, tree, prev_facet ) )
 					continue;
 				else
 					ff_id = track_surface_fs[ t_id ][ j ].front();
