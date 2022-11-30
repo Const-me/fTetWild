@@ -663,6 +663,8 @@ bool floatTetWild::sampleTriangleAndCheckOut(
 bool floatTetWild::sampleTriangleAndCheckOut(
   const std::array<Vector3, 3>& vs, Scalar sampling_dist, Scalar eps_2, const AABBWrapper& tree, GEO2::index_t& prev_facet )
 {
+	using namespace AvxMath;
+
 	GEO2::vec3 nearest_point;
 	double sq_dist = std::numeric_limits<double>::max();
 
@@ -671,7 +673,6 @@ bool floatTetWild::sampleTriangleAndCheckOut(
 		ls[ i ] = ( vs[ i ] - vs[ mod3( i + 1 ) ] ).squaredNorm();
 
 	auto min_max = std::minmax_element( ls.begin(), ls.end() );
-	int min_i = min_max.first - ls.begin();
 	int max_i = min_max.second - ls.begin();
 	Scalar N = sqrt( ls[ max_i ] ) / sampling_dist;
 	if( N <= 1 )
@@ -686,7 +687,6 @@ bool floatTetWild::sampleTriangleAndCheckOut(
 	if( N == int( N ) )
 		N -= 1;
 
-	using namespace AvxMath;
 	Vec v0( loadDouble3( vs[ max_i ].data() ) );
 	Vec v1( loadDouble3( vs[ ( max_i + 1 ) % 3 ].data() ) );
 	Vec v2( loadDouble3( vs[ ( max_i + 2 ) % 3 ].data() ) );
