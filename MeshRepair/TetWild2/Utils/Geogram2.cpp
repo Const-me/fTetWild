@@ -35,24 +35,21 @@ namespace GEO2
 	{
 		double l2 = distance2( v0, v1 );
 		double t = dot( _mm256_sub_pd( point, v0 ), _mm256_sub_pd( v1, v0 ) );
-		if( t <= 0.0 || l2 == 0.0 )
-		{
-			closest = v0;
-			return distance2( point, v0 );
-		}
-		else if( t > l2 )
-		{
-			closest = v1;
-			return distance2( point, v1 );
-		}
+
+		// Clamp t into [ 0 .. 1 ] interval
+		// For some reason, std::min/max compiled into _mm_cmp_sd + _mm_blendv_pd, which is slower than min/max instructions
+		__m128d tv = _mm_set_sd( t );
+		tv = _mm_max_sd( tv, _mm_setzero_pd() );
+		tv = _mm_min_sd( tv, _mm_set_sd( 1.0 ) );
+		t = _mm_cvtsd_f64( tv );
 
 		__m256d cp = AvxMath::lerpFast( v0, v1, t / l2 );
 		closest = cp;
 		return distance2( point, cp );
 	}
 
-	static double __declspec( noinline ) __vectorcall
-	  pointDegenerateTriangleSquaredDistance( const __m256d point, const __m256d v0, const __m256d v1, const __m256d v2, vec3* closestPoint )
+	static double __declspec( noinline ) __vectorcall pointDegenerateTriangleSquaredDistance(
+	  const __m256d point, const __m256d v0, const __m256d v1, const __m256d v2, vec3* closestPoint )
 	{
 		__m256d closest;
 		double result = pointSegmentSquaredDistance( point, v0, v1, closest );
@@ -78,6 +75,41 @@ namespace GEO2
 		return result;
 	}
 
+	namespace
+	{
+		class Vec2
+		{
+			__m128d vec;
+
+		  public:
+			Vec2( __m128d v )
+				: vec( v )
+			{
+			}
+
+			operator __m128d() const
+			{
+				return vec;
+			}
+			operator double() const
+			{
+				return _mm_cvtsd_f64( vec );
+			}
+			double getHigh() const
+			{
+				return _mm_cvtsd_f64( _mm_unpackhi_pd( vec, vec ) );
+			}
+			__m128d operator*( __m128d that ) const
+			{
+				return _mm_mul_pd( vec, that );
+			}
+			__m128d operator-( __m128d that ) const
+			{
+				return _mm_sub_pd( vec, that );
+			}
+		};
+	}  // namespace
+
 	double __vectorcall pointTriangleSquaredDistanceAvx( __m256d point, const vec3& V0, const vec3& V1, const vec3& V2, vec3* closest_point )
 	{
 		using namespace AvxMath;
@@ -89,26 +121,33 @@ namespace GEO2
 		const __m256d edge0 = _mm256_sub_pd( v1, v0 );
 		const __m256d edge1 = _mm256_sub_pd( v2, v0 );
 
-		const double a00 = length2( edge0 );
-		const double a01 = dot( edge0, edge1 );
-		const double a11 = length2( edge1 );
-		const double det = ::fabs( a00 * a11 - a01 * a01 );
+		const Vec2 a00 = vector3Dot2( edge0, edge0 );
+		const Vec2 a01 = vector3Dot2( edge0, edge1 );
+		const Vec2 a11 = vector3Dot2( edge1, edge1 );
+		const double det = ::fabs( (double)a00 * a11 - (double)a01 * a01 );
 
 		// If the triangle is degenerate
 		if( det < 1e-30 )
 			return pointDegenerateTriangleSquaredDistance( point, v0, v1, v2, closest_point );
 
-		const double b0 = dot( diff, edge0 );
-		const double b1 = dot( diff, edge1 );
+		const Vec2 b0 = vector3Dot2( diff, edge0 );
+		const Vec2 b1 = vector3Dot2( diff, edge1 );
 		const double c = length2( diff );
-		double s = a01 * b1 - a11 * b0;
-		double t = a01 * b0 - a00 * b1;
+		const Vec2 b10 = _mm_blend_pd( b0, b1, 0b01 );
+		const Vec2 b01 = _mm_blend_pd( b0, b1, 0b10 );
+		const Vec2 a1100 = _mm_blend_pd( a11, a00, 0b10 );
+		const Vec2 st = Vec2 { a01 * b10 } - a1100 * b01;
+		// Negative zeros do happen in that vector, and they cause result to deviate from the original due to different branches taken
+		// Can't just vmovmskpd to grab the sign bit, doing actual comparison for st < 0
+		const uint32_t stNegative = (uint32_t)_mm_movemask_pd( _mm_cmplt_pd( st, _mm_setzero_pd() ) );
+		double s = st;
+		double t = st.getHigh();
 		double sqrDistance;
 		if( s + t <= det )
 		{
-			if( s < 0.0 )
+			if( stNegative & 1 )
 			{
-				if( t < 0.0 )
+				if( stNegative & 2 )
 				{  // region 4
 					if( b0 < 0.0 )
 					{
@@ -164,7 +203,7 @@ namespace GEO2
 					}
 				}
 			}
-			else if( t < 0.0 )
+			else if( stNegative & 2 )
 			{  // region 5
 				t = 0.0;
 				if( b0 >= 0.0 )
@@ -196,7 +235,7 @@ namespace GEO2
 		{
 			double tmp0, tmp1, numer, denom;
 
-			if( s < 0.0 )
+			if( stNegative & 1 )
 			{  // region 2
 				tmp0 = a01 + b0;
 				tmp1 = a11 + b1;
@@ -237,7 +276,7 @@ namespace GEO2
 					}
 				}
 			}
-			else if( t < 0.0 )
+			else if( stNegative & 2 )
 			{  // region 6
 				tmp0 = a01 + b1;
 				tmp1 = a00 + b0;
@@ -305,9 +344,8 @@ namespace GEO2
 				}
 			}
 		}
-		// Account for numerical round-off error.
-		if( sqrDistance < 0.0 )
-			sqrDistance = 0.0;
+		// Account for numerical round-off error
+		sqrDistance = std::max( sqrDistance, 0.0 );
 
 		if( nullptr != closest_point )
 		{
@@ -325,7 +363,11 @@ namespace GEO2
 #if 1
 		return pointTriangleSquaredDistanceAvx( point, V0, V1, V2, closest_point );
 #else
-		double orig = pointTriangleSquaredDistanceOrig( point, V0, V1, V2, closest_point );
+		std::array<double, 4> arr;
+		_mm256_storeu_pd( arr.data(), point );
+		const vec3& pointRef = *(const vec3*)arr.data();
+		double orig = pointTriangleSquaredDistanceOrig( pointRef, V0, V1, V2, closest_point );
+
 		double my = pointTriangleSquaredDistanceAvx( point, V0, V1, V2, closest_point );
 		if( my != orig )
 			__debugbreak();
