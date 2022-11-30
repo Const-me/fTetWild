@@ -660,21 +660,35 @@ bool floatTetWild::sampleTriangleAndCheckOut(
 	return false;
 } */
 
+namespace
+{
+	inline uint32_t lastMaxLaneIndex( __m256d vec3 )
+	{
+		__m256d ax = AvxMath::vector3BroadcastMaximum( vec3 );
+		// Compare for equality
+		const __m256d eq = _mm256_cmp_pd( vec3, ax, _CMP_EQ_OQ );
+		// Return index of the first equal lane
+		uint32_t mask = _mm256_movemask_pd( eq );
+		mask &= 0b111;
+		uint32_t idx = _lzcnt_u32( mask );
+		assert( idx != 32 && idx >= 29 );
+		return 31 - idx;
+	}
+}  // namespace
+
 bool floatTetWild::sampleTriangleAndCheckOut(
   const std::array<Vector3, 3>& vs, Scalar sampling_dist, Scalar eps_2, const AABBWrapper& tree, GEO2::index_t& prev_facet )
 {
-	using namespace AvxMath;
-
 	GEO2::vec3 nearest_point;
 	double sq_dist = std::numeric_limits<double>::max();
 
-	std::array<double, 3> ls;
-	for( int i = 0; i < 3; i++ )
-		ls[ i ] = ( vs[ i ] - vs[ mod3( i + 1 ) ] ).squaredNorm();
+	using namespace AvxMath;
+	const std::array<Vec, 3> verts = { _mm256_loadu_pd( vs[ 0 ].data() ), _mm256_loadu_pd( vs[ 1 ].data() ), loadDouble3( vs[ 2 ].data() ) };
 
-	auto min_max = std::minmax_element( ls.begin(), ls.end() );
-	int max_i = min_max.second - ls.begin();
-	Scalar N = sqrt( ls[ max_i ] ) / sampling_dist;
+	const Vec ls = computeLengthsSquared( verts[ 0 ] - verts[ 1 ], verts[ 1 ] - verts[ 2 ], verts[ 2 ] - verts[ 0 ] );
+	const Vec lsRel = ls.sqrt() / sampling_dist;
+	const uint32_t max_i = lastMaxLaneIndex( ls );
+	Scalar N = vectorExtractLane( lsRel, max_i );
 	if( N <= 1 )
 	{
 		for( int i = 0; i < 3; i++ )
@@ -687,9 +701,10 @@ bool floatTetWild::sampleTriangleAndCheckOut(
 	if( N == int( N ) )
 		N -= 1;
 
-	Vec v0( loadDouble3( vs[ max_i ].data() ) );
-	Vec v1( loadDouble3( vs[ ( max_i + 1 ) % 3 ].data() ) );
-	Vec v2( loadDouble3( vs[ ( max_i + 2 ) % 3 ].data() ) );
+	using namespace AvxMath;
+	const Vec v0 = verts[ max_i ];
+	const Vec v1 = verts[ ( max_i + 1 ) % 3 ];
+	const Vec v2 = verts[ ( max_i + 2 ) % 3 ];
 
 	Vec n_v0v1 = normalize( v1 - v0 );
 	for( int n = 0; n <= N; n++ )
@@ -700,7 +715,7 @@ bool floatTetWild::sampleTriangleAndCheckOut(
 	if( tree.is_out_sf_envelope( v1, eps_2, prev_facet, sq_dist, nearest_point ) )
 		return true;
 
-	Scalar h = distance( dot( ( v2 - v0 ), ( v1 - v0 ) ) * ( v1 - v0 ) / ls[ max_i ] + v0, v2 );
+	Scalar h = distance( dot( ( v2 - v0 ), ( v1 - v0 ) ) * ( v1 - v0 ) / vectorExtractLane( ls, max_i ) + v0, v2 );
 	int M = h / ( sqrt3_2 * sampling_dist );
 	if( M < 1 )
 		return tree.is_out_sf_envelope( v2, eps_2, prev_facet, sq_dist, nearest_point );
@@ -739,7 +754,7 @@ bool floatTetWild::sampleTriangleAndCheckOut(
 		return true;
 
 	// sample edges
-	N = sqrt( ls[ mod3( max_i + 1 ) ] ) / sampling_dist;
+	N = vectorExtractLane( lsRel, ( max_i + 1 ) % 3 );
 	if( N > 1 )
 	{
 		if( N == int( N ) )
@@ -752,7 +767,7 @@ bool floatTetWild::sampleTriangleAndCheckOut(
 		}
 	}
 
-	N = sqrt( ls[ mod3( max_i + 2 ) ] ) / sampling_dist;
+	N = vectorExtractLane( lsRel, ( max_i + 2 ) % 3 );
 	if( N > 1 )
 	{
 		if( N == int( N ) )
