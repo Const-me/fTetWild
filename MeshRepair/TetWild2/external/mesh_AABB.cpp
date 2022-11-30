@@ -840,10 +840,6 @@ namespace floatTetWild
 		std::vector<FacetRecursionFrame32>& stack = recursionStacks[ omp_get_thread_num() ].stack32;
 		const __m256 boxVec = makeBoxVector( p, sqEpsilon );
 
-		const __m128 p32_single = _mm256_cvtpd_ps( p );
-		// Duplicate the downcasted position into low & high halves of an AVX vector, for pointBoxSignedSquaredDistanceX2 function
-		const __m256 p32 = _mm256_setr_m128( p32_single, p32_single );
-
 		// Copy that value from memory to a register, saves quite a few loads/stores in the loop below
 		double sqDist = sqDistResult;
 
@@ -919,35 +915,14 @@ namespace floatTetWild
 				continue;
 			}
 
-			// They both intersected. Compute signed distance to both boxes, which is way more expensive than testing for intersections,
-			// and select the direction to follow
-			const __m256 distX2 = Box32::pointBoxSignedSquaredDistanceX2( boxesFloat[ childl ], boxesFloat[ childr ], p32 );
-
-			const float distL = _mm256_cvtss_f32( distX2 );
-			const float distR = _mm_cvtss_f32( _mm256_extractf128_ps( distX2, 2 ) );
-
+			// Push the right [ childr, m, e ] state to the stack..
 			auto& newFrame = stack.emplace_back();
-
-			if( distL < distR ) 
-			{
-				// Push the right [ childr, m, e ] state to the stack, and replace the current state with the left one
-				newFrame.n = childr;
-				newFrame.b = m;
-				newFrame.e = e;
-
-				n = childl;
-				e = m;
-			}
-			else
-			{
-				// Push the left [ childl, b, m ] state to the stack, and replace the current state with the right one
-				newFrame.n = childl;
-				newFrame.b = b;
-				newFrame.e = m;
-
-				n = childr;
-				b = m;
-			}
+			newFrame.n = childr;
+			newFrame.b = m;
+			newFrame.e = e;
+			// ..and replace the current state with the left one
+			n = childl;
+			e = m;
 		}
 #undef POP_FROM_THE_STACK
 
