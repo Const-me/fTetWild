@@ -50,3 +50,8 @@ inline bool compareInt2( const E& a, const E& b )
 }
 
 void dbgTestSolidAngles();
+
+inline const char* cstr( bool b )
+{
+	return b ? "true" : "false";
+}

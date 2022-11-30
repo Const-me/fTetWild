@@ -46,9 +46,8 @@
 #include "stdafx.h"
 #include "mesh_AABB.h"
 #include "../Utils/BoundingBox.hpp"
-#ifdef __AVX__
 #include <Utils/AvxMath.h>
-#endif
+#include <Utils/miscUtils.h>
 #include <omp.h>
 
 namespace
@@ -953,8 +952,12 @@ namespace floatTetWild
 
 		const bool found1 = sqd1 <= sqEpsilon;
 		const bool found2 = sqDist <= sqEpsilon;
-		if( found1 != found2 )
-			__debugbreak();
+		if( found1 == found2 )
+			return;
+		// clang-format off
+		printf( "AABB query: eps2 = %g, squared distances [ %g, %g ], found = [ %s, %s ], facets = [ %i, %i ]\n",
+			sqEpsilon, sqd1, sqDist, cstr( found1 ), cstr( found2 ), nf1, nearestFacet );
+		// clang-format on
 #endif
 	}
 
