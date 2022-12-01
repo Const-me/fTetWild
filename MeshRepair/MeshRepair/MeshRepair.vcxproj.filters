@@ -40,7 +40,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="API\MeshRepair.def">
+    <None Include="MeshRepair.def">
       <Filter>API</Filter>
     </None>
   </ItemGroup>
