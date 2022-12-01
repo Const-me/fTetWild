@@ -4,12 +4,6 @@
 #include "Mesh.h"
 #include <memory>
 
-//#define NEW_ENVELOPE //fortest
-
-#ifdef NEW_ENVELOPE
-#include <fastenvelope/FastEnvelope.h>
-#endif
-
 namespace floatTetWild
 {
 	class AABBWrapper
@@ -24,7 +18,10 @@ namespace floatTetWild
 		MeshFacetsAABBWithEps sf_tree;
 
 		//// initialization
-		inline Scalar get_sf_diag() const { return sf_mesh.boxDiagonal(); }
+		inline Scalar get_sf_diag() const
+		{
+			return sf_mesh.boxDiagonal();
+		}
 
 		AABBWrapper( const GEO2::Mesh& sf_mesh, FacetRecursionStacks& stacks )
 			: sf_mesh( sf_mesh )
@@ -120,67 +117,33 @@ namespace floatTetWild
 			return false;
 		}
 
-		inline bool is_out_b_envelope( const std::vector<GEO2::vec3>& ps, const Scalar eps_2, GEO2::index_t prev_facet = GEO2::NO_FACET ) const
+		inline bool is_out_b_envelope( const std::vector<GEO2::vec3>& ps, __m128d eps21, GEO2::index_t prev_facet = GEO2::NO_FACET ) const
 		{
-			GEO2::vec3 nearest_point;
-			double sq_dist = std::numeric_limits<double>::max();
-
 			for( const GEO2::vec3& current_point : ps )
 			{
-				if( prev_facet != GEO2::NO_FACET )
-				{
-					const __m256d pos = AvxMath::loadDouble3( &current_point.x );
-					get_point_facet_nearest_point( b_mesh, pos, prev_facet, nearest_point, sq_dist );
-				}
-				if( Scalar( sq_dist ) > eps_2 )
-				{
-					b_tree->facet_in_envelope_with_hint( current_point, eps_2, prev_facet, nearest_point, sq_dist );
-				}
-				if( Scalar( sq_dist ) > eps_2 )
-				{
+				__m256d p = AvxMath::loadDouble3( &current_point.x );
+				if( b_tree->isOutOfEnvelope( p, eps21, prev_facet ) )
 					return true;
-				}
 			}
-
 			return false;
 		}
 
-		inline bool is_out_tmp_b_envelope( const std::vector<GEO2::vec3>& ps, const Scalar eps_2, GEO2::index_t prev_facet = GEO2::NO_FACET ) const
+		inline bool is_out_tmp_b_envelope( const std::vector<GEO2::vec3>& ps, __m128d eps21, GEO2::index_t prev_facet = GEO2::NO_FACET ) const
 		{
-			GEO2::vec3 nearest_point;
-			double sq_dist = std::numeric_limits<double>::max();
-
 			for( const GEO2::vec3& current_point : ps )
 			{
-				if( prev_facet != GEO2::NO_FACET )
-				{
-					const __m256d pos = AvxMath::loadDouble3( &current_point.x );
-					get_point_facet_nearest_point( tmp_b_mesh, pos, prev_facet, nearest_point, sq_dist );
-				}
-				if( Scalar( sq_dist ) > eps_2 )
-				{
-					tmp_b_tree->facet_in_envelope_with_hint( current_point, eps_2, prev_facet, nearest_point, sq_dist );
-				}
-				if( Scalar( sq_dist ) > eps_2 )
-				{
+				__m256d p = AvxMath::loadDouble3( &current_point.x );
+				if( tmp_b_tree->isOutOfEnvelope( p, eps21, prev_facet ) )
 					return true;
-				}
 			}
-
 			return false;
 		}
 
 		//// envelope check - point
-		inline bool is_out_sf_envelope( const Vector3& p, const Scalar eps_2, GEO2::index_t& prev_facet ) const
+		inline bool isOutSurfaceEnvelope( const Vector3& p, __m128d eps21, GEO2::index_t& prev_facet ) const
 		{
-			GEO2::vec3 nearest_p;
-			double sq_dist;
-			GEO2::vec3 geo_p( p[ 0 ], p[ 1 ], p[ 2 ] );
-			prev_facet = sf_tree.facet_in_envelope( geo_p, eps_2, nearest_p, sq_dist );
-
-			if( Scalar( sq_dist ) > eps_2 )
-				return true;
-			return false;
+			const __m256d pos = AvxMath::loadDouble3( p.data() );
+			return sf_tree.isOutOfEnvelope( pos, eps21, prev_facet );
 		}
 
 		inline bool is_out_sf_envelope( const Vector3& p, const Scalar eps_2, GEO2::index_t& prev_facet, double& sq_dist, GEO2::vec3& nearest_p ) const
@@ -188,6 +151,16 @@ namespace floatTetWild
 			GEO2::vec3 geo_p( p[ 0 ], p[ 1 ], p[ 2 ] );
 			return is_out_sf_envelope( geo_p, eps_2, prev_facet, sq_dist, nearest_p );
 		}
+
+		inline bool is_out_sf_envelope( __m256d pos, const Scalar eps_2, GEO2::index_t& prev_facet, double& sq_dist, GEO2::vec3& nearest_p ) const
+		{
+			// TODO: avoid the load/store
+			std::array<double, 4> arr;
+			_mm256_storeu_pd( arr.data(), pos );
+			const GEO2::vec3* geo_p = (const GEO2::vec3*)arr.data();
+			return is_out_sf_envelope( *geo_p, eps_2, prev_facet, sq_dist, nearest_p );
+		}
+
 		inline bool is_out_sf_envelope( const GEO2::vec3& geo_p, const Scalar eps_2, GEO2::index_t& prev_facet, double& sq_dist, GEO2::vec3& nearest_p ) const
 		{
 			if( prev_facet != GEO2::NO_FACET )
@@ -229,23 +202,6 @@ namespace floatTetWild
 			return false;
 		}
 
-#ifdef NEW_ENVELOPE
-		inline bool is_out_sf_envelope_exact( const Vector3& p ) const
-		{
-			return sf_tree_exact.is_outside( p );
-		}
-
-		inline bool is_out_b_envelope_exact( const Vector3& p ) const
-		{
-			return b_tree_exact.is_outside( p );
-		}
-
-		inline bool is_out_tmp_b_envelope_exact( const Vector3& p ) const
-		{
-			return tmp_b_tree_exact.is_outside( p );
-		}
-#endif
-
 		// fortest
 		inline Scalar dist_sf_envelope( const std::vector<GEO2::vec3>& ps, const Scalar eps_2, GEO2::index_t prev_facet = GEO2::NO_FACET ) const
 		{  /// only used for checking correctness
@@ -273,5 +229,4 @@ namespace floatTetWild
 		}
 		// fortest
 	};
-
 }  // namespace floatTetWild

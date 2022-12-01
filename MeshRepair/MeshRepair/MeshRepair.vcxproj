@@ -89,7 +89,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <ModuleDefinitionFile>API\MeshRepair.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>MeshRepair.def</ModuleDefinitionFile>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
   </ItemDefinitionGroup>
@@ -122,7 +122,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="API\MeshRepair.def" />
+    <None Include="MeshRepair.def" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="eigen.natvis" />

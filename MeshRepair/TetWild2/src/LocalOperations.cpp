@@ -12,6 +12,7 @@
 #include "../external/Rational.h"
 #include "LocalOperations2.h"
 #include <Utils/lowLevel.h>
+#include <Utils/AvxMathVec.h>
 
 namespace floatTetWild
 {
@@ -181,10 +182,11 @@ bool floatTetWild::is_boundary_edge( const Mesh& mesh, int v1_id, int v2_id, con
 		AvxMath::storeDouble3( ps.emplace_back().data(), pos );
 	}
 
+	const __m128d eps21 = _mm_loadu_pd( &mesh.params.eps_2 );
 	if( !mesh.is_input_all_inserted )
-		return !tree.is_out_tmp_b_envelope( ps, mesh.params.eps_2 );
+		return !tree.is_out_tmp_b_envelope( ps, eps21 );
 	else
-		return !tree.is_out_b_envelope( ps, mesh.params.eps_2 );
+		return !tree.is_out_b_envelope( ps, eps21 );
 }
 
 bool floatTetWild::is_valid_edge( const Mesh& mesh, int v1_id, int v2_id )
@@ -219,8 +221,9 @@ bool floatTetWild::is_isolate_surface_point( const Mesh& mesh, int v_id )
 
 bool floatTetWild::is_point_out_envelope( const Mesh& mesh, const Vector3& p, const AABBWrapper& tree )
 {
-	GEO2::index_t prev_facet;
-	return tree.is_out_sf_envelope( p, mesh.params.eps_2, prev_facet );
+	const __m128d eps21 = _mm_loadu_pd( &mesh.params.eps_2 );
+	GEO2::index_t prev_facet = GEO2::NO_FACET;
+	return tree.isOutSurfaceEnvelope( p, eps21, prev_facet );
 }
 
 bool floatTetWild::is_point_out_boundary_envelope( const Mesh& mesh, const Vector3& p, const AABBWrapper& tree )
@@ -421,13 +424,17 @@ bool floatTetWild::is_out_boundary_envelope( const Mesh& mesh, int v_id, const V
 			ps.push_back( ps[ p0_id ] * ( j / N ) + ps[ p1_id ] * ( 1 - j / N ) );
 		}
 	}
-	return tree.is_out_tmp_b_envelope( ps, mesh.params.eps_2 / 100, prev_facet );
+
+	__m128d eps21 = _mm_loadu_pd( &mesh.params.eps_2 );
+	eps21 = _mm_div_pd( eps21, _mm_setr_pd( 100, 10 ) );	// These two numbers are [ eps^2, eps ], we want to decrement by a factor of 10
+	return tree.is_out_tmp_b_envelope( ps, eps21, prev_facet );
 }
 
 bool floatTetWild::is_out_envelope( Mesh& mesh, int v_id, const Vector3& new_pos, const AABBWrapper& tree )
 {
-	GEO2::index_t prev_facet;
-	if( tree.is_out_sf_envelope( new_pos, mesh.params.eps_2, prev_facet ) )
+	const __m128d eps21 = _mm_loadu_pd( &mesh.params.eps_2 );
+	GEO2::index_t prev_facet = GEO2::NO_FACET;
+	if( tree.isOutSurfaceEnvelope( new_pos, eps21, prev_facet ) )
 		return true;
 
 	for( int t_id : mesh.tet_vertices[ v_id ].connTets )
@@ -444,7 +451,7 @@ bool floatTetWild::is_out_envelope( Mesh& mesh, int v_id, const Vector3& new_pos
 					else
 						vs[ k ] = mesh.tet_vertices[ mesh.tets[ t_id ][ mod4( j + 1 + k ) ] ].pos;
 				}
-				bool is_out = sample_triangle_and_check_is_out( vs, mesh.params.dd, mesh.params.eps_2, tree, prev_facet );
+				bool is_out = sampleTriangleAndCheckOut( vs, mesh.params.dd, eps21, tree, prev_facet );
 				if( is_out )
 					return true;
 			}
@@ -457,7 +464,7 @@ namespace
 {
 	// std::sqrt( 3 ) / 2;
 	constexpr double sqrt3_2 = 0.86602540378443864676372317075294;
-}
+}  // namespace
 
 void floatTetWild::sample_triangle( const std::array<Vector3, 3>& vs, std::vector<GEO2::vec3>& ps, Scalar sampling_dist )
 {
@@ -550,7 +557,8 @@ void floatTetWild::sample_triangle( const std::array<Vector3, 3>& vs, std::vecto
 	}
 }
 
-bool floatTetWild::sample_triangle_and_check_is_out(
+/*
+bool floatTetWild::sampleTriangleAndCheckOut(
   const std::array<Vector3, 3>& vs, Scalar sampling_dist, Scalar eps_2, const AABBWrapper& tree, GEO2::index_t& prev_facet )
 {
 	GEO2::vec3 nearest_point;
@@ -655,6 +663,142 @@ bool floatTetWild::sample_triangle_and_check_is_out(
 		}
 	}
 
+	return false;
+} */
+
+namespace
+{
+	inline uint32_t lastMaxLaneIndex( __m256d vec3 )
+	{
+		__m256d ax = AvxMath::vector3BroadcastMaximum( vec3 );
+		// Compare for equality
+		const __m256d eq = _mm256_cmp_pd( vec3, ax, _CMP_EQ_OQ );
+		// Return index of the last equal lane
+		uint32_t mask = _mm256_movemask_pd( eq );
+		mask &= 0b111;
+		uint32_t idx = _lzcnt_u32( mask );
+		assert( idx != 32 && idx >= 29 );
+		return 31 - idx;
+	}
+
+	__m128i findSearchRoot( const floatTetWild::MeshFacetsAABBWithEps& mesh, const std::array<AvxMath::Vec, 3>& verts, __m128d eps21 )
+	{
+		__m256d i = _mm256_min_pd( _mm256_min_pd( verts[ 0 ], verts[ 1 ] ), verts[ 2 ] );
+		__m256d ax = _mm256_max_pd( _mm256_max_pd( verts[ 0 ], verts[ 1 ] ), verts[ 2 ] );
+		__m128d eps = _mm_unpackhi_pd( eps21, eps21 );
+		__m256d bc = AvxMath::vectorBroadcast( eps );
+
+		i = _mm256_sub_pd( i, bc );
+		ax = _mm256_add_pd( ax, bc );
+		return mesh.getBoxRoot( i, ax );
+	}
+}  // namespace
+
+bool floatTetWild::sampleTriangleAndCheckOut(
+  const std::array<Vector3, 3>& vs, Scalar sampling_dist, __m128d eps21, const AABBWrapper& tree, uint32_t& prevFace )
+{
+	using namespace AvxMath;
+	const std::array<Vec, 3> verts = { _mm256_loadu_pd( vs[ 0 ].data() ), _mm256_loadu_pd( vs[ 1 ].data() ), loadDouble3( vs[ 2 ].data() ) };
+
+	const auto& aabb = tree.sf_tree;
+	const __m128i root = findSearchRoot( aabb, verts, eps21 );
+
+	const Vec ls = computeLengthsSquared( verts[ 0 ] - verts[ 1 ], verts[ 1 ] - verts[ 2 ], verts[ 2 ] - verts[ 0 ] );
+	const Vec lsRel = ls.sqrt() / sampling_dist;
+	const uint32_t max_i = lastMaxLaneIndex( ls );
+	Scalar N = vectorExtractLane( lsRel, max_i );
+	if( N <= 1 )
+	{
+		for( int i = 0; i < 3; i++ )
+		{
+			if( aabb.isOutOfEnvelope( verts[ i ], eps21, root, prevFace ) )
+				return true;
+		}
+		return false;
+	}
+	// TODO [low]: replace the following code with simpler, faster, and more accurate algorithm of generating the mid.points, based on barycentric coordinates
+	// Here's a good algorithm: https://www.khronos.org/opengl/wiki/tessellation#Triangles
+	if( N == int( N ) )
+		N -= 1;
+
+	using namespace AvxMath;
+	const Vec v0 = verts[ max_i ];
+	const Vec v1 = verts[ ( max_i + 1 ) % 3 ];
+	const Vec v2 = verts[ ( max_i + 2 ) % 3 ];
+
+	Vec n_v0v1 = normalize( v1 - v0 );
+	for( int n = 0; n <= N; n++ )
+	{
+		if( aabb.isOutOfEnvelope( v0 + n_v0v1 * sampling_dist * n, eps21, root, prevFace ) )
+			return true;
+	}
+	if( aabb.isOutOfEnvelope( v1, eps21, root, prevFace ) )
+		return true;
+
+	Scalar h = distance( dot( ( v2 - v0 ), ( v1 - v0 ) ) * ( v1 - v0 ) / vectorExtractLane( ls, max_i ) + v0, v2 );
+	int M = h / ( sqrt3_2 * sampling_dist );
+	if( M < 1 )
+		return aabb.isOutOfEnvelope( v2, eps21, root, prevFace );
+
+	Vec n_v0v2 = normalize( v2 - v0 );
+	Vec n_v1v2 = normalize( v2 - v1 );
+	Scalar tan_v0, tan_v1, sin_v0, sin_v1;
+	sin_v0 = length( cross( ( v2 - v0 ), ( v1 - v0 ) ) ) / ( distance( v0, v2 ) * distance( v0, v1 ) );
+	tan_v0 = length( cross( ( v2 - v0 ), ( v1 - v0 ) ) ) / dot( ( v2 - v0 ), ( v1 - v0 ) );
+	tan_v1 = length( cross( ( v2 - v1 ), ( v0 - v1 ) ) ) / dot( ( v2 - v1 ), ( v0 - v1 ) );
+	sin_v1 = length( cross( ( v2 - v1 ), ( v0 - v1 ) ) ) / ( distance( v1, v2 ) * distance( v0, v1 ) );
+
+	for( int m = 1; m <= M; m++ )
+	{
+		int n = sqrt3_2 / tan_v0 * m + 0.5;
+		int n1 = sqrt3_2 / tan_v0 * m;
+		if( m % 2 == 0 && n == n1 )
+			n++;
+
+		Vec v0_m = v0 + m * sqrt3_2 * sampling_dist / sin_v0 * n_v0v2;
+		Vec v1_m = v1 + m * sqrt3_2 * sampling_dist / sin_v1 * n_v1v2;
+		if( distance( v0_m, v1_m ) <= sampling_dist )
+			break;
+
+		Scalar delta_d = ( ( n + ( m % 2 ) / 2.0 ) - m * sqrt3_2 / tan_v0 ) * sampling_dist;
+		Vec v = v0_m + delta_d * n_v0v1;
+		int N1 = distance( v, v1_m ) / sampling_dist;
+		for( int i = 0; i <= N1; i++ )
+		{
+			if( aabb.isOutOfEnvelope( v + i * n_v0v1 * sampling_dist, eps21, root, prevFace ) )
+				return true;
+		}
+	}
+
+	if( aabb.isOutOfEnvelope( v2, eps21, root, prevFace ) )
+		return true;
+
+	// sample edges
+	N = vectorExtractLane( lsRel, ( max_i + 1 ) % 3 );
+	if( N > 1 )
+	{
+		if( N == int( N ) )
+			N -= 1;
+		Vec n_v1v2 = normalize( v2 - v1 );
+		for( int n = 1; n <= N; n++ )
+		{
+			if( aabb.isOutOfEnvelope( v1 + n_v1v2 * sampling_dist * n, eps21, root, prevFace ) )
+				return true;
+		}
+	}
+
+	N = vectorExtractLane( lsRel, ( max_i + 2 ) % 3 );
+	if( N > 1 )
+	{
+		if( N == int( N ) )
+			N -= 1;
+		Vec n_v2v0 = normalize( v0 - v2 );
+		for( int n = 1; n <= N; n++ )
+		{
+			if( aabb.isOutOfEnvelope( v2 + n_v2v0 * sampling_dist * n, eps21, root, prevFace ) )
+				return true;
+		}
+	}
 	return false;
 }
 

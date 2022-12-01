@@ -65,9 +65,6 @@ namespace floatTetWild
 	 */
 	class MeshFacetsAABBWithEps
 	{
-		static constexpr bool useFp32Boxes = true;
-		static constexpr bool dbgCompareVersions = false;
-
 	  public:
 		/**
 		 * \brief Creates the Axis Aligned Bounding Boxes tree.
@@ -93,12 +90,7 @@ namespace floatTetWild
 		{
 			GEO2::index_t nearest_facet = GEO2::NO_FACET;
 			sq_dist = DBL_MAX;
-			if constexpr( dbgCompareVersions )
-				nearestFacetCompare( p, nearest_facet, nearest_point, sq_dist );
-			else if constexpr( useFp32Boxes )
-				nearestFacetStack32( p, nearest_facet, nearest_point, sq_dist );
-			else
-				nearestFacetStack( p, nearest_facet, nearest_point, sq_dist );
+			nearestFacetStack32( p, nearest_facet, nearest_point, sq_dist );
 			return nearest_facet;
 		}
 
@@ -125,13 +117,7 @@ namespace floatTetWild
 		{
 			if( nearest_facet == GEO2::NO_FACET )
 				sq_dist = DBL_MAX;
-
-			if constexpr( dbgCompareVersions )
-				nearestFacetCompare( p, nearest_facet, nearest_point, sq_dist );
-			else if constexpr( useFp32Boxes )
-				nearestFacetStack32( p, nearest_facet, nearest_point, sq_dist );
-			else
-				nearestFacetStack( p, nearest_facet, nearest_point, sq_dist );
+			nearestFacetStack32( p, nearest_facet, nearest_point, sq_dist );
 		}
 
 		/*
@@ -142,14 +128,8 @@ namespace floatTetWild
 		{
 			GEO2::index_t nearest_facet = GEO2::NO_FACET;
 			sq_dist = DBL_MAX;
-			__m128i vec = _mm_setr_epi32( 1, 0, (int)mesh_.countTriangles(), 0 );
 			__m256d pt = AvxMath::loadDouble3( &p.x );
-			if constexpr( dbgCompareVersions )
-				facetInEnvelopeCompare( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist, vec );
-			else if constexpr( useFp32Boxes )
-				facetInEnvelopeStack32( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist );
-			else
-				facetInEnvelopeStack( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist );
+			facetInEnvelopeStack32( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist );
 			return nearest_facet;
 		}
 
@@ -162,58 +142,33 @@ namespace floatTetWild
 		{
 			if( nearest_facet == GEO2::NO_FACET )
 				sq_dist = DBL_MAX;
-			__m128i vec = _mm_setr_epi32( 1, 0, (int)mesh_.countTriangles(), 0 );
 			__m256d pt = AvxMath::loadDouble3( &p.x );
-			if constexpr( dbgCompareVersions )
-				facetInEnvelopeCompare( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist, vec );
-			else if constexpr( useFp32Boxes )
-				facetInEnvelopeStack32( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist );
-			else
-				facetInEnvelopeStack( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist );
+			facetInEnvelopeStack32( pt, sq_epsilon, nearest_facet, nearest_point, sq_dist );
 		}
 
-	  private:
-		/**
-		 * \brief The recursive function used by the implementation
-		 *  of nearest_facet().
-		 *
-		 * \details The first call may use get_nearest_facet_hint()
-		 * to initialize nearest_facet, nearest_point and sq_dist,
-		 * as done in nearest_facet().
-		 *
-		 * \param[in] p query point
-		 * \param[in,out] nearest_facet the nearest facet so far,
-		 * \param[in,out] nearest_point a point in nearest_facet
-		 * \param[in,out] sq_dist squared distance between p and nearest_point
-		 * \param[in] n index of the current node in the AABB tree
-		 * \param[in] b index of the first facet in the subtree under node \p n
-		 * \param[in] e one position past the index of the last facet in the
-		 *  subtree under node \p n
-		 */
-		void nearestFacetRecursive( const GEO2::vec3& p, GEO2::index_t& nearest_facet, GEO2::vec3& nearest_point, double& sq_dist, GEO2::index_t n,
-		  GEO2::index_t b, GEO2::index_t e ) const;
+		// Find root node of the tree which contains the specified box
+		__m128i __vectorcall getBoxRoot( __m256d boxMin64, __m256d boxMax64 ) const;
 
-		// Same as above without recursion
-		void nearestFacetStack( const GEO2::vec3& point, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDistResult ) const;
+		bool __vectorcall isOutOfEnvelope( __m256d pos, __m128d eps21, __m128i searchRoot, uint32_t& prevFace ) const;
+		bool __vectorcall isOutOfEnvelope( __m256d pos, __m128d eps21, uint32_t& prevFace ) const;
+
+		// Collect IDs of the faces which might intersect the specified bounding box
+		// The returned vector is stored in a thread-local structure for the calling thread
+		const std::vector<uint32_t>& facesInTheBox( __m256d boxMin64, __m256d boxMax64 ) const;
+
+		// Compute minimum squared distance between the point and the specified set of triangles
+		// Return true if that distance exceeds the supplied scalar
+		bool isOutOfEnvelope( __m256d pos, double eps2, const std::vector<uint32_t>& faces ) const;
+
+	  private:
 
 		// Same as above without recursion
 		void nearestFacetStack32( const GEO2::vec3& point, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDistResult ) const;
 
-		void nearestFacetCompare( const GEO2::vec3& point, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDistResult ) const;
-
-		/*
-		 * Same as before, but stops early if a point within a given distance
-		 * is found.
-		 */
-		void facetInEnvelopeRecursive(
-		  __m256d p, double sq_epsilon, GEO2::index_t& nearest_facet, GEO2::vec3& nearest_point, double& sq_dist, __m128i nbe ) const;
-
-		void facetInEnvelopeStack( __m256d p, double sqEpsilon, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDist ) const;
+		void facetInEnvelopeStack32_v1( __m256d p, double sqEpsilon, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDist ) const;
+		void facetInEnvelopeStack32_v2( __m256d p, double sqEpsilon, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDist ) const;
 		void facetInEnvelopeStack32( __m256d p, double sqEpsilon, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDist ) const;
 
-		void facetInEnvelopeCompare( __m256d p, double sqEpsilon, GEO2::index_t& nearestFacet, GEO2::vec3& nearestPoint, double& sqDist, __m128i nbe ) const;
-
-		std::vector<GEO2::Box> bboxes_;
 		std::vector<Box32> boxesFloat;
 		const GEO2::Mesh& mesh_;
 		FacetRecursionStacks& recursionStacks;
@@ -225,5 +180,13 @@ namespace floatTetWild
 		const vec3 *p1, *p2, *p3;
 		M.getTriangleVertices( f, &p1, &p2, &p3 );
 		squared_dist = point_triangle_squared_distance( p, *p1, *p2, *p3, &nearest_p );
+	}
+
+	inline double pointTriangleSquaredDistance( const GEO2::Mesh& M, __m256d p, GEO2::index_t f )
+	{
+		using namespace GEO2;
+		const vec3 *p1, *p2, *p3;
+		M.getTriangleVertices( f, &p1, &p2, &p3 );
+		return point_triangle_squared_distance( p, *p1, *p2, *p3, nullptr );
 	}
 }  // namespace floatTetWild

@@ -26,7 +26,7 @@ I’ve benchmarked on [Stanford dragon](https://en.wikipedia.org/wiki/Stanford_d
 The computer I’m using at the time of writing has AMD [Ryzen 7 5700G](https://www.amd.com/en/products/apu/amd-ryzen-7-5700g) processor.
 
 The original version took 4:51, process time 07:46<br/>
-My version took 01:53 (so more than twice as fast), process time 03:43
+My version 1.3.0 took 01:34 (about 3 times faster), process time 03:02
 
 Despite I managed to make it way faster, I’m not quite happy with the performance.<br/>
 Just like the original version, this fork is mostly single-threaded.<br/>
@@ -99,3 +99,19 @@ The DLL doesn’t do any IO, doesn’t call any OS APIs directly, only uses Open
 For COM implementation the library uses [ComLightInterop](https://github.com/Const-me/ComLightInterop), which works fine on Linux.
 
 If you don’t want to build anything only want to test, to run the released binaries you gonna need to install [vc_redist.x64.exe](https://aka.ms/vs/17/release/vc_redist.x64.exe)
+
+# Screenshots
+
+Source model, 871k faces, 41.5MB in binary STL format:
+
+![](./figs/source.jpg)
+
+High precision result with relative epsilon = 1E-4.<br/>
+The test took 717 seconds = about 12 minutes on my computer, and generated 307k triangles, 14.6MB in binary STL format:
+
+![](./figs/high-quality.jpg)
+
+Medium precision result with relative epsilon = 1E-3.<br/>
+This one took 97 seconds to complete, and generated 28.4k faces, 1.35MB in binary STL format:
+
+![](./figs/medium-quality.jpg)
