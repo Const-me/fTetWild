@@ -102,7 +102,7 @@ If you don’t want to build anything only want to test, to run the released bin
 
 # Screenshots
 
-Source model:
+Source model, 871k faces, 41.5MB in binary STL format:
 
 ![](./figs/source.jpg)
 
