@@ -99,3 +99,19 @@ The DLL doesn’t do any IO, doesn’t call any OS APIs directly, only uses Open
 For COM implementation the library uses [ComLightInterop](https://github.com/Const-me/ComLightInterop), which works fine on Linux.
 
 If you don’t want to build anything only want to test, to run the released binaries you gonna need to install [vc_redist.x64.exe](https://aka.ms/vs/17/release/vc_redist.x64.exe)
+
+# Screenshots
+
+Source model:
+
+![](./figs/source.jpg)
+
+High precision result with relative epsilon = 1E-4.<br/>
+The test took 717 seconds = about 12 minutes on my computer, and generated 307k triangles, 14.6MB in binary STL format:
+
+![](./figs/high-quality.jpg)
+
+Medium precision result with relative epsilon = 1E-3.<br/>
+This one took 97 seconds to complete, and generated 28.4k faces, 1.35MB in binary STL format:
+
+![](./figs/medium-quality.jpg)
