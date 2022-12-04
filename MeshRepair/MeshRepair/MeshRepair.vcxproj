@@ -45,11 +45,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(ProjectDir);$(ProjectDir)..\GeogramDelaunay;$(ProjectDir)..\ThirdParty;$(SolutionDir)..\..\mpir\sandybridge\Inc;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)tbb\Debug;$(SolutionDir)..\..\mpir\sandybridge\Bin;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)tbb\$(Configuration);$(SolutionDir)\ThirdParty\mpir\sandybridge\Bin\$(Configuration);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(ProjectDir);$(ProjectDir)..\GeogramDelaunay;$(ProjectDir)..\ThirdParty;$(SolutionDir)..\..\mpir\sandybridge\Inc;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)tbb\Release;$(SolutionDir)..\..\mpir\sandybridge\Bin;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)tbb\$(Configuration);$(SolutionDir)\ThirdParty\mpir\sandybridge\Bin\$(Configuration);$(LibraryPath)</LibraryPath>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -67,7 +67,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <ModuleDefinitionFile>API\MeshRepair.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>MeshRepair.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
