@@ -6,7 +6,8 @@
 // obtain one at http://mozilla.org/MPL/2.0/.
 
 #pragma once
-#include <gmp.h>
+
+#include "mpir/gmp.h"
 #include <iostream>
 
 namespace triwild
