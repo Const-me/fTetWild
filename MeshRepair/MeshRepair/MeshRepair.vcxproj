@@ -44,12 +44,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir);$(ProjectDir)..\GeogramDelaunay;$(ProjectDir)..\ThirdParty;$(SolutionDir)..\..\mpir\sandybridge\Inc;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)tbb\$(Configuration);$(SolutionDir)\ThirdParty\mpir\sandybridge\Bin\$(Configuration);$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir);$(ProjectDir)..\GeogramDelaunay;$(ProjectDir)..\ThirdParty;$(ProjectDir)..\ThirdParty\mpir\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)tbb\$(Configuration);$(SolutionDir)\ThirdParty\mpir\lib\$(Configuration);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(ProjectDir);$(ProjectDir)..\GeogramDelaunay;$(ProjectDir)..\ThirdParty;$(SolutionDir)..\..\mpir\sandybridge\Inc;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)tbb\$(Configuration);$(SolutionDir)\ThirdParty\mpir\sandybridge\Bin\$(Configuration);$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir);$(ProjectDir)..\GeogramDelaunay;$(ProjectDir)..\ThirdParty;$(ProjectDir)..\ThirdParty\mpir\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)tbb\$(Configuration);$(SolutionDir)\ThirdParty\mpir\lib\$(Configuration);$(LibraryPath)</LibraryPath>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

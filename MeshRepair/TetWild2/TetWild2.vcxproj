@@ -44,10 +44,10 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir);$(ProjectDir)..\GeogramDelaunay;$(ProjectDir)..\ThirdParty;$(SolutionDir)..\..\mpir\sandybridge\Inc;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir);$(ProjectDir)..\GeogramDelaunay;$(ProjectDir)..\ThirdParty;$(ProjectDir)..\ThirdParty\mpir\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(ProjectDir);$(ProjectDir)..\GeogramDelaunay;$(ProjectDir)..\ThirdParty;$(SolutionDir)..\..\mpir\sandybridge\Inc;$(SolutionDir)..\3rdparty\libigl\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir);$(ProjectDir)..\GeogramDelaunay;$(ProjectDir)..\ThirdParty;$(ProjectDir)..\ThirdParty\mpir\include;$(SolutionDir)..\3rdparty\libigl\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
