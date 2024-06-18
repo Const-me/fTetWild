@@ -16,11 +16,38 @@
 
 namespace floatTetWild
 {
+	class IntMap : public std::map<int, int>
+	{
+	  public:
+		bool tryLookup( int key, int& val ) const
+		{
+			auto it = find( key );
+			if( it != end() )
+			{
+				val = it->second;
+				return true;
+			}
+			else
+				return false;
+		}
+		bool contains( int key ) const
+		{
+			return find( key ) != end();
+		}
+
+		std::pair<int*, bool> emplace( int key )
+		{
+			auto res = std::map<int, int>::emplace( std::make_pair( key, -1 ) );
+			return std::make_pair( &res.first->second, res.second );
+		}
+	};
+
 	class CutMesh
 	{
 	  public:
 		SortedIntSet v_ids;
-		FlatIntMap map_v_ids;
+		// FlatIntMap map_v_ids;
+		IntMap map_v_ids;
 		std::vector<std::array<int, 4>> tets;
 
 		std::vector<double> to_plane_dists;
@@ -47,8 +74,8 @@ namespace floatTetWild
 			v_ids = std::move( buffers.v_ids );
 			v_ids.clear();
 
-			map_v_ids = std::move( buffers.map_v_ids );
-			map_v_ids.clear();
+			// map_v_ids = std::move( buffers.map_v_ids );
+			// map_v_ids.clear();
 
 			tets = std::move( buffers.tets );
 			tets.clear();
@@ -68,7 +95,7 @@ namespace floatTetWild
 		~CutMesh()
 		{
 			buffers.v_ids = std::move( v_ids );
-			buffers.map_v_ids = std::move( map_v_ids );
+			// buffers.map_v_ids = std::move( map_v_ids );
 			buffers.tets = std::move( tets );
 			buffers.to_plane_dists = std::move( to_plane_dists );
 			buffers.is_snapped = std::move( is_snapped );

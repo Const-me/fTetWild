@@ -25,7 +25,8 @@ void floatTetWild::CutMesh::construct( const std::vector<int>& cut_t_ids )
 			v_ids.addSorted( mesh.tets[ t_id ][ j ] );
 
 	for( int i = 0; i < v_ids.size(); i++ )
-		map_v_ids.setAt( v_ids[ i ], i );
+		// map_v_ids.setAt( v_ids[ i ], i );
+		map_v_ids[ v_ids[ i ] ] = i;
 
 	tets.resize( cut_t_ids.size() );
 	for( int i = 0; i < cut_t_ids.size(); i++ )
